@@ -39,6 +39,15 @@ def determine_location(
     vguess = vision.get("best_guess_location") if vision else None
     vconf = float(vision.get("confidence", 0.0)) if vision else 0.0
 
+    # EXIF caption fields. Press/stock photos often embed the location here.
+    raw = metadata.get("raw", {}) if metadata else {}
+    caption = None
+    for key in ("ImageDescription", "XPTitle", "XPSubject", "UserComment"):
+        value = raw.get(key)
+        if isinstance(value, str) and value.strip():
+            caption = value.strip()
+            break
+
     # 1. Authoritative EXIF GPS.
     if _has_coords(gps):
         result.update(
@@ -85,6 +94,17 @@ def determine_location(
             }
         )
         evidence.append(f"Vision suggested place: {vguess.get('name')}.")
+
+    # 4. Fall back to an EXIF caption (free text, so lower confidence).
+    elif caption:
+        result.update(
+            {
+                "location_name": caption,
+                "confidence": 0.4,
+                "source": "exif_caption",
+            }
+        )
+        evidence.append(f"EXIF caption: {caption}.")
 
     # Add supporting clues from the vision model regardless of branch.
     if vision:

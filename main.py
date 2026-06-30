@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, Request, UploadFile
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from PIL import Image
@@ -99,17 +99,30 @@ def _decode_base64(text: str) -> Optional[bytes]:
 
 
 async def _extract_image_bytes(
-    request: Request, image: Optional[UploadFile]
+    request: Request,
 ) -> tuple[Optional[bytes], Optional[str]]:
     """Pull image bytes out of whatever format the client sent.
 
     Returns (bytes, original_filename) or (None, None) if nothing usable.
-    """
-    # 1. multipart/form-data with an "image" field.
-    if image is not None:
-        return await image.read(), image.filename
 
+    NOTE: we deliberately do NOT declare an UploadFile/File() parameter on the
+    route. Doing so makes FastAPI parse EVERY request body as a form, which
+    crashes on raw image bytes ("Too many fields"). Instead we read the body
+    ourselves and only invoke multipart parsing when the content type says so.
+    """
     content_type = (request.headers.get("content-type") or "").lower()
+
+    # 1. multipart/form-data: parse the form and grab the first file part.
+    if "multipart/form-data" in content_type:
+        try:
+            form = await request.form()
+        except Exception:
+            return None, None
+        for value in form.values():
+            if hasattr(value, "read"):  # it's an UploadFile
+                return await value.read(), getattr(value, "filename", None)
+        return None, None
+
     body = await request.body()
     if not body:
         return None, None
@@ -145,20 +158,24 @@ async def _extract_image_bytes(
 
 
 @app.post("/analyze")
-async def analyze(
-    request: Request, image: Optional[UploadFile] = File(None)
-) -> JSONResponse:
+async def analyze(request: Request) -> JSONResponse:
     """Receive an image (any supported format), run the OSINT pipeline."""
-    contents, original_name = await _extract_image_bytes(request, image)
+    content_type = request.headers.get("content-type") or "(none)"
+    contents, original_name = await _extract_image_bytes(request)
+    received_bytes = len(contents) if contents else 0
+    head_hex = contents[:8].hex() if contents else ""
+    print(
+        f"[/analyze] content-type={content_type!r} bytes={received_bytes} "
+        f"head={head_hex} filename={original_name!r}"
+    )
 
     if not contents:
-        return JSONResponse(
-            status_code=400,
-            content=error_response(
-                "No image found in request. Send multipart field 'image', "
-                "raw image bytes, or a base64 string."
-            ),
+        err = error_response(
+            "No image found in request. Send multipart field 'image', "
+            "raw image bytes, or a base64 string."
         )
+        err["received"] = {"content_type": content_type, "bytes": received_bytes}
+        return JSONResponse(status_code=400, content=err)
 
     if len(contents) > MAX_BYTES:
         return JSONResponse(
@@ -172,10 +189,13 @@ async def analyze(
             fmt = probe.format
             probe.verify()
     except Exception:
-        return JSONResponse(
-            status_code=400,
-            content=error_response("Uploaded data is not a valid image.", filename=original_name),
-        )
+        err = error_response("Uploaded data is not a valid image.", filename=original_name)
+        err["received"] = {
+            "content_type": content_type,
+            "bytes": received_bytes,
+            "head_hex": head_hex,
+        }
+        return JSONResponse(status_code=400, content=err)
 
     suffix = _FORMAT_EXT.get(fmt or "", ".jpg")
     saved_name = f"{uuid.uuid4().hex}{suffix}"

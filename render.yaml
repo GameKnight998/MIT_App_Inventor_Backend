@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: image-locator-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Pin the interpreter to match local development.
+      - key: PYTHON_VERSION
+        value: 3.13.2
+      # Set the real key in the Render dashboard (sync: false keeps it secret).
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: VISION_MODEL
+        value: gpt-4o

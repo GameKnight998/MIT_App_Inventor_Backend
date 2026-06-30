@@ -1,0 +1,30 @@
+# Python virtual environment
+venv/
+env/
+.venv/
+
+# Environment / secrets
+.env
+*.env
+!.env.example
+
+# Uploaded images (keep the folder, ignore its contents)
+uploads/*
+!uploads/.gitkeep
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

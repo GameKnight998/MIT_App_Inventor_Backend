@@ -101,10 +101,14 @@ def build_response(
         # Friendly, underscore-free source label for display.
         "source": _source_label(source_code),
         "summary": _build_summary(name, country, lat, lon),
+        # Plausibility check of the coordinates vs. the described scene.
+        "verified": location.get("verification", {}).get("status", "skipped"),
+        "warning": location.get("warning", ""),
         "alternatives": location.get("alternatives", []),
         # Full breakdown for debugging / richer clients.
         "details": {
             "source_code": source_code,
+            "verification": location.get("verification"),
             "exif": metadata,
             "vision": vision,
             "evidence": location.get("evidence", []),
@@ -131,5 +135,7 @@ def error_response(message: str, *, filename: str | None = None) -> dict[str, An
         "confidence": 0.0,
         "source": "Error",
         "summary": message,
+        "verified": "skipped",
+        "warning": "",
         "alternatives": [],
     }

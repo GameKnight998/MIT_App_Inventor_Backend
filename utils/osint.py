@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from utils.geocode import forward_geocode, reverse_geocode
+from utils.verify import detect_expected_features, verify_location
 
 
 def _clamp(value: float) -> float:
@@ -110,7 +111,7 @@ def determine_location(
             result["region"] = rev.get("region")
             result["address"] = rev.get("display_name")
             evidence.append(f"Reverse-geocoded to {rev.get('display_name')}.")
-        _append_clue_evidence(result, metadata, vision)
+        _finalize(result, metadata, vision)
         return result
 
     # 2-4. Work through ranked vision candidates.
@@ -200,7 +201,7 @@ def determine_location(
                 result["address"] = rev.get("display_name")
                 result["country"] = result["country"] or rev.get("country")
                 result["region"] = result["region"] or rev.get("region")
-        _append_clue_evidence(result, metadata, vision)
+        _finalize(result, metadata, vision)
         return result
 
     # 5. EXIF caption fallback (try to geocode it too).
@@ -230,12 +231,82 @@ def determine_location(
             )
         evidence.append(f"EXIF caption: {caption}.")
 
-    _append_clue_evidence(result, metadata, vision)
+    _finalize(result, metadata, vision)
 
     if result["source"] == "unknown":
         evidence.append("No GPS metadata and no confident visual location match.")
 
     return result
+
+
+def _finalize(
+    result: dict[str, Any],
+    metadata: Optional[dict[str, Any]],
+    vision: Optional[dict[str, Any]],
+) -> None:
+    """Append clue evidence and cross-check the location against the scene."""
+    _append_clue_evidence(result, metadata, vision)
+    _verify_and_adjust(result, vision)
+
+
+def _verify_and_adjust(
+    result: dict[str, Any], vision: Optional[dict[str, Any]]
+) -> None:
+    """Confirm expected geographic features exist near the resolved point.
+
+    Lowers confidence and adds a warning when the scene (e.g. a lake) does not
+    match what is actually at the coordinates. EXIF GPS is authoritative, so it
+    is checked for information only and never penalised heavily.
+    """
+    lat = result.get("latitude")
+    lon = result.get("longitude")
+    if lat is None or lon is None:
+        return
+
+    expected = detect_expected_features(vision)
+    if not expected:
+        return
+
+    report = verify_location(lat, lon, expected)
+    result["verification"] = report
+    evidence: list[str] = result["evidence"]
+    status = report.get("status")
+    nearest = report.get("nearest_m", {})
+
+    if status == "skipped":
+        return
+
+    for cat in report.get("confirmed", []):
+        dist = nearest.get(cat) or nearest.get("coast" if cat == "water" else cat)
+        if dist is not None:
+            evidence.append(f"Verified: {cat} found ~{int(dist)} m away.")
+        else:
+            evidence.append(f"Verified: {cat} present nearby.")
+    for cat in report.get("missing", []):
+        evidence.append(
+            f"Warning: image suggests {cat}, but none found within "
+            f"{report.get('radius_m')} m of this location."
+        )
+
+    is_gps = result.get("source") == "exif_gps"
+    factor = {
+        "verified": 1.0,
+        "partial": 0.7,
+        "mismatch": 0.4,
+    }.get(status, 1.0)
+
+    if status == "mismatch":
+        result["warning"] = (
+            "The described scene does not match this location's surroundings; "
+            "the result may be unreliable."
+        )
+    elif status == "partial":
+        result["warning"] = (
+            "Some described features could not be confirmed near this location."
+        )
+
+    if not is_gps:
+        result["confidence"] = _clamp(result.get("confidence", 0.0) * factor)
 
 
 def _append_clue_evidence(

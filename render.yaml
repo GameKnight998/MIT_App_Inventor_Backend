@@ -16,3 +16,7 @@ services:
         sync: false
       - key: VISION_MODEL
         value: gpt-4o
+      - key: GEOCODING_ENABLED
+        value: "1"
+      - key: GEOCODER_USER_AGENT
+        value: ImageLocatorBackend/1.0 (MIT App Inventor capstone)

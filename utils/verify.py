@@ -18,7 +18,17 @@ from typing import Any, Optional
 
 import requests
 
-OVERPASS_URL = os.getenv("OVERPASS_URL", "https://overpass-api.de/api/interpreter")
+# Several public Overpass mirrors; we try them in order so a single mirror being
+# down (or unreachable from the host) doesn't disable verification entirely.
+_DEFAULT_OVERPASS = (
+    "https://overpass-api.de/api/interpreter,"
+    "https://overpass.kumi.systems/api/interpreter,"
+    "https://overpass.private.coffee/api/interpreter,"
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+)
+OVERPASS_ENDPOINTS = [
+    u.strip() for u in os.getenv("OVERPASS_URL", _DEFAULT_OVERPASS).split(",") if u.strip()
+]
 VERIFY_RADIUS_M = int(os.getenv("VERIFY_RADIUS_M", "3000"))
 VERIFY_TIMEOUT = float(os.getenv("VERIFY_TIMEOUT", "20"))
 # Beyond this distance a "confirmed" feature is treated as only approximate.
@@ -112,16 +122,45 @@ def _classify(tags: dict[str, Any]) -> Optional[str]:
     return None
 
 
-def _skipped(note: str) -> dict[str, Any]:
+def _report(status: str, note: str, expected: list[str] | None = None) -> dict[str, Any]:
     return {
-        "status": "skipped",
+        "status": status,
         "note": note,
-        "expected": [],
+        "expected": expected or [],
         "confirmed": [],
         "missing": [],
         "nearest_m": {},
         "match_score": 1.0,
     }
+
+
+def _skipped(note: str) -> dict[str, Any]:
+    return _report("skipped", note)
+
+
+def _unavailable(note: str, expected: list[str]) -> dict[str, Any]:
+    """Verification could not be performed (map service unreachable)."""
+    return _report("unavailable", note, expected)
+
+
+def _query_overpass(query: str) -> tuple[Optional[list[dict[str, Any]]], str]:
+    """Try each Overpass mirror in turn. Returns (elements, note)."""
+    last_error = "no endpoints configured"
+    headers = {"User-Agent": os.getenv("GEOCODER_USER_AGENT", "ImageLocatorBackend/1.0")}
+    for url in OVERPASS_ENDPOINTS:
+        try:
+            resp = requests.post(
+                url,
+                data={"data": query},
+                headers=headers,
+                timeout=VERIFY_TIMEOUT + 5,
+            )
+            resp.raise_for_status()
+            return resp.json().get("elements", []), f"ok via {url}"
+        except Exception as exc:
+            last_error = f"{url}: {exc}"
+            continue
+    return None, f"all Overpass mirrors failed ({last_error})"
 
 
 def verify_location(
@@ -144,17 +183,11 @@ def verify_location(
         f"out tags center 120;"
     )
 
-    try:
-        resp = requests.post(
-            OVERPASS_URL,
-            data={"data": query},
-            headers={"User-Agent": os.getenv("GEOCODER_USER_AGENT", "ImageLocatorBackend/1.0")},
-            timeout=VERIFY_TIMEOUT + 5,
-        )
-        resp.raise_for_status()
-        elements = resp.json().get("elements", [])
-    except Exception as exc:
-        return _skipped(f"Overpass lookup failed: {exc}")
+    elements, note = _query_overpass(query)
+    if elements is None:
+        # Distinct from "skipped": we DID want to verify but couldn't reach the
+        # map service, so the caller knows the result is simply unverified.
+        return _unavailable(note, expected)
 
     # Overpass' around filter guarantees each returned feature is within the
     # radius, so presence = "nearby". We only measure precise distance from

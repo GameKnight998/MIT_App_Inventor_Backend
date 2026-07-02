@@ -31,7 +31,15 @@ from utils.verify import detect_expected_features, verify_location
 MAX_VERIFY_ATTEMPTS = int(os.getenv("MAX_VERIFY_ATTEMPTS", "3"))
 GEO_CANDIDATES_PER_NAME = int(os.getenv("GEO_CANDIDATES_PER_NAME", "3"))
 
-_STATUS_FACTOR = {"verified": 1.0, "skipped": 1.0, "partial": 0.7, "mismatch": 0.4}
+_STATUS_FACTOR = {
+    "verified": 1.0,
+    "skipped": 1.0,
+    "unavailable": 1.0,  # map service unreachable -> can't verify, don't penalise
+    "partial": 0.7,
+    "mismatch": 0.4,
+}
+# Statuses that end the retry loop (no point retrying when we can't check).
+_ACCEPT_STATUSES = ("verified", "skipped", "unavailable")
 
 
 def _clamp(value: float) -> float:
@@ -180,7 +188,7 @@ def _select_location(
             hyp["verification"] = report
             status = report.get("status")
 
-            if status in ("verified", "skipped"):
+            if status in _ACCEPT_STATUSES:
                 chosen, chosen_report = hyp, report
                 break
             if status == "partial":
@@ -390,6 +398,9 @@ def _emit_verification_evidence(
     if not report or report.get("status") == "skipped":
         return
     evidence: list[str] = result["evidence"]
+    if report.get("status") == "unavailable":
+        evidence.append("Map verification unavailable; location is unverified.")
+        return
     nearest = report.get("nearest_m", {})
     for cat in report.get("confirmed", []):
         dist = nearest.get(cat)
@@ -412,6 +423,11 @@ def _set_warning(result: dict[str, Any], status: Optional[str]) -> None:
     elif status == "partial":
         result["warning"] = (
             "Some described features could not be confirmed near this location."
+        )
+    elif status == "unavailable":
+        result["warning"] = (
+            "This location could not be cross-checked against map data "
+            "(verification service unavailable), so it is unverified."
         )
 
 

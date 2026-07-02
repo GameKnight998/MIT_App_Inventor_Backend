@@ -24,3 +24,7 @@ services:
         value: "1"
       - key: VERIFY_RADIUS_M
         value: "3000"
+      - key: MAX_VERIFY_ATTEMPTS
+        value: "3"
+      - key: GEO_CANDIDATES_PER_NAME
+        value: "3"

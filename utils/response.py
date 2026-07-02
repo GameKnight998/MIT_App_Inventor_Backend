@@ -105,6 +105,9 @@ def build_response(
         "verified": location.get("verification", {}).get("status", "skipped"),
         "warning": location.get("warning", ""),
         "alternatives": location.get("alternatives", []),
+        # Locations that were tried and crossed out because the scene did not
+        # match their real-world surroundings.
+        "rejected": location.get("rejected", []),
         # Full breakdown for debugging / richer clients.
         "details": {
             "source_code": source_code,
@@ -138,4 +141,5 @@ def error_response(message: str, *, filename: str | None = None) -> dict[str, An
         "verified": "skipped",
         "warning": "",
         "alternatives": [],
+        "rejected": [],
     }

@@ -2,23 +2,36 @@
 
 Trust order (highest first):
   1. EXIF GPS coordinates                 -> authoritative (reverse-geocoded).
-  2. Vision candidate WITH coordinates    -> use directly.
-  3. Vision candidate name -> forward-geocoded to coordinates.
-  4. Vision candidate name only (geocode failed).
-  5. EXIF caption (ImageDescription) -> optionally geocoded.
-  6. Unknown.
+  2. Vision candidates, resolved to coordinates and VERIFIED against the map.
+  3. Vision candidate name only (geocode failed).
+  4. EXIF caption (ImageDescription) -> optionally geocoded.
+  5. Unknown.
 
-Confidence is boosted when independent clue types (landmarks, OCR text, signage,
-flags, languages) corroborate the guess, and when a name successfully resolves to
-real coordinates via geocoding.
+Iterative verification (step 2): instead of trusting the top guess, every
+candidate location is checked against OpenStreetMap. If the scene's features
+(e.g. a lake) are NOT near a candidate, that location is "crossed out" and the
+next candidate -- or the next real-world match for an ambiguous name -- is tried,
+repeating until a location whose surroundings match the photo is found (or the
+attempt budget is exhausted). Confidence is boosted by corroborating clues and
+reduced when the final choice still doesn't fully match.
 """
 
 from __future__ import annotations
 
+import os
 from typing import Any, Optional
 
-from utils.geocode import forward_geocode, reverse_geocode
+from utils.geocode import (
+    forward_geocode,
+    forward_geocode_candidates,
+    reverse_geocode,
+)
 from utils.verify import detect_expected_features, verify_location
+
+MAX_VERIFY_ATTEMPTS = int(os.getenv("MAX_VERIFY_ATTEMPTS", "3"))
+GEO_CANDIDATES_PER_NAME = int(os.getenv("GEO_CANDIDATES_PER_NAME", "3"))
+
+_STATUS_FACTOR = {"verified": 1.0, "skipped": 1.0, "partial": 0.7, "mismatch": 0.4}
 
 
 def _clamp(value: float) -> float:
@@ -63,17 +76,159 @@ def _candidates(vision: Optional[dict[str, Any]]) -> list[dict[str, Any]]:
     cands = vision.get("candidates") or []
     if cands:
         return cands
-    # Fall back to the legacy single best guess.
     guess = vision.get("best_guess_location")
     if guess and (guess.get("name") or _has_coords(guess)):
         return [{**guess, "confidence": vision.get("confidence", 0.0)}]
     return []
 
 
+def _alt(hyp: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "name": hyp.get("name"),
+        "country": hyp.get("country"),
+        "latitude": hyp.get("latitude"),
+        "longitude": hyp.get("longitude"),
+        "confidence": round(hyp.get("base", 0.0), 3),
+    }
+
+
+def _hypotheses_for_candidate(
+    cand: dict[str, Any], bonus: float
+) -> list[dict[str, Any]]:
+    """All coordinate options to try for one vision candidate, best first."""
+    cconf = _clamp(float(cand.get("confidence", 0.0) or 0.0))
+    name = cand.get("name")
+    options: list[dict[str, Any]] = []
+
+    if _has_coords(cand):
+        options.append(
+            {
+                "name": name,
+                "country": cand.get("country"),
+                "region": cand.get("region"),
+                "latitude": cand["latitude"],
+                "longitude": cand["longitude"],
+                "address": None,
+                "base": _clamp(cconf + bonus),
+                "source": "vision_coordinates",
+            }
+        )
+
+    if name:
+        query = ", ".join(
+            p for p in (name, cand.get("region"), cand.get("country")) if p
+        )
+        for g in forward_geocode_candidates(query, GEO_CANDIDATES_PER_NAME):
+            options.append(
+                {
+                    "name": name or g.get("name"),
+                    "country": g.get("country") or cand.get("country"),
+                    "region": g.get("region") or cand.get("region"),
+                    "latitude": g["latitude"],
+                    "longitude": g["longitude"],
+                    "address": g.get("display_name"),
+                    "base": _clamp(cconf * 0.9 + bonus),
+                    "source": "vision_geocoded",
+                }
+            )
+    return options
+
+
+def _select_location(
+    candidates: list[dict[str, Any]], bonus: float, expected: list[str]
+) -> dict[str, Any]:
+    """Try candidate locations, crossing out those the map contradicts.
+
+    Returns a dict with the chosen hypothesis (or None), its verification
+    report, the list of rejected locations, untried alternatives, a name-only
+    fallback, and the number of verification attempts made.
+    """
+    attempts = 0
+    seen: set[tuple[float, float]] = set()
+    rejected: list[dict[str, Any]] = []
+    alternatives: list[dict[str, Any]] = []
+    name_only: Optional[dict[str, Any]] = None
+    best_partial: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
+    best_mismatch: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
+    chosen: Optional[dict[str, Any]] = None
+    chosen_report: Optional[dict[str, Any]] = None
+
+    for cand in candidates:
+        cconf = _clamp(float(cand.get("confidence", 0.0) or 0.0))
+        name = cand.get("name")
+        if name and name_only is None:
+            name_only = {
+                "name": name,
+                "country": cand.get("country"),
+                "region": cand.get("region"),
+                "confidence": _clamp(cconf * 0.7 + bonus * 0.5),
+                "source": "vision_place_name",
+            }
+
+        for hyp in _hypotheses_for_candidate(cand, bonus):
+            key = (round(hyp["latitude"], 3), round(hyp["longitude"], 3))
+            if key in seen:
+                continue
+            seen.add(key)
+
+            if attempts >= MAX_VERIFY_ATTEMPTS:
+                alternatives.append(_alt(hyp))
+                continue
+
+            report = verify_location(hyp["latitude"], hyp["longitude"], expected)
+            attempts += 1
+            hyp["verification"] = report
+            status = report.get("status")
+
+            if status in ("verified", "skipped"):
+                chosen, chosen_report = hyp, report
+                break
+            if status == "partial":
+                if best_partial is None or report.get("match_score", 0) > best_partial[
+                    1
+                ].get("match_score", 0):
+                    best_partial = (hyp, report)
+                alternatives.append(_alt(hyp))
+            else:  # mismatch -> cross it out
+                rejected.append(
+                    {
+                        "name": hyp.get("name"),
+                        "latitude": hyp.get("latitude"),
+                        "longitude": hyp.get("longitude"),
+                        "reason": (
+                            f"expected {report.get('missing')} not found within "
+                            f"{report.get('radius_m')} m"
+                        ),
+                    }
+                )
+                if best_mismatch is None or report.get("match_score", 0) > best_mismatch[
+                    1
+                ].get("match_score", 0):
+                    best_mismatch = (hyp, report)
+
+        if chosen is not None:
+            break
+
+    if chosen is None:
+        if best_partial is not None:
+            chosen, chosen_report = best_partial
+        elif best_mismatch is not None:
+            chosen, chosen_report = best_mismatch
+
+    return {
+        "chosen": chosen,
+        "report": chosen_report,
+        "rejected": rejected,
+        "alternatives": alternatives,
+        "name_only": name_only,
+        "attempts": attempts,
+    }
+
+
 def determine_location(
     metadata: dict[str, Any], vision: dict[str, Any]
 ) -> dict[str, Any]:
-    """Fuse metadata + vision clues into a best-estimate location."""
+    """Fuse metadata + vision clues into a best-estimate, map-verified location."""
     evidence: list[str] = []
     result: dict[str, Any] = {
         "location_name": None,
@@ -85,6 +240,7 @@ def determine_location(
         "confidence": 0.0,
         "source": "unknown",
         "alternatives": [],
+        "rejected": [],
         "evidence": evidence,
     }
 
@@ -101,9 +257,7 @@ def determine_location(
                 "source": "exif_gps",
             }
         )
-        evidence.append(
-            f"EXIF GPS coordinates {gps['latitude']}, {gps['longitude']}."
-        )
+        evidence.append(f"EXIF GPS coordinates {gps['latitude']}, {gps['longitude']}.")
         rev = reverse_geocode(gps["latitude"], gps["longitude"])
         if rev:
             result["location_name"] = rev.get("name")
@@ -111,74 +265,19 @@ def determine_location(
             result["region"] = rev.get("region")
             result["address"] = rev.get("display_name")
             evidence.append(f"Reverse-geocoded to {rev.get('display_name')}.")
-        _finalize(result, metadata, vision)
+        _append_clue_evidence(result, metadata, vision)
+        _verify_and_adjust(result, vision)  # info only; GPS is never penalised
         return result
 
-    # 2-4. Work through ranked vision candidates.
-    candidates = _candidates(vision)
-    alternatives: list[dict[str, Any]] = []
-    chosen: Optional[dict[str, Any]] = None
-    chosen_source: Optional[str] = None
-
-    for idx, cand in enumerate(candidates):
-        name = cand.get("name")
-        cconf = _clamp(float(cand.get("confidence", 0.0) or 0.0))
-
-        if _has_coords(cand):
-            resolved = {
-                "name": name,
-                "country": cand.get("country"),
-                "region": cand.get("region"),
-                "latitude": cand["latitude"],
-                "longitude": cand["longitude"],
-                "confidence": _clamp(cconf + bonus),
-                "source": "vision_coordinates",
-            }
-        elif name:
-            geo = forward_geocode(
-                ", ".join(
-                    p for p in (name, cand.get("region"), cand.get("country")) if p
-                )
-            )
-            if geo:
-                resolved = {
-                    "name": name or geo.get("name"),
-                    "country": geo.get("country") or cand.get("country"),
-                    "region": geo.get("region") or cand.get("region"),
-                    "latitude": geo["latitude"],
-                    "longitude": geo["longitude"],
-                    "address": geo.get("display_name"),
-                    "confidence": _clamp(cconf * 0.9 + bonus),
-                    "source": "vision_geocoded",
-                }
-            else:
-                resolved = {
-                    "name": name,
-                    "country": cand.get("country"),
-                    "region": cand.get("region"),
-                    "latitude": None,
-                    "longitude": None,
-                    "confidence": _clamp(cconf * 0.7 + bonus * 0.5),
-                    "source": "vision_place_name",
-                }
-        else:
-            continue
-
-        if chosen is None:
-            chosen = resolved
-            chosen_source = resolved["source"]
-        else:
-            alternatives.append(
-                {
-                    "name": resolved.get("name"),
-                    "country": resolved.get("country"),
-                    "latitude": resolved.get("latitude"),
-                    "longitude": resolved.get("longitude"),
-                    "confidence": round(resolved.get("confidence", 0.0), 3),
-                }
-            )
+    # 2. Vision candidates with iterative, map-checked verification.
+    expected = detect_expected_features(vision)
+    selection = _select_location(_candidates(vision), bonus, expected)
+    chosen = selection["chosen"]
+    report = selection["report"]
 
     if chosen is not None:
+        status = (report or {}).get("status", "skipped")
+        factor = _STATUS_FACTOR.get(status, 1.0)
         result.update(
             {
                 "location_name": chosen.get("name"),
@@ -187,24 +286,45 @@ def determine_location(
                 "address": chosen.get("address"),
                 "latitude": chosen.get("latitude"),
                 "longitude": chosen.get("longitude"),
-                "confidence": chosen.get("confidence", 0.0),
-                "source": chosen_source or "vision_place_name",
+                "confidence": _clamp(chosen.get("base", 0.0) * factor),
+                "source": chosen.get("source", "vision_geocoded"),
             }
         )
-        result["alternatives"] = alternatives
-        if chosen.get("name"):
-            evidence.append(f"Best match: {chosen.get('name')}.")
-        # Enrich a coordinate-only match with a readable address.
+        result["alternatives"] = selection["alternatives"][:3]
+        result["rejected"] = selection["rejected"][:5]
+        if report:
+            result["verification"] = report
+
         if _has_coords(chosen) and not chosen.get("address"):
             rev = reverse_geocode(chosen["latitude"], chosen["longitude"])
             if rev:
                 result["address"] = rev.get("display_name")
                 result["country"] = result["country"] or rev.get("country")
                 result["region"] = result["region"] or rev.get("region")
-        _finalize(result, metadata, vision)
+
+        _emit_retry_evidence(result, selection)
+        _emit_verification_evidence(result, report)
+        _set_warning(result, status)
+        _append_clue_evidence(result, metadata, vision)
         return result
 
-    # 5. EXIF caption fallback (try to geocode it too).
+    # 3. Name-only fallback (geocoding produced no coordinates to verify).
+    name_only = selection["name_only"]
+    if name_only is not None:
+        result.update(
+            {
+                "location_name": name_only.get("name"),
+                "country": name_only.get("country"),
+                "region": name_only.get("region"),
+                "confidence": name_only.get("confidence", 0.0),
+                "source": "vision_place_name",
+            }
+        )
+        evidence.append(f"Best guess (unverified): {name_only.get('name')}.")
+        _append_clue_evidence(result, metadata, vision)
+        return result
+
+    # 4. EXIF caption fallback (try to geocode it too).
     caption = _caption(metadata)
     if caption:
         geo = forward_geocode(caption)
@@ -230,33 +350,78 @@ def determine_location(
                 }
             )
         evidence.append(f"EXIF caption: {caption}.")
+        _append_clue_evidence(result, metadata, vision)
+        _verify_and_adjust(result, vision)
+        return result
 
-    _finalize(result, metadata, vision)
-
-    if result["source"] == "unknown":
-        evidence.append("No GPS metadata and no confident visual location match.")
-
+    _append_clue_evidence(result, metadata, vision)
+    evidence.append("No GPS metadata and no confident visual location match.")
     return result
 
 
-def _finalize(
-    result: dict[str, Any],
-    metadata: Optional[dict[str, Any]],
-    vision: Optional[dict[str, Any]],
+def _emit_retry_evidence(result: dict[str, Any], selection: dict[str, Any]) -> None:
+    """Record which locations were crossed out and how many were tried."""
+    evidence: list[str] = result["evidence"]
+    rejected = selection["rejected"]
+    attempts = selection["attempts"]
+
+    if rejected:
+        evidence.append(
+            f"Crossed out {len(rejected)} location(s) whose surroundings did not "
+            f"match the photo."
+        )
+        for r in rejected[:3]:
+            evidence.append(
+                f"Rejected {r.get('name')} ({r.get('latitude')}, "
+                f"{r.get('longitude')}): {r.get('reason')}."
+            )
+    if result.get("location_name"):
+        suffix = (
+            f" after checking {attempts} candidate location(s)"
+            if attempts > 1
+            else ""
+        )
+        evidence.append(f"Selected: {result['location_name']}{suffix}.")
+
+
+def _emit_verification_evidence(
+    result: dict[str, Any], report: Optional[dict[str, Any]]
 ) -> None:
-    """Append clue evidence and cross-check the location against the scene."""
-    _append_clue_evidence(result, metadata, vision)
-    _verify_and_adjust(result, vision)
+    if not report or report.get("status") == "skipped":
+        return
+    evidence: list[str] = result["evidence"]
+    nearest = report.get("nearest_m", {})
+    for cat in report.get("confirmed", []):
+        dist = nearest.get(cat)
+        if dist is not None:
+            evidence.append(f"Verified: {cat} found ~{int(dist)} m away.")
+        else:
+            evidence.append(f"Verified: {cat} present nearby.")
+    for cat in report.get("missing", []):
+        evidence.append(
+            f"Note: expected {cat} not found within {report.get('radius_m')} m."
+        )
+
+
+def _set_warning(result: dict[str, Any], status: Optional[str]) -> None:
+    if status == "mismatch":
+        result["warning"] = (
+            "None of the described features could be confirmed near any candidate "
+            "location; the result may be unreliable."
+        )
+    elif status == "partial":
+        result["warning"] = (
+            "Some described features could not be confirmed near this location."
+        )
 
 
 def _verify_and_adjust(
     result: dict[str, Any], vision: Optional[dict[str, Any]]
 ) -> None:
-    """Confirm expected geographic features exist near the resolved point.
+    """Single verification pass for the GPS and caption paths.
 
-    Lowers confidence and adds a warning when the scene (e.g. a lake) does not
-    match what is actually at the coordinates. EXIF GPS is authoritative, so it
-    is checked for information only and never penalised heavily.
+    EXIF GPS is authoritative, so it is checked for information only and never
+    penalised. The caption path (weaker evidence) can be reduced.
     """
     lat = result.get("latitude")
     lon = result.get("longitude")
@@ -269,44 +434,17 @@ def _verify_and_adjust(
 
     report = verify_location(lat, lon, expected)
     result["verification"] = report
-    evidence: list[str] = result["evidence"]
     status = report.get("status")
-    nearest = report.get("nearest_m", {})
-
     if status == "skipped":
         return
 
-    for cat in report.get("confirmed", []):
-        dist = nearest.get(cat) or nearest.get("coast" if cat == "water" else cat)
-        if dist is not None:
-            evidence.append(f"Verified: {cat} found ~{int(dist)} m away.")
-        else:
-            evidence.append(f"Verified: {cat} present nearby.")
-    for cat in report.get("missing", []):
-        evidence.append(
-            f"Warning: image suggests {cat}, but none found within "
-            f"{report.get('radius_m')} m of this location."
-        )
-
+    _emit_verification_evidence(result, report)
     is_gps = result.get("source") == "exif_gps"
-    factor = {
-        "verified": 1.0,
-        "partial": 0.7,
-        "mismatch": 0.4,
-    }.get(status, 1.0)
-
-    if status == "mismatch":
-        result["warning"] = (
-            "The described scene does not match this location's surroundings; "
-            "the result may be unreliable."
-        )
-    elif status == "partial":
-        result["warning"] = (
-            "Some described features could not be confirmed near this location."
-        )
-
     if not is_gps:
-        result["confidence"] = _clamp(result.get("confidence", 0.0) * factor)
+        _set_warning(result, status)
+        result["confidence"] = _clamp(
+            result.get("confidence", 0.0) * _STATUS_FACTOR.get(status, 1.0)
+        )
 
 
 def _append_clue_evidence(

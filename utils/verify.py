@@ -50,6 +50,20 @@ def _enabled() -> bool:
     return os.getenv("VERIFY_ENABLED", "1") not in ("0", "false", "False")
 
 
+def is_mismatch(report: dict[str, Any]) -> bool:
+    """True when NONE of the expected features exist near the coordinates.
+
+    Used by the OSINT retry loop to decide whether to cross out a location and
+    try the next candidate.
+    """
+    return report.get("status") == "mismatch"
+
+
+def is_confirmed_match(report: dict[str, Any]) -> bool:
+    """True when the location is corroborated (or verification was skipped)."""
+    return report.get("status") in ("verified", "skipped")
+
+
 def detect_expected_features(vision: Optional[dict[str, Any]]) -> list[str]:
     """Infer which geographic features the image should be near."""
     if not vision:

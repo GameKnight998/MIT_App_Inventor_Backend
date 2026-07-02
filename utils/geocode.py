@@ -50,10 +50,34 @@ def _short_name(address: dict[str, Any]) -> Optional[str]:
     return None
 
 
-def forward_geocode(query: str) -> Optional[dict[str, Any]]:
-    """Resolve a place name/description to coordinates and a canonical name."""
-    if not _enabled() or not query or not query.strip():
+def _parse_result(item: dict[str, Any]) -> Optional[dict[str, Any]]:
+    try:
+        lat = round(float(item["lat"]), 6)
+        lon = round(float(item["lon"]), 6)
+    except (KeyError, TypeError, ValueError):
         return None
+    address = item.get("address", {}) or {}
+    return {
+        "latitude": lat,
+        "longitude": lon,
+        "display_name": item.get("display_name"),
+        "name": item.get("name") or _short_name(address),
+        "country": address.get("country"),
+        "country_code": (address.get("country_code") or "").upper() or None,
+        "region": address.get("state") or address.get("region"),
+        "importance": item.get("importance"),
+    }
+
+
+def forward_geocode_candidates(query: str, limit: int = 3) -> list[dict[str, Any]]:
+    """Resolve a place name to up to `limit` ranked real-world matches.
+
+    A single HTTP request returns several candidates, which lets the caller try
+    the next real place when the first one fails verification (e.g. an ambiguous
+    name like "Springfield" that exists in many states).
+    """
+    if not _enabled() or not query or not query.strip():
+        return []
 
     try:
         resp = requests.get(
@@ -61,7 +85,7 @@ def forward_geocode(query: str) -> Optional[dict[str, Any]]:
             params={
                 "q": query.strip(),
                 "format": "jsonv2",
-                "limit": 1,
+                "limit": max(1, min(int(limit), 10)),
                 "addressdetails": 1,
             },
             headers=_headers(),
@@ -70,29 +94,16 @@ def forward_geocode(query: str) -> Optional[dict[str, Any]]:
         resp.raise_for_status()
         results = resp.json()
     except Exception:
-        return None
+        return []
 
-    if not results:
-        return None
+    parsed = [_parse_result(item) for item in results]
+    return [p for p in parsed if p is not None]
 
-    top = results[0]
-    try:
-        lat = round(float(top["lat"]), 6)
-        lon = round(float(top["lon"]), 6)
-    except (KeyError, TypeError, ValueError):
-        return None
 
-    address = top.get("address", {}) or {}
-    return {
-        "latitude": lat,
-        "longitude": lon,
-        "display_name": top.get("display_name"),
-        "name": top.get("name") or _short_name(address),
-        "country": address.get("country"),
-        "country_code": (address.get("country_code") or "").upper() or None,
-        "region": address.get("state") or address.get("region"),
-        "importance": top.get("importance"),
-    }
+def forward_geocode(query: str) -> Optional[dict[str, Any]]:
+    """Resolve a place name/description to the single best match (or None)."""
+    candidates = forward_geocode_candidates(query, limit=1)
+    return candidates[0] if candidates else None
 
 
 def reverse_geocode(latitude: float, longitude: float) -> Optional[dict[str, Any]]:

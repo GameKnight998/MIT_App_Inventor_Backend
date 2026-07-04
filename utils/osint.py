@@ -21,6 +21,7 @@ from __future__ import annotations
 import os
 from typing import Any, Optional
 
+from utils.enrich import enrich_location
 from utils.geocode import (
     forward_geocode,
     forward_geocode_candidates,
@@ -270,6 +271,7 @@ def determine_location(
         "source": "unknown",
         "alternatives": [],
         "rejected": [],
+        "nearby_places": [],
         "evidence": evidence,
     }
 
@@ -296,6 +298,7 @@ def determine_location(
             evidence.append(f"Reverse-geocoded to {rev.get('display_name')}.")
         _append_clue_evidence(result, metadata, vision)
         _verify_and_adjust(result, vision)  # info only; GPS is never penalised
+        _enrich(result, vision)
         return result
 
     # 2. Vision candidates with iterative, map-checked verification.
@@ -340,14 +343,15 @@ def determine_location(
         if amb_factor < 1.0:
             evidence.append(
                 "Several regions look similar in this photo, so the specific "
-                "region is uncertain (see alternatives)."
-            )
+                    "region is uncertain (see alternatives)."
+                )
             if not result.get("warning"):
                 result["warning"] = (
                     "This scene lacks distinctive features; multiple regions are "
                     "plausible and the exact one is uncertain."
                 )
         _append_clue_evidence(result, metadata, vision)
+        _enrich(result, vision)
         return result
 
     # 3. Name-only fallback (geocoding produced no coordinates to verify).
@@ -394,11 +398,46 @@ def determine_location(
         evidence.append(f"EXIF caption: {caption}.")
         _append_clue_evidence(result, metadata, vision)
         _verify_and_adjust(result, vision)
+        _enrich(result, vision)
         return result
 
     _append_clue_evidence(result, metadata, vision)
     evidence.append("No GPS metadata and no confident visual location match.")
     return result
+
+
+def _enrich(result: dict[str, Any], vision: Optional[dict[str, Any]]) -> None:
+    """Consult another OSINT source (Wikipedia) for nearby notable places.
+
+    Adds `nearby_places` for user context and cross-checks the AI's landmark
+    guesses against an independent source (small confidence boost on a match).
+    """
+    if not _has_coords(result):
+        return
+
+    data = enrich_location(result["latitude"], result["longitude"])
+    places = data.get("nearby_places", [])
+    if not places:
+        return
+
+    result["nearby_places"] = places[:8]
+    evidence: list[str] = result["evidence"]
+    evidence.append(
+        "Nearby notable places (Wikipedia): "
+        + ", ".join(p["title"] for p in places[:5])
+        + "."
+    )
+
+    if vision and result.get("source") != "exif_gps":
+        landmarks = [str(l).lower() for l in (vision.get("landmarks") or []) if l]
+        titles = [p["title"].lower() for p in places]
+        for lm in landmarks:
+            if any(lm in t or t in lm for t in titles):
+                evidence.append(
+                    f"Corroborated landmark '{lm}' with a nearby Wikipedia place."
+                )
+                result["confidence"] = _clamp(result.get("confidence", 0.0) + 0.05)
+                break
 
 
 def _merge_alternatives(

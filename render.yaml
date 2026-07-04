@@ -28,3 +28,5 @@ services:
         value: "3"
       - key: GEO_CANDIDATES_PER_NAME
         value: "3"
+      - key: ENRICH_ENABLED
+        value: "1"

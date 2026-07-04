@@ -108,6 +108,9 @@ def build_response(
         # Locations that were tried and crossed out because the scene did not
         # match their real-world surroundings.
         "rejected": location.get("rejected", []),
+        # Notable places near the result, from an independent OSINT source
+        # (Wikipedia GeoSearch) for further context / corroboration.
+        "nearby_places": location.get("nearby_places", []),
         # Full breakdown for debugging / richer clients.
         "details": {
             "source_code": source_code,
@@ -142,4 +145,5 @@ def error_response(message: str, *, filename: str | None = None) -> dict[str, An
         "warning": "",
         "alternatives": [],
         "rejected": [],
+        "nearby_places": [],
     }

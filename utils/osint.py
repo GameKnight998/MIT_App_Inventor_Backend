@@ -29,7 +29,7 @@ from utils.geocode import (
 )
 from utils.verify import detect_expected_features, verify_location
 
-MAX_VERIFY_ATTEMPTS = int(os.getenv("MAX_VERIFY_ATTEMPTS", "3"))
+MAX_VERIFY_ATTEMPTS = int(os.getenv("MAX_VERIFY_ATTEMPTS", "5"))
 GEO_CANDIDATES_PER_NAME = int(os.getenv("GEO_CANDIDATES_PER_NAME", "3"))
 
 _STATUS_FACTOR = {
@@ -39,8 +39,11 @@ _STATUS_FACTOR = {
     "partial": 0.7,
     "mismatch": 0.4,
 }
-# Statuses that end the retry loop (no point retrying when we can't check).
-_ACCEPT_STATUSES = ("verified", "skipped", "unavailable")
+# Statuses that end the retry loop with an immediate accept. "unavailable" is
+# deliberately NOT here: when we can't reach the map, we must not accept
+# whichever candidate happened to hit the outage. Instead we keep checking and,
+# if nothing verifies, fall back to the AI's most-confident un-disproven pick.
+_ACCEPT_STATUSES = ("verified", "skipped")
 
 
 def _clamp(value: float) -> float:
@@ -179,6 +182,7 @@ def _select_location(
     alternatives: list[dict[str, Any]] = []
     name_only: Optional[dict[str, Any]] = None
     best_partial: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
+    best_unavailable: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
     best_mismatch: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
     chosen: Optional[dict[str, Any]] = None
     chosen_report: Optional[dict[str, Any]] = None
@@ -219,6 +223,14 @@ def _select_location(
                 ].get("match_score", 0):
                     best_partial = (hyp, report)
                 alternatives.append(_alt(hyp))
+            elif status == "unavailable":
+                # Couldn't check this one. Keep the highest-confidence such
+                # candidate (candidates arrive best-first) as a fallback.
+                if best_unavailable is None or hyp.get("base", 0.0) > best_unavailable[
+                    0
+                ].get("base", 0.0):
+                    best_unavailable = (hyp, report)
+                alternatives.append(_alt(hyp))
             else:  # mismatch -> cross it out
                 rejected.append(
                     {
@@ -240,8 +252,13 @@ def _select_location(
             break
 
     if chosen is None:
+        # Preference when nothing verified cleanly: a real partial match (has
+        # corroborating evidence) > the AI's top un-checkable pick > a location
+        # the map actively contradicted.
         if best_partial is not None:
             chosen, chosen_report = best_partial
+        elif best_unavailable is not None:
+            chosen, chosen_report = best_unavailable
         elif best_mismatch is not None:
             chosen, chosen_report = best_mismatch
 

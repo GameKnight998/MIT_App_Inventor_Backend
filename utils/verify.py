@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import math
 import os
+import time
 from typing import Any, Optional
 
 import requests
@@ -24,15 +25,30 @@ _DEFAULT_OVERPASS = (
     "https://overpass-api.de/api/interpreter,"
     "https://overpass.kumi.systems/api/interpreter,"
     "https://overpass.private.coffee/api/interpreter,"
+    "https://overpass.osm.ch/api/interpreter,"
+    "https://overpass.openstreetmap.fr/api/interpreter,"
     "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
 )
 OVERPASS_ENDPOINTS = [
     u.strip() for u in os.getenv("OVERPASS_URL", _DEFAULT_OVERPASS).split(",") if u.strip()
 ]
 VERIFY_RADIUS_M = int(os.getenv("VERIFY_RADIUS_M", "3000"))
-VERIFY_TIMEOUT = float(os.getenv("VERIFY_TIMEOUT", "20"))
+VERIFY_TIMEOUT = float(os.getenv("VERIFY_TIMEOUT", "15"))
+# Fail fast on a mirror we can't even connect to (separate from slow reads).
+OVERPASS_CONNECT_TIMEOUT = float(os.getenv("OVERPASS_CONNECT_TIMEOUT", "6"))
+# Hard wall-clock cap for trying mirrors on a SINGLE verify call, so a total
+# outage can't stack up (mirrors x timeout) into a multi-minute request.
+OVERPASS_TOTAL_BUDGET = float(os.getenv("OVERPASS_TOTAL_BUDGET", "25"))
+# After a full outage, skip the network for this long so the remaining
+# candidates in one request return "unavailable" instantly instead of each
+# re-probing every dead mirror.
+OVERPASS_COOLDOWN = float(os.getenv("OVERPASS_COOLDOWN", "120"))
 # Beyond this distance a "confirmed" feature is treated as only approximate.
 PRECISION_M = int(os.getenv("VERIFY_PRECISION_M", "800"))
+
+# Simple in-process circuit breaker: monotonic timestamp until which we treat
+# Overpass as down and short-circuit without hitting the network.
+_circuit_open_until = 0.0
 
 # Words in the vision analysis that imply a checkable geographic feature.
 _CATEGORY_KEYWORDS: dict[str, list[str]] = {
@@ -144,22 +160,41 @@ def _unavailable(note: str, expected: list[str]) -> dict[str, Any]:
 
 
 def _query_overpass(query: str) -> tuple[Optional[list[dict[str, Any]]], str]:
-    """Try each Overpass mirror in turn. Returns (elements, note)."""
+    """Try each Overpass mirror in turn. Returns (elements, note).
+
+    Stops at the first mirror that answers. Bounded by a per-call time budget
+    and a short circuit-breaker cooldown so a total outage degrades quickly
+    instead of stalling every candidate in the retry loop.
+    """
+    global _circuit_open_until
+
+    now = time.monotonic()
+    if now < _circuit_open_until:
+        return None, "Overpass recently unreachable (cooling down, skipped network)"
+
+    start = now
     last_error = "no endpoints configured"
     headers = {"User-Agent": os.getenv("GEOCODER_USER_AGENT", "ImageLocatorBackend/1.0")}
     for url in OVERPASS_ENDPOINTS:
+        if time.monotonic() - start > OVERPASS_TOTAL_BUDGET:
+            last_error = f"time budget {OVERPASS_TOTAL_BUDGET:.0f}s exceeded ({last_error})"
+            break
         try:
             resp = requests.post(
                 url,
                 data={"data": query},
                 headers=headers,
-                timeout=VERIFY_TIMEOUT + 5,
+                timeout=(OVERPASS_CONNECT_TIMEOUT, VERIFY_TIMEOUT + 5),
             )
             resp.raise_for_status()
             return resp.json().get("elements", []), f"ok via {url}"
         except Exception as exc:
             last_error = f"{url}: {exc}"
             continue
+
+    # Every mirror failed (or we ran out of time): open the breaker so the rest
+    # of this request doesn't re-probe the same dead endpoints.
+    _circuit_open_until = time.monotonic() + OVERPASS_COOLDOWN
     return None, f"all Overpass mirrors failed ({last_error})"
 
 

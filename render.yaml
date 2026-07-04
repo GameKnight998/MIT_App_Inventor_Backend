@@ -24,8 +24,16 @@ services:
         value: "1"
       - key: VERIFY_RADIUS_M
         value: "3000"
+      - key: VERIFY_TIMEOUT
+        value: "15"
+      - key: OVERPASS_CONNECT_TIMEOUT
+        value: "6"
+      - key: OVERPASS_TOTAL_BUDGET
+        value: "25"
+      - key: OVERPASS_COOLDOWN
+        value: "120"
       - key: MAX_VERIFY_ATTEMPTS
-        value: "3"
+        value: "5"
       - key: GEO_CANDIDATES_PER_NAME
         value: "3"
       - key: ENRICH_ENABLED

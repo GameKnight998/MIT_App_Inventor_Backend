@@ -12,6 +12,9 @@ env/
 uploads/*
 !uploads/.gitkeep
 
+# Local test fixtures (downloaded sample images)
+testdata/
+
 # Python caches
 __pycache__/
 *.py[cod]

@@ -69,6 +69,27 @@ def _clue_bonus(vision: Optional[dict[str, Any]]) -> float:
     return min(bonus, 0.25)
 
 
+def _ambiguity_factor(vision: Optional[dict[str, Any]]) -> tuple[float, float]:
+    """Temper confidence when several candidate regions are similarly likely.
+
+    A generic scene (e.g. pine forest by a road) often yields multiple regions
+    with near-equal confidence; the model then picks one somewhat arbitrarily.
+    When the top two candidate confidences are close, the specific region is
+    uncertain, so we scale confidence down. Returns (factor, gap).
+
+    gap 0.00 -> factor 0.70   (a near tie)
+    gap 0.20+ -> factor 1.00   (a clear favourite)
+    """
+    cands = _candidates(vision)
+    confs = sorted(
+        (_clamp(float(c.get("confidence", 0.0) or 0.0)) for c in cands), reverse=True
+    )
+    if len(confs) < 2:
+        return 1.0, 1.0
+    gap = confs[0] - confs[1]
+    return _clamp(0.7 + gap * 1.5), gap
+
+
 def _caption(metadata: Optional[dict[str, Any]]) -> Optional[str]:
     raw = metadata.get("raw", {}) if metadata else {}
     for key in ("ImageDescription", "XPTitle", "XPSubject", "UserComment"):
@@ -286,6 +307,7 @@ def determine_location(
     if chosen is not None:
         status = (report or {}).get("status", "skipped")
         factor = _STATUS_FACTOR.get(status, 1.0)
+        amb_factor, gap = _ambiguity_factor(vision)
         result.update(
             {
                 "location_name": chosen.get("name"),
@@ -294,11 +316,13 @@ def determine_location(
                 "address": chosen.get("address"),
                 "latitude": chosen.get("latitude"),
                 "longitude": chosen.get("longitude"),
-                "confidence": _clamp(chosen.get("base", 0.0) * factor),
+                "confidence": _clamp(chosen.get("base", 0.0) * factor * amb_factor),
                 "source": chosen.get("source", "vision_geocoded"),
             }
         )
-        result["alternatives"] = selection["alternatives"][:3]
+        result["alternatives"] = _merge_alternatives(
+            vision, chosen.get("name"), selection["alternatives"]
+        )
         result["rejected"] = selection["rejected"][:5]
         if report:
             result["verification"] = report
@@ -313,6 +337,16 @@ def determine_location(
         _emit_retry_evidence(result, selection)
         _emit_verification_evidence(result, report)
         _set_warning(result, status)
+        if amb_factor < 1.0:
+            evidence.append(
+                "Several regions look similar in this photo, so the specific "
+                "region is uncertain (see alternatives)."
+            )
+            if not result.get("warning"):
+                result["warning"] = (
+                    "This scene lacks distinctive features; multiple regions are "
+                    "plausible and the exact one is uncertain."
+                )
         _append_clue_evidence(result, metadata, vision)
         return result
 
@@ -365,6 +399,37 @@ def determine_location(
     _append_clue_evidence(result, metadata, vision)
     evidence.append("No GPS metadata and no confident visual location match.")
     return result
+
+
+def _merge_alternatives(
+    vision: Optional[dict[str, Any]],
+    chosen_name: Optional[str],
+    extra: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Always surface the other candidate regions, plus any tried alternatives."""
+    alts: list[dict[str, Any]] = []
+    seen_names: set[str] = set()
+
+    def add(entry: dict[str, Any]) -> None:
+        name = entry.get("name")
+        if not name or name == chosen_name or name in seen_names:
+            return
+        seen_names.add(name)
+        alts.append(entry)
+
+    for cand in _candidates(vision):
+        add(
+            {
+                "name": cand.get("name"),
+                "country": cand.get("country"),
+                "latitude": cand.get("latitude"),
+                "longitude": cand.get("longitude"),
+                "confidence": round(_clamp(float(cand.get("confidence", 0.0) or 0.0)), 3),
+            }
+        )
+    for entry in extra:
+        add(entry)
+    return alts[:3]
 
 
 def _emit_retry_evidence(result: dict[str, Any], selection: dict[str, Any]) -> None:

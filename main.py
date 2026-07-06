@@ -33,6 +33,7 @@ from fastapi.responses import JSONResponse
 from PIL import Image
 
 from utils.exif import extract_exif
+from utils.forensics import assess_forensics
 from utils.osint import determine_location
 from utils.response import build_response, error_response
 from utils.vision import analyze_image
@@ -211,13 +212,15 @@ async def analyze(request: Request) -> JSONResponse:
 
     try:
         metadata = extract_exif(str(saved_path))
+        forensics = assess_forensics(str(saved_path), fmt, metadata)
         vision = analyze_image(str(saved_path))
-        location = determine_location(metadata, vision)
+        location = determine_location(metadata, vision, forensics)
         payload = build_response(
             filename=original_name or saved_name,
             metadata=metadata,
             vision=vision,
             location=location,
+            forensics=forensics,
         )
         return JSONResponse(status_code=200, content=payload)
     except Exception as exc:

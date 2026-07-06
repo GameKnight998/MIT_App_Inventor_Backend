@@ -18,6 +18,7 @@ reduced when the final choice still doesn't fully match.
 
 from __future__ import annotations
 
+import math
 import os
 from typing import Any, Optional
 
@@ -31,6 +32,9 @@ from utils.verify import detect_expected_features, verify_location
 
 MAX_VERIFY_ATTEMPTS = int(os.getenv("MAX_VERIFY_ATTEMPTS", "5"))
 GEO_CANDIDATES_PER_NAME = int(os.getenv("GEO_CANDIDATES_PER_NAME", "3"))
+# Candidates whose coordinates fall within this distance of each other are
+# treated as the same geographic region for cluster reporting (#11).
+CLUSTER_RADIUS_KM = float(os.getenv("CLUSTER_RADIUS_KM", "150"))
 
 _STATUS_FACTOR = {
     "verified": 1.0,
@@ -273,6 +277,34 @@ def _select_location(
 
 
 def determine_location(
+    metadata: dict[str, Any],
+    vision: dict[str, Any],
+    forensics: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+    """Fuse all evidence into a location, then attach forensics, clustered
+    alternatives and an auditable reasoning trace.
+
+    The core fusion logic lives in `_determine_core`; this wrapper enriches the
+    result with the cross-cutting fields (#10 forensics, #11 clusters, #13 trace)
+    so those are computed once regardless of which evidence path produced the
+    answer.
+    """
+    result = _determine_core(metadata, vision)
+    result["forensics"] = forensics or {}
+    result["alternative_clusters"] = _cluster_candidates(vision)
+    if forensics and forensics.get("notes"):
+        # Surface the most useful provenance note in the evidence list.
+        for note in forensics["notes"]:
+            if "expected" in note or "unusual" in note:
+                result["evidence"].append(f"Forensics: {note}")
+                break
+    result["reasoning_trace"] = _build_reasoning_trace(
+        result, metadata, vision, forensics
+    )
+    return result
+
+
+def _determine_core(
     metadata: dict[str, Any], vision: dict[str, Any]
 ) -> dict[str, Any]:
     """Fuse metadata + vision clues into a best-estimate, map-verified location."""
@@ -486,6 +518,169 @@ def _merge_alternatives(
     for entry in extra:
         add(entry)
     return alts[:3]
+
+
+def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    r = 6371.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlmb = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlmb / 2) ** 2
+    return 2 * r * math.asin(min(1.0, math.sqrt(a)))
+
+
+def _cluster_candidates(vision: Optional[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Group candidates that are geographically close into regional clusters.
+
+    Turns "three unrelated cities" into "one region we're fairly sure about",
+    which is far more useful when a scene is ambiguous within a single area
+    (e.g. several Pacific-Northwest guesses). Confidence is summed per cluster
+    (clamped) because agreeing candidates reinforce the same region.
+    """
+    coords = [c for c in _candidates(vision) if _has_coords(c)]
+    coords.sort(
+        key=lambda c: _clamp(float(c.get("confidence", 0.0) or 0.0)), reverse=True
+    )
+
+    clusters: list[dict[str, Any]] = []
+    for cand in coords:
+        conf = _clamp(float(cand.get("confidence", 0.0) or 0.0))
+        member = {"name": cand.get("name"), "confidence": round(conf, 3)}
+        placed = False
+        for cl in clusters:
+            if (
+                _haversine_km(cl["_lat"], cl["_lon"], cand["latitude"], cand["longitude"])
+                <= CLUSTER_RADIUS_KM
+            ):
+                cl["members"].append(member)
+                cl["confidence"] = round(_clamp(cl["confidence"] + conf), 3)
+                placed = True
+                break
+        if not placed:
+            clusters.append(
+                {
+                    "region": cand.get("region") or cand.get("name"),
+                    "country": cand.get("country"),
+                    "confidence": round(conf, 3),
+                    "members": [member],
+                    "_lat": cand["latitude"],
+                    "_lon": cand["longitude"],
+                }
+            )
+
+    for cl in clusters:
+        cl.pop("_lat", None)
+        cl.pop("_lon", None)
+    clusters.sort(key=lambda cl: cl["confidence"], reverse=True)
+    return clusters
+
+
+def _build_reasoning_trace(
+    result: dict[str, Any],
+    metadata: Optional[dict[str, Any]],
+    vision: Optional[dict[str, Any]],
+    forensics: Optional[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Assemble an ordered, auditable narrative of how the answer was reached."""
+    trace: list[dict[str, Any]] = []
+
+    meta_lines: list[str] = []
+    if metadata:
+        if metadata.get("timestamp"):
+            meta_lines.append(f"Photo timestamp: {metadata['timestamp']}.")
+        cam = metadata.get("camera", {}) or {}
+        if cam.get("model"):
+            label = f"{cam.get('make') or ''} {cam.get('model')}".strip()
+            meta_lines.append(f"Camera: {label}.")
+    if forensics:
+        meta_lines.extend(forensics.get("notes", []))
+    if meta_lines:
+        trace.append({"stage": "Metadata & forensics", "details": meta_lines})
+
+    clue_lines: list[str] = []
+    if vision:
+        road_side = vision.get("road_side")
+        if road_side and road_side != "unknown":
+            clue_lines.append(f"Traffic drives on the {road_side}.")
+        ta = vision.get("text_analysis") or {}
+        if ta.get("primary_script"):
+            clue_lines.append(f"Script/alphabet: {ta['primary_script']}.")
+        if ta.get("regional_spelling"):
+            clue_lines.append(
+                "Regional spelling: " + ", ".join(ta["regional_spelling"]) + "."
+            )
+        if ta.get("implied_countries"):
+            clue_lines.append(
+                "Text implies: " + ", ".join(ta["implied_countries"]) + "."
+            )
+        if vision.get("architecture_style"):
+            line = f"Architecture: {vision['architecture_style']}"
+            regions = vision.get("architecture_regions") or []
+            if regions:
+                line += " (implies " + ", ".join(regions) + ")"
+            clue_lines.append(line + ".")
+        scene = vision.get("scene") or {}
+        present = [k for k, v in scene.items() if v]
+        if present:
+            clue_lines.append("Scene features: " + ", ".join(present) + ".")
+        for key in ("vegetation", "terrain", "climate"):
+            if vision.get(key):
+                clue_lines.append(f"{key.capitalize()}: {vision[key]}.")
+    if clue_lines:
+        trace.append({"stage": "Visual clues", "details": clue_lines})
+
+    cand_lines: list[str] = []
+    for cand in _candidates(vision):
+        conf = _clamp(float(cand.get("confidence", 0.0) or 0.0))
+        why = cand.get("why") or ""
+        cand_lines.append(f"{cand.get('name')} ({round(conf, 2)}): {why}".strip())
+    clusters = result.get("alternative_clusters") or []
+    if any(len(cl.get("members", [])) > 1 for cl in clusters):
+        for cl in clusters:
+            cand_lines.append(
+                f"Cluster {cl.get('region')} (~{cl.get('confidence')}): "
+                + ", ".join(m["name"] for m in cl.get("members", []) if m.get("name"))
+            )
+    if cand_lines:
+        trace.append({"stage": "Candidate regions", "details": cand_lines})
+
+    verification = result.get("verification") or {}
+    status = verification.get("status")
+    if verification and status not in (None, "skipped"):
+        verify_lines: list[str] = []
+        if verification.get("confirmed"):
+            verify_lines.append(
+                "Confirmed nearby: " + ", ".join(verification["confirmed"]) + "."
+            )
+        if verification.get("missing"):
+            verify_lines.append(
+                "Not found nearby: " + ", ".join(verification["missing"]) + "."
+            )
+        if verification.get("context"):
+            verify_lines.append(
+                "Context features: " + ", ".join(verification["context"]) + "."
+            )
+        for rej in (result.get("rejected") or [])[:5]:
+            verify_lines.append(f"Rejected {rej.get('name')}: {rej.get('reason')}.")
+        if status == "unavailable":
+            verify_lines.append("Map service unavailable, so this is unverified.")
+        if verify_lines:
+            trace.append({"stage": "Map verification", "details": verify_lines})
+
+    conclusion: list[str] = []
+    if result.get("location_name"):
+        conclusion.append(
+            f"{result['location_name']} - confidence "
+            f"{round(float(result.get('confidence', 0.0)), 2)} "
+            f"(source: {result.get('source')})."
+        )
+    else:
+        conclusion.append("Location could not be determined from this image.")
+    if result.get("warning"):
+        conclusion.append(result["warning"])
+    trace.append({"stage": "Conclusion", "details": conclusion})
+
+    return trace
 
 
 def _emit_retry_evidence(result: dict[str, Any], selection: dict[str, Any]) -> None:

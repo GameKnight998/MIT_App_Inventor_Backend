@@ -67,6 +67,7 @@ def build_response(
     metadata: dict[str, Any],
     vision: dict[str, Any],
     location: dict[str, Any],
+    forensics: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Assemble the JSON payload returned to the client."""
     lat = location.get("latitude")
@@ -111,6 +112,15 @@ def build_response(
         # Notable places near the result, from an independent OSINT source
         # (Wikipedia GeoSearch) for further context / corroboration.
         "nearby_places": location.get("nearby_places", []),
+        # Candidates grouped into geographic clusters (#11) so the client can
+        # show "one region we're fairly sure of" instead of scattered cities.
+        "alternative_clusters": location.get("alternative_clusters", []),
+        # What the file itself reveals about its origin (#10): screenshot,
+        # edited, original camera, stripped metadata, and whether missing GPS
+        # is expected.
+        "forensics": location.get("forensics", forensics or {}),
+        # Ordered, auditable narrative of how the answer was reached (#13).
+        "reasoning_trace": location.get("reasoning_trace", []),
         # Full breakdown for debugging / richer clients.
         "details": {
             "source_code": source_code,
@@ -146,4 +156,7 @@ def error_response(message: str, *, filename: str | None = None) -> dict[str, An
         "alternatives": [],
         "rejected": [],
         "nearby_places": [],
+        "alternative_clusters": [],
+        "forensics": {},
+        "reasoning_trace": [],
     }

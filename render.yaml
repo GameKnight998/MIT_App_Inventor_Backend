@@ -38,3 +38,5 @@ services:
         value: "3"
       - key: ENRICH_ENABLED
         value: "1"
+      - key: CLUSTER_RADIUS_KM
+        value: "150"

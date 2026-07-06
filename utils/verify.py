@@ -90,10 +90,37 @@ def is_confirmed_match(report: dict[str, Any]) -> bool:
     return report.get("status") in ("verified", "skipped")
 
 
+# Structured scene booleans (from vision) -> checkable natural feature category.
+# Only well-tagged, discriminative natural features are used as *expected*
+# (required) features. Poorly tagged categories like desert are deliberately
+# excluded so a correct location is never crossed out for a mapping gap.
+_SCENE_TO_CATEGORY: dict[str, str] = {
+    "lake": "water",
+    "river": "water",
+    "ocean_or_sea": "coast",
+    "beach": "coast",
+    "coastline": "coast",
+    "mountains": "mountain",
+    "forest": "forest",
+}
+
+
 def detect_expected_features(vision: Optional[dict[str, Any]]) -> list[str]:
-    """Infer which geographic features the image should be near."""
+    """Infer which geographic features the image should be near.
+
+    Prefers the structured `scene` booleans emitted by the vision model; only
+    falls back to scanning free text when no structured scene is available.
+    """
     if not vision:
         return []
+
+    scene = vision.get("scene")
+    if isinstance(scene, dict) and any(bool(v) for v in scene.values()):
+        expected: list[str] = []
+        for key, category in _SCENE_TO_CATEGORY.items():
+            if scene.get(key) and category not in expected:
+                expected.append(category)
+        return expected
 
     parts: list[str] = []
     for key in ("environment", "terrain", "vegetation", "climate", "reasoning"):
@@ -109,7 +136,7 @@ def detect_expected_features(vision: Optional[dict[str, Any]]) -> list[str]:
                 parts.append(str(item.get("why") or ""))
 
     text = " ".join(parts).lower()
-    expected: list[str] = []
+    expected = []
     for category, words in _CATEGORY_KEYWORDS.items():
         if any(w in text for w in words):
             expected.append(category)
@@ -125,16 +152,34 @@ def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return 2 * r * math.asin(min(1.0, math.sqrt(a)))
 
 
+# Categories that are reported as nearby *context* (they enrich the reasoning
+# trace and street-network corroboration) but do not affect the pass/fail score,
+# because features like roads/farmland/urban land exist almost everywhere.
+_CONTEXT_CATEGORIES = ("railway", "airport", "park", "farmland", "urban")
+
+
 def _classify(tags: dict[str, Any]) -> Optional[str]:
     natural = tags.get("natural")
+    landuse = tags.get("landuse")
     if natural in ("water", "bay", "wetland") or "waterway" in tags:
         return "water"
     if natural in ("coastline", "beach"):
         return "coast"
     if natural in ("peak", "volcano", "ridge", "glacier"):
         return "mountain"
-    if natural == "wood" or tags.get("landuse") == "forest":
+    if natural == "wood" or landuse == "forest":
         return "forest"
+    # --- richer street-network / land-use context (#5) ---
+    if tags.get("railway") in ("rail", "light_rail", "subway", "tram", "station"):
+        return "railway"
+    if tags.get("aeroway") == "aerodrome":
+        return "airport"
+    if tags.get("leisure") == "park":
+        return "park"
+    if landuse in ("farmland", "orchard", "vineyard", "meadow"):
+        return "farmland"
+    if landuse in ("residential", "commercial", "industrial", "retail"):
+        return "urban"
     return None
 
 
@@ -209,13 +254,18 @@ def verify_location(
     if not expected:
         return _skipped("No checkable features described in the image.")
 
+    r = VERIFY_RADIUS_M
     query = (
         f"[out:json][timeout:{int(VERIFY_TIMEOUT)}];"
         f'(nwr["natural"~"^(water|bay|wetland|coastline|beach|peak|volcano|ridge|glacier|wood)$"]'
-        f"(around:{VERIFY_RADIUS_M},{latitude},{longitude});"
-        f'nwr["waterway"](around:{VERIFY_RADIUS_M},{latitude},{longitude});'
-        f'nwr["landuse"="forest"](around:{VERIFY_RADIUS_M},{latitude},{longitude}););'
-        f"out tags center 120;"
+        f"(around:{r},{latitude},{longitude});"
+        f'nwr["waterway"](around:{r},{latitude},{longitude});'
+        f'nwr["landuse"~"^(forest|farmland|orchard|vineyard|meadow|residential|commercial|industrial|retail)$"]'
+        f"(around:{r},{latitude},{longitude});"
+        f'nwr["railway"~"^(rail|light_rail|subway|tram|station)$"](around:{r},{latitude},{longitude});'
+        f'nwr["aeroway"="aerodrome"](around:{r},{latitude},{longitude});'
+        f'nwr["leisure"="park"](around:{r},{latitude},{longitude}););'
+        f"out tags center 200;"
     )
 
     elements, note = _query_overpass(query)
@@ -250,6 +300,10 @@ def verify_location(
     missing = [c for c in expected if not satisfied(c)]
     match_score = len(confirmed) / len(expected) if expected else 1.0
 
+    # Nearby land-use / street-network features that weren't required but add
+    # corroborating context (roads, railways, farmland, urban land, etc.).
+    context = [c for c in _CONTEXT_CATEGORIES if c in present]
+
     if not confirmed:
         status = "mismatch"
     elif missing:
@@ -263,6 +317,7 @@ def verify_location(
         "expected": expected,
         "confirmed": confirmed,
         "missing": missing,
+        "context": context,
         "nearest_m": {k: v for k, v in nearest_node.items()},
         "match_score": round(match_score, 3),
         "radius_m": VERIFY_RADIUS_M,

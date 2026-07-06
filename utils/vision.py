@@ -18,6 +18,25 @@ from typing import Any
 
 VISION_MODEL = os.getenv("VISION_MODEL", "gpt-4o")
 
+# Boolean scene descriptors. Emitted as a structured object so downstream
+# verification never has to grep free-text wording (which was brittle).
+_SCENE_KEYS = (
+    "mountains",
+    "hills",
+    "lake",
+    "river",
+    "ocean_or_sea",
+    "beach",
+    "coastline",
+    "forest",
+    "farmland",
+    "desert",
+    "snow",
+    "urban",
+    "suburban",
+    "rural",
+)
+
 _SYSTEM_PROMPT = (
     "You are a world-class geolocation (OSINT) image analyst, on par with expert "
     "GeoGuessr players and intelligence analysts. Study the image extremely "
@@ -47,9 +66,21 @@ _SYSTEM_PROMPT = (
     '  "signage": [string],\n'
     '  "vehicles_plates": [string],\n'
     '  "architecture": string,\n'
+    '  "architecture_style": string,\n'
+    '  "architecture_regions": [string],\n'
     '  "vegetation": string,\n'
     '  "climate": string,\n'
     '  "terrain": string,\n'
+    '  "scene": {\n'
+    '     "mountains": bool, "hills": bool, "lake": bool, "river": bool,\n'
+    '     "ocean_or_sea": bool, "beach": bool, "coastline": bool, "forest": bool,\n'
+    '     "farmland": bool, "desert": bool, "snow": bool, "urban": bool,\n'
+    '     "suburban": bool, "rural": bool\n'
+    "  },\n"
+    '  "text_analysis": {\n'
+    '     "primary_script": string, "regional_spelling": [string],\n'
+    '     "implied_countries": [string]\n'
+    "  },\n"
     '  "road_side": "left"|"right"|"unknown",\n'
     '  "time_of_day": string,\n'
     '  "hemisphere_hint": string,\n'
@@ -62,9 +93,24 @@ _SYSTEM_PROMPT = (
     '  "reasoning": string,\n'
     '  "confidence": number\n'
     "}\n"
-    "Provide up to 3 candidates. Each confidence and the top-level confidence are "
-    "0.0-1.0. Do not invent text you cannot actually read."
+    "Rules:\n"
+    "- In `scene`, set each boolean STRICTLY by what is actually visible in the "
+    "image. Do not guess a feature that is not shown, and do not infer it from the "
+    "candidate region. This object drives map verification.\n"
+    "- In `text_analysis`, reason from any visible text: the script/alphabet, "
+    "regional spelling (e.g. 'colour' vs 'color', 'Apotek' vs 'Farmacia', "
+    "'Strasse' vs 'Street'), and which countries those imply.\n"
+    "- In `architecture_style`, name the building style if any (e.g. 'Nordic "
+    "timber', 'Soviet-era apartment block', 'Mediterranean stucco', 'American "
+    "strip mall', 'Dutch rowhouse') and list the regions it implies in "
+    "`architecture_regions`.\n"
+    "- Provide up to 3 candidates. Each confidence and the top-level confidence "
+    "are 0.0-1.0. Do not invent text you cannot actually read."
 )
+
+
+def _empty_scene() -> dict[str, bool]:
+    return {key: False for key in _SCENE_KEYS}
 
 
 def _empty_analysis(note: str) -> dict[str, Any]:
@@ -78,9 +124,17 @@ def _empty_analysis(note: str) -> dict[str, Any]:
         "signage": [],
         "vehicles_plates": [],
         "architecture": None,
+        "architecture_style": None,
+        "architecture_regions": [],
         "vegetation": None,
         "climate": None,
         "terrain": None,
+        "scene": _empty_scene(),
+        "text_analysis": {
+            "primary_script": None,
+            "regional_spelling": [],
+            "implied_countries": [],
+        },
         "road_side": "unknown",
         "time_of_day": None,
         "hemisphere_hint": None,
@@ -107,6 +161,42 @@ def _clamp(value: Any) -> float:
         return max(0.0, min(1.0, float(value)))
     except (TypeError, ValueError):
         return 0.0
+
+
+def _as_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        return value.strip().lower() in ("true", "yes", "1")
+    return False
+
+
+def _normalize_scene(raw: Any) -> dict[str, bool]:
+    scene = _empty_scene()
+    if isinstance(raw, dict):
+        for key in _SCENE_KEYS:
+            if key in raw:
+                scene[key] = _as_bool(raw[key])
+    return scene
+
+
+def _normalize_text_analysis(raw: Any) -> dict[str, Any]:
+    out: dict[str, Any] = {
+        "primary_script": None,
+        "regional_spelling": [],
+        "implied_countries": [],
+    }
+    if isinstance(raw, dict):
+        script = raw.get("primary_script")
+        if isinstance(script, str) and script.strip():
+            out["primary_script"] = script.strip()
+        for key in ("regional_spelling", "implied_countries"):
+            val = raw.get(key)
+            if isinstance(val, list):
+                out[key] = [str(v) for v in val if v]
+    return out
 
 
 def _normalize_candidate(raw: dict[str, Any]) -> dict[str, Any]:
@@ -185,6 +275,8 @@ def analyze_image(image_path: str) -> dict[str, Any]:
         "signage",
         "vehicles_plates",
         "architecture",
+        "architecture_style",
+        "architecture_regions",
         "vegetation",
         "climate",
         "terrain",
@@ -196,6 +288,9 @@ def analyze_image(image_path: str) -> dict[str, Any]:
     ):
         if parsed.get(key) is not None:
             analysis[key] = parsed[key]
+
+    analysis["scene"] = _normalize_scene(parsed.get("scene"))
+    analysis["text_analysis"] = _normalize_text_analysis(parsed.get("text_analysis"))
 
     candidates_raw = parsed.get("candidates")
     if isinstance(candidates_raw, list) and candidates_raw:

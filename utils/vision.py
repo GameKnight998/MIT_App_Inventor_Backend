@@ -81,6 +81,11 @@ _SYSTEM_PROMPT = (
     '     "primary_script": string, "regional_spelling": [string],\n'
     '     "implied_countries": [string]\n'
     "  },\n"
+    '  "sun": {\n'
+    '     "sun_visible": bool, "shadows_visible": bool,\n'
+    '     "shadow_direction": string, "shadow_length": "short"|"long"|"none",\n'
+    '     "approx_solar_elevation": "low"|"medium"|"high"\n'
+    "  },\n"
     '  "road_side": "left"|"right"|"unknown",\n'
     '  "time_of_day": string,\n'
     '  "hemisphere_hint": string,\n'
@@ -104,6 +109,11 @@ _SYSTEM_PROMPT = (
     "timber', 'Soviet-era apartment block', 'Mediterranean stucco', 'American "
     "strip mall', 'Dutch rowhouse') and list the regions it implies in "
     "`architecture_regions`.\n"
+    "- In `sun`, report ONLY what is visible: whether the sun disc or clear "
+    "shadows are shown, the compass direction the shadows point if you can tell "
+    "(e.g. 'toward the camera', 'to the left/north-east'), whether shadows are "
+    "short or long, and whether the sun looks low, medium or high. Leave fields "
+    "null/false if not visible. Do NOT infer these from the guessed location.\n"
     "- Provide up to 3 candidates. Each confidence and the top-level confidence "
     "are 0.0-1.0. Do not invent text you cannot actually read."
 )
@@ -134,6 +144,13 @@ def _empty_analysis(note: str) -> dict[str, Any]:
             "primary_script": None,
             "regional_spelling": [],
             "implied_countries": [],
+        },
+        "sun": {
+            "sun_visible": False,
+            "shadows_visible": False,
+            "shadow_direction": None,
+            "shadow_length": None,
+            "approx_solar_elevation": None,
         },
         "road_side": "unknown",
         "time_of_day": None,
@@ -196,6 +213,24 @@ def _normalize_text_analysis(raw: Any) -> dict[str, Any]:
             val = raw.get(key)
             if isinstance(val, list):
                 out[key] = [str(v) for v in val if v]
+    return out
+
+
+def _normalize_sun(raw: Any) -> dict[str, Any]:
+    out: dict[str, Any] = {
+        "sun_visible": False,
+        "shadows_visible": False,
+        "shadow_direction": None,
+        "shadow_length": None,
+        "approx_solar_elevation": None,
+    }
+    if isinstance(raw, dict):
+        out["sun_visible"] = _as_bool(raw.get("sun_visible"))
+        out["shadows_visible"] = _as_bool(raw.get("shadows_visible"))
+        for key in ("shadow_direction", "shadow_length", "approx_solar_elevation"):
+            val = raw.get(key)
+            if isinstance(val, str) and val.strip() and val.strip().lower() != "none":
+                out[key] = val.strip()
     return out
 
 
@@ -291,6 +326,7 @@ def analyze_image(image_path: str) -> dict[str, Any]:
 
     analysis["scene"] = _normalize_scene(parsed.get("scene"))
     analysis["text_analysis"] = _normalize_text_analysis(parsed.get("text_analysis"))
+    analysis["sun"] = _normalize_sun(parsed.get("sun"))
 
     candidates_raw = parsed.get("candidates")
     if isinstance(candidates_raw, list) and candidates_raw:

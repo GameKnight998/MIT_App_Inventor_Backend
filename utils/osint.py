@@ -28,13 +28,18 @@ from utils.geocode import (
     forward_geocode_candidates,
     reverse_geocode,
 )
-from utils.verify import detect_expected_features, verify_location
+from utils.solar import sun_consistency
+from utils.verify import VERIFY_RADIUS_M, detect_expected_features, verify_location
 
 MAX_VERIFY_ATTEMPTS = int(os.getenv("MAX_VERIFY_ATTEMPTS", "5"))
 GEO_CANDIDATES_PER_NAME = int(os.getenv("GEO_CANDIDATES_PER_NAME", "3"))
 # Candidates whose coordinates fall within this distance of each other are
 # treated as the same geographic region for cluster reporting (#11).
 CLUSTER_RADIUS_KM = float(os.getenv("CLUSTER_RADIUS_KM", "150"))
+# Iterative narrowing: shrink the verify radius to localise the scene tightly.
+NARROW_ENABLED = os.getenv("NARROW_ENABLED", "1") not in ("0", "false", "False")
+MAX_NARROW_STEPS = int(os.getenv("MAX_NARROW_STEPS", "3"))
+NARROW_MIN_RADIUS_M = int(os.getenv("NARROW_MIN_RADIUS_M", "500"))
 
 _STATUS_FACTOR = {
     "verified": 1.0,
@@ -347,6 +352,7 @@ def _determine_core(
             evidence.append(f"Reverse-geocoded to {rev.get('display_name')}.")
         _append_clue_evidence(result, metadata, vision)
         _verify_and_adjust(result, vision)  # info only; GPS is never penalised
+        _apply_solar(result, metadata, vision)  # info only for GPS
         _enrich(result, vision)
         return result
 
@@ -399,6 +405,20 @@ def _determine_core(
                     "This scene lacks distinctive features; multiple regions are "
                     "plausible and the exact one is uncertain."
                 )
+
+        # Iterative narrowing: only when the map fully confirmed the scene, so
+        # tightening the radius is meaningful. Tight precision -> small boost.
+        if NARROW_ENABLED and status == "verified" and expected and _has_coords(result):
+            precision_m, narrow_steps = _narrow_location(
+                result["latitude"], result["longitude"], expected
+            )
+            result["precision_m"] = precision_m
+            for step in narrow_steps:
+                evidence.append(step)
+            if precision_m <= NARROW_MIN_RADIUS_M * 2:
+                result["confidence"] = _clamp(result.get("confidence", 0.0) + 0.03)
+
+        _apply_solar(result, metadata, vision)
         _append_clue_evidence(result, metadata, vision)
         _enrich(result, vision)
         return result
@@ -575,6 +595,77 @@ def _cluster_candidates(vision: Optional[dict[str, Any]]) -> list[dict[str, Any]
     return clusters
 
 
+def _narrow_location(
+    latitude: float, longitude: float, expected: list[str]
+) -> tuple[int, list[str]]:
+    """Coarse-to-fine narrowing: shrink the search radius while the scene's
+    features still all verify, to estimate how tightly they localise the point.
+
+    Returns (precision_m, steps). `precision_m` is the smallest radius at which
+    every expected feature was still confirmed. Bounded by MAX_NARROW_STEPS and
+    the Overpass circuit breaker; stops immediately if the map is unavailable.
+    """
+    radius = VERIFY_RADIUS_M
+    precision = radius
+    steps: list[str] = []
+    for _ in range(MAX_NARROW_STEPS):
+        new_radius = radius // 2
+        if new_radius < NARROW_MIN_RADIUS_M:
+            break
+        report = verify_location(latitude, longitude, expected, new_radius)
+        status = report.get("status")
+        if status == "unavailable":
+            steps.append(f"Narrowing stopped: map unavailable at {new_radius} m.")
+            break
+        if status == "verified":
+            radius = new_radius
+            precision = new_radius
+            steps.append(f"All features still present within {new_radius} m.")
+        else:
+            steps.append(
+                f"Not all features within {new_radius} m; localised to ~{radius} m."
+            )
+            break
+    return precision, steps
+
+
+def _apply_solar(
+    result: dict[str, Any],
+    metadata: Optional[dict[str, Any]],
+    vision: Optional[dict[str, Any]],
+) -> None:
+    """Cross-check the chosen coordinate against the sun's computed position.
+
+    A strong day/night contradiction tempers confidence and warns; a match
+    gives a small boost. EXIF GPS is authoritative, so it is only annotated.
+    """
+    if not _has_coords(result):
+        return
+    timestamp = metadata.get("timestamp") if metadata else None
+    report = sun_consistency(
+        result["latitude"], result["longitude"], timestamp, vision
+    )
+    status = report.get("status")
+    if status == "unknown" and report.get("expected_elevation") is None:
+        return
+
+    result["solar"] = report
+    if report.get("note"):
+        result["evidence"].append(f"Sun check: {report['note']}")
+
+    if result.get("source") == "exif_gps":
+        return  # authoritative; never penalise GPS
+
+    if status == "inconsistent":
+        result["confidence"] = _clamp(result.get("confidence", 0.0) * 0.6)
+        if not result.get("warning"):
+            result["warning"] = report.get("note")
+    elif status == "weak_mismatch":
+        result["confidence"] = _clamp(result.get("confidence", 0.0) * 0.9)
+    elif status == "consistent":
+        result["confidence"] = _clamp(result.get("confidence", 0.0) + 0.03)
+
+
 def _build_reasoning_trace(
     result: dict[str, Any],
     metadata: Optional[dict[str, Any]],
@@ -666,6 +757,17 @@ def _build_reasoning_trace(
             verify_lines.append("Map service unavailable, so this is unverified.")
         if verify_lines:
             trace.append({"stage": "Map verification", "details": verify_lines})
+
+    refine: list[str] = []
+    solar = result.get("solar")
+    if solar and solar.get("note"):
+        refine.append(f"Sun geometry: {solar['note']}")
+    if result.get("precision_m"):
+        refine.append(
+            f"Scene features localise to within ~{result['precision_m']} m."
+        )
+    if refine:
+        trace.append({"stage": "Sun & narrowing", "details": refine})
 
     conclusion: list[str] = []
     if result.get("location_name"):

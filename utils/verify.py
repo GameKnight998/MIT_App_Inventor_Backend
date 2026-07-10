@@ -244,9 +244,13 @@ def _query_overpass(query: str) -> tuple[Optional[list[dict[str, Any]]], str]:
 
 
 def verify_location(
-    latitude: float, longitude: float, expected: list[str]
+    latitude: float, longitude: float, expected: list[str], radius: Optional[int] = None
 ) -> dict[str, Any]:
-    """Check whether the expected features exist near the coordinates."""
+    """Check whether the expected features exist near the coordinates.
+
+    `radius` (metres) overrides the default search radius; the iterative
+    narrowing pass shrinks it to localise the scene more tightly.
+    """
     if not _enabled():
         return _skipped("Verification disabled.")
     if latitude is None or longitude is None:
@@ -254,7 +258,7 @@ def verify_location(
     if not expected:
         return _skipped("No checkable features described in the image.")
 
-    r = VERIFY_RADIUS_M
+    r = int(radius) if radius else VERIFY_RADIUS_M
     query = (
         f"[out:json][timeout:{int(VERIFY_TIMEOUT)}];"
         f'(nwr["natural"~"^(water|bay|wetland|coastline|beach|peak|volcano|ridge|glacier|wood)$"]'
@@ -280,15 +284,32 @@ def verify_location(
     # large features like lakes, so we never use them to judge closeness.
     present: set[str] = set()
     nearest_node: dict[str, float] = {}
+    # Nearest anchor point per category (node coords, else the way/relation
+    # "center"), used by the narrowing pass to re-centre on the real feature.
+    anchors: dict[str, dict[str, float]] = {}
     for el in elements:
         cat = _classify(el.get("tags", {}) or {})
         if not cat:
             continue
         present.add(cat)
         if el.get("type") == "node" and el.get("lat") is not None:
-            dist = _haversine_m(latitude, longitude, float(el["lat"]), float(el["lon"]))
+            plat, plon = float(el["lat"]), float(el["lon"])
+            dist = _haversine_m(latitude, longitude, plat, plon)
             if cat not in nearest_node or dist < nearest_node[cat]:
                 nearest_node[cat] = round(dist, 1)
+        else:
+            center = el.get("center") or {}
+            plat = center.get("lat")
+            plon = center.get("lon")
+        if plat is None or plon is None:
+            continue
+        adist = _haversine_m(latitude, longitude, float(plat), float(plon))
+        if cat not in anchors or adist < anchors[cat]["dist_m"]:
+            anchors[cat] = {
+                "lat": round(float(plat), 6),
+                "lon": round(float(plon), 6),
+                "dist_m": round(adist, 1),
+            }
 
     # A "water" expectation is satisfied by a lake/river OR a coastline.
     def satisfied(cat: str) -> bool:
@@ -319,6 +340,7 @@ def verify_location(
         "missing": missing,
         "context": context,
         "nearest_m": {k: v for k, v in nearest_node.items()},
+        "anchors": anchors,
         "match_score": round(match_score, 3),
-        "radius_m": VERIFY_RADIUS_M,
+        "radius_m": r,
     }

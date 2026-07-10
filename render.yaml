@@ -40,3 +40,9 @@ services:
         value: "1"
       - key: CLUSTER_RADIUS_KM
         value: "150"
+      - key: NARROW_ENABLED
+        value: "1"
+      - key: MAX_NARROW_STEPS
+        value: "3"
+      - key: NARROW_MIN_RADIUS_M
+        value: "500"

@@ -121,6 +121,11 @@ def build_response(
         "forensics": location.get("forensics", forensics or {}),
         # Ordered, auditable narrative of how the answer was reached (#13).
         "reasoning_trace": location.get("reasoning_trace", []),
+        # How tightly the scene's features localise the point, in metres
+        # (null unless iterative narrowing ran).
+        "precision_m": location.get("precision_m"),
+        # Sun-position consistency check (null unless a timestamp was present).
+        "solar": location.get("solar"),
         # Full breakdown for debugging / richer clients.
         "details": {
             "source_code": source_code,
@@ -159,4 +164,6 @@ def error_response(message: str, *, filename: str | None = None) -> dict[str, An
         "alternative_clusters": [],
         "forensics": {},
         "reasoning_trace": [],
+        "precision_m": None,
+        "solar": None,
     }

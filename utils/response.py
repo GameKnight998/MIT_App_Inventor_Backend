@@ -126,6 +126,12 @@ def build_response(
         "precision_m": location.get("precision_m"),
         # Sun-position consistency check (null unless a timestamp was present).
         "solar": location.get("solar"),
+        # Ground elevation at the result, in metres (null unless looked up).
+        "elevation_m": location.get("elevation_m"),
+        # Climate/elevation consistency check vs. the described scene (null
+        # unless the scene had a checkable climate feature).
+        "climate_check": location.get("climate_check"),
+        "landmark_check": (location.get("verification") or {}).get("named"),
         # Full breakdown for debugging / richer clients.
         "details": {
             "source_code": source_code,
@@ -166,4 +172,7 @@ def error_response(message: str, *, filename: str | None = None) -> dict[str, An
         "reasoning_trace": [],
         "precision_m": None,
         "solar": None,
+        "elevation_m": None,
+        "climate_check": None,
+        "landmark_check": None,
     }

@@ -19,6 +19,8 @@ from typing import Any, Optional
 
 import requests
 
+from utils.cache import cache_get, cache_set
+
 # Several public Overpass mirrors; we try them in order so a single mirror being
 # down (or unreachable from the host) doesn't disable verification entirely.
 _DEFAULT_OVERPASS = (
@@ -259,6 +261,19 @@ def verify_location(
         return _skipped("No checkable features described in the image.")
 
     r = int(radius) if radius else VERIFY_RADIUS_M
+    # Cache real map answers by rounded coords/features/radius. Never cache an
+    # "unavailable" (outage) result, so a hiccup isn't remembered.
+    cache_key = (
+        "verify",
+        round(latitude, 3),
+        round(longitude, 3),
+        tuple(sorted(expected)),
+        r,
+    )
+    cached_report = cache_get(cache_key)
+    if cached_report is not None:
+        return cached_report
+
     query = (
         f"[out:json][timeout:{int(VERIFY_TIMEOUT)}];"
         f'(nwr["natural"~"^(water|bay|wetland|coastline|beach|peak|volcano|ridge|glacier|wood)$"]'
@@ -332,7 +347,7 @@ def verify_location(
     else:
         status = "verified"
 
-    return {
+    report = {
         "status": status,
         "note": "ok",
         "expected": expected,
@@ -344,3 +359,5 @@ def verify_location(
         "match_score": round(match_score, 3),
         "radius_m": r,
     }
+    cache_set(cache_key, report)
+    return report

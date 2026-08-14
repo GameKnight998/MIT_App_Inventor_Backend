@@ -15,6 +15,8 @@ from typing import Any, Optional
 
 import requests
 
+from utils.cache import cached
+
 WIKI_API = os.getenv("WIKI_API_URL", "https://en.wikipedia.org/w/api.php")
 USER_AGENT = os.getenv(
     "GEOCODER_USER_AGENT", "ImageLocatorBackend/1.0 (MIT App Inventor capstone)"
@@ -26,6 +28,7 @@ def _enabled() -> bool:
     return os.getenv("ENRICH_ENABLED", "1") not in ("0", "false", "False")
 
 
+@cached(cache_empty=False)
 def nearby_places(
     latitude: float, longitude: float, radius_m: Optional[int] = None, limit: Optional[int] = None
 ) -> list[dict[str, Any]]:

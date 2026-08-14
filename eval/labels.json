@@ -1,0 +1,340 @@
+{
+  "gazetteer": {
+    "Lake Chelan": {
+      "latitude": 47.8411,
+      "longitude": -120.0464,
+      "country": "United States",
+      "region": "Washington",
+      "name": "Lake Chelan",
+      "display_name": "Lake Chelan, Chelan County, Washington, United States",
+      "osm_type": "lake",
+      "category": "natural",
+      "addresstype": "lake"
+    },
+    "Lake Sevan": {
+      "latitude": 40.317,
+      "longitude": 45.35,
+      "country": "Armenia",
+      "region": "Gegharkunik",
+      "name": "Lake Sevan",
+      "display_name": "Lake Sevan, Gegharkunik, Armenia",
+      "osm_type": "lake",
+      "category": "natural",
+      "addresstype": "lake"
+    },
+    "Eiffel Tower": {
+      "latitude": 48.8584,
+      "longitude": 2.2945,
+      "country": "France",
+      "region": "Île-de-France",
+      "name": "Eiffel Tower",
+      "display_name": "Eiffel Tower, Paris, France",
+      "osm_type": "attraction",
+      "category": "tourism",
+      "addresstype": "attraction"
+    },
+    "Paris": {
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "country": "France",
+      "region": "Île-de-France",
+      "name": "Paris",
+      "display_name": "Paris, Île-de-France, France",
+      "osm_type": "city",
+      "category": "place",
+      "addresstype": "city"
+    },
+    "Eastern Oregon": {
+      "latitude": 44.0,
+      "longitude": -120.5,
+      "country": "United States",
+      "region": "Oregon",
+      "name": "Eastern Oregon",
+      "display_name": "Oregon, United States",
+      "osm_type": "state",
+      "category": "place",
+      "addresstype": "state"
+    },
+    "Central Washington": {
+      "latitude": 47.0,
+      "longitude": -120.0,
+      "country": "United States",
+      "region": "Washington",
+      "name": "Central Washington",
+      "display_name": "Washington, United States",
+      "osm_type": "state",
+      "category": "place",
+      "addresstype": "state"
+    },
+    "Seattle": {
+      "latitude": 47.606,
+      "longitude": -122.332,
+      "country": "United States",
+      "region": "Washington",
+      "name": "Seattle",
+      "display_name": "Seattle, King County, Washington, United States",
+      "osm_type": "city",
+      "category": "place",
+      "addresstype": "city"
+    }
+  },
+  "water_near": {
+    "47.842,-120.016": [
+      {
+        "latitude": 47.8411,
+        "longitude": -120.0464,
+        "name": "Lake Chelan",
+        "display_name": "Lake Chelan, Washington, United States",
+        "osm_type": "lake",
+        "category": "natural"
+      }
+    ],
+    "40.317,45.35": [
+      {
+        "latitude": 40.317,
+        "longitude": 45.35,
+        "name": "Lake Sevan",
+        "display_name": "Lake Sevan, Armenia",
+        "osm_type": "lake",
+        "category": "natural"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "chelan_named_lake",
+      "description": "Large lake + arid hillside; vision names Lake Chelan at the right coords.",
+      "expected": {
+        "country": "United States",
+        "country_aliases": ["USA", "United States of America"],
+        "region": "Washington",
+        "latitude": 47.841,
+        "longitude": -120.046,
+        "radius_km": 50,
+        "name_contains": ["chelan"]
+      },
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
+      "vision": {
+        "available": true,
+        "scene": {"lake": true, "hills": true, "mountains": true, "rural": true, "forest": false},
+        "landmarks": ["Lake Chelan"],
+        "candidates": [
+          {
+            "name": "Lake Chelan",
+            "region": "Washington",
+            "country": "USA",
+            "latitude": 47.842,
+            "longitude": -120.016,
+            "confidence": 0.6,
+            "why": "large lake and dry hills"
+          },
+          {
+            "name": "Lake Sevan",
+            "region": "Gegharkunik",
+            "country": "Armenia",
+            "latitude": 40.317,
+            "longitude": 45.35,
+            "confidence": 0.4,
+            "why": "similar large lake"
+          }
+        ],
+        "confidence": 0.6,
+        "reasoning": "Large lake with surrounding hills."
+      }
+    },
+    {
+      "id": "named_lake_wrong_coords",
+      "description": "Vision labels Lake Chelan but drops the pin in Eastern Oregon (no named lake).",
+      "expected": {
+        "country": "United States",
+        "country_aliases": ["USA"],
+        "region": "Washington",
+        "latitude": 47.841,
+        "longitude": -120.046,
+        "radius_km": 80,
+        "name_contains": ["chelan"]
+      },
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
+      "vision": {
+        "available": true,
+        "scene": {"lake": true, "hills": true, "rural": true},
+        "landmarks": ["Lake Chelan"],
+        "candidates": [
+          {
+            "name": "Lake Chelan",
+            "region": "Oregon",
+            "country": "USA",
+            "latitude": 44.0,
+            "longitude": -120.5,
+            "confidence": 0.7,
+            "why": "wrong pin"
+          },
+          {
+            "name": "Lake Chelan",
+            "region": "Washington",
+            "country": "USA",
+            "latitude": 47.842,
+            "longitude": -120.016,
+            "confidence": 0.55,
+            "why": "correct pin, slightly lower AI conf"
+          }
+        ],
+        "confidence": 0.7,
+        "reasoning": "AI pinned the name at the wrong coordinates first."
+      }
+    },
+    {
+      "id": "eiffel_landmark",
+      "description": "Named landmark (Eiffel Tower) near Paris coordinates.",
+      "expected": {
+        "country": "France",
+        "country_aliases": ["FR"],
+        "region": "Île-de-France",
+        "latitude": 48.858,
+        "longitude": 2.294,
+        "radius_km": 25,
+        "name_contains": ["paris", "eiffel"]
+      },
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
+      "vision": {
+        "available": true,
+        "scene": {"urban": true},
+        "landmarks": ["Eiffel Tower"],
+        "candidates": [
+          {
+            "name": "Paris",
+            "region": "Île-de-France",
+            "country": "France",
+            "latitude": 48.8566,
+            "longitude": 2.3522,
+            "confidence": 0.85,
+            "why": "tower visible"
+          }
+        ],
+        "confidence": 0.85,
+        "reasoning": "Eiffel Tower."
+      }
+    },
+    {
+      "id": "exif_gps",
+      "description": "Embedded GPS is authoritative; vision is ignored for the pin.",
+      "expected": {
+        "country": "United States",
+        "country_aliases": ["USA"],
+        "region": "Washington",
+        "latitude": 47.606,
+        "longitude": -122.332,
+        "radius_km": 5,
+        "name_contains": []
+      },
+      "metadata": {
+        "has_exif": true,
+        "gps": {"latitude": 47.606, "longitude": -122.332},
+        "camera": {"make": "Apple", "model": "iPhone"},
+        "timestamp": "2024:06:01 12:00:00",
+        "raw": {}
+      },
+      "vision": {
+        "available": true,
+        "scene": {"urban": true},
+        "candidates": [],
+        "confidence": 0.2,
+        "reasoning": "city street"
+      }
+    },
+    {
+      "id": "ambiguous_region",
+      "description": "Generic pine-forest scene; two similar PNW guesses, no named landmark.",
+      "expected": {
+        "country": "United States",
+        "country_aliases": ["USA"],
+        "region": "Washington",
+        "latitude": 47.25,
+        "longitude": -120.9,
+        "radius_km": 250,
+        "name_contains": ["washington", "oregon", "pacific"]
+      },
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
+      "vision": {
+        "available": true,
+        "scene": {"forest": true, "rural": true, "hills": true, "lake": false},
+        "landmarks": [],
+        "candidates": [
+          {
+            "name": "Eastern Oregon",
+            "region": "Oregon",
+            "country": "USA",
+            "latitude": 44.0,
+            "longitude": -120.5,
+            "confidence": 0.55,
+            "why": "dry pine forest"
+          },
+          {
+            "name": "Central Washington",
+            "region": "Washington",
+            "country": "USA",
+            "latitude": 47.0,
+            "longitude": -120.0,
+            "confidence": 0.5,
+            "why": "similar"
+          }
+        ],
+        "confidence": 0.55,
+        "reasoning": "Generic PNW forest."
+      }
+    },
+    {
+      "id": "unknown_scene",
+      "description": "No GPS, no candidates, no clues — should not invent a pin.",
+      "expected": {
+        "country": null,
+        "country_aliases": [],
+        "region": null,
+        "latitude": null,
+        "longitude": null,
+        "radius_km": 0,
+        "name_contains": [],
+        "expect_unknown": true
+      },
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
+      "vision": {
+        "available": true,
+        "scene": {},
+        "landmarks": [],
+        "candidates": [],
+        "confidence": 0.0,
+        "reasoning": "blank interior wall"
+      }
+    }
+  ]
+}

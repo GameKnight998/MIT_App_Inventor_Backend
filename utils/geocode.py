@@ -11,11 +11,14 @@ pipeline keeps working without geocoding.
 
 from __future__ import annotations
 
+import math
 import os
 import time
 from typing import Any, Optional
 
 import requests
+
+from utils.cache import cached
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org"
 USER_AGENT = os.getenv(
@@ -66,9 +69,14 @@ def _parse_result(item: dict[str, Any]) -> Optional[dict[str, Any]]:
         "country_code": (address.get("country_code") or "").upper() or None,
         "region": address.get("state") or address.get("region"),
         "importance": item.get("importance"),
+        # Nominatim jsonv2: category/type distinguish a lake from a state centroid.
+        "category": item.get("category") or item.get("class"),
+        "osm_type": item.get("type"),
+        "addresstype": item.get("addresstype"),
     }
 
 
+@cached(cache_empty=False)
 def forward_geocode_candidates(query: str, limit: int = 3) -> list[dict[str, Any]]:
     """Resolve a place name to up to `limit` ranked real-world matches.
 
@@ -106,6 +114,7 @@ def forward_geocode(query: str) -> Optional[dict[str, Any]]:
     return candidates[0] if candidates else None
 
 
+@cached(cache_empty=False)
 def reverse_geocode(latitude: float, longitude: float) -> Optional[dict[str, Any]]:
     """Resolve coordinates to a readable address and its components."""
     if not _enabled() or latitude is None or longitude is None:
@@ -141,6 +150,53 @@ def reverse_geocode(latitude: float, longitude: float) -> Optional[dict[str, Any
         "region": address.get("state") or address.get("region"),
         "city": address.get("city") or address.get("town") or address.get("village"),
     }
+
+
+@cached(cache_empty=False)
+def search_nearby(
+    query: str,
+    latitude: float,
+    longitude: float,
+    radius_km: float = 25.0,
+    limit: int = 5,
+) -> list[dict[str, Any]]:
+    """Search Nominatim restricted to a bounding box around a coordinate.
+
+    Used to answer "is there a named lake/landmark near this guess?" without
+    another Overpass round-trip. Fail-soft: returns [] on any error.
+    """
+    if not _enabled() or not query or latitude is None or longitude is None:
+        return []
+
+    lat = round(float(latitude), 3)
+    lon = round(float(longitude), 3)
+    radius_km = max(1.0, float(radius_km))
+    dlat = radius_km / 111.0
+    dlon = radius_km / (111.0 * max(0.2, math.cos(math.radians(lat))))
+    # viewbox: min_lon, max_lat, max_lon, min_lat
+    viewbox = f"{lon - dlon},{lat + dlat},{lon + dlon},{lat - dlat}"
+
+    try:
+        resp = requests.get(
+            f"{NOMINATIM_URL}/search",
+            params={
+                "q": query.strip(),
+                "format": "jsonv2",
+                "limit": max(1, min(int(limit), 10)),
+                "addressdetails": 1,
+                "viewbox": viewbox,
+                "bounded": 1,
+            },
+            headers=_headers(),
+            timeout=TIMEOUT,
+        )
+        resp.raise_for_status()
+        results = resp.json()
+    except Exception:
+        return []
+
+    parsed = [_parse_result(item) for item in results]
+    return [p for p in parsed if p is not None]
 
 
 def polite_pause() -> None:

@@ -22,12 +22,15 @@ import math
 import os
 from typing import Any, Optional
 
+from utils.cache import parallel_map
 from utils.enrich import enrich_location
 from utils.geocode import (
     forward_geocode,
     forward_geocode_candidates,
     reverse_geocode,
 )
+from utils.geoenv import annual_climate, climate_consistency, elevation_m
+from utils.landmarks import extract_named_features, verify_named_and_water
 from utils.solar import sun_consistency
 from utils.verify import VERIFY_RADIUS_M, detect_expected_features, verify_location
 
@@ -57,6 +60,72 @@ _ACCEPT_STATUSES = ("verified", "skipped")
 
 def _clamp(value: float) -> float:
     return max(0.0, min(1.0, value))
+
+
+def _sigmoid(x: float) -> float:
+    try:
+        return 1.0 / (1.0 + math.exp(-x))
+    except OverflowError:
+        return 0.0 if x < 0 else 1.0
+
+
+def _logit(p: float) -> float:
+    p = min(max(p, 1e-6), 1 - 1e-6)
+    return math.log(p / (1 - p))
+
+
+# Log-odds contributions per independent evidence signal. These de-anchor the
+# final confidence from the AI's self-reported number: instead of trusting the
+# model and multiplying penalties, each signal casts an additive vote and we
+# squash the sum back into [0, 1]. Weights are heuristic (documented, tunable)
+# and are the natural thing to calibrate once a labelled eval set exists.
+_FUSION_PRIOR = 0.2
+_VERIFY_LOGIT = {
+    "verified": 1.8,
+    "partial": 0.3,
+    "mismatch": -1.6,
+    "unavailable": 0.0,
+    "skipped": 0.0,
+}
+_SOLAR_LOGIT = {"consistent": 0.6, "weak_mismatch": -0.4, "inconsistent": -2.0}
+_CLIMATE_LOGIT = {"consistent": 0.5, "weak_mismatch": -0.4}
+_NAMED_LOGIT = {"matched": 1.2, "missed": -0.9, "unknown": 0.0}
+_WATER_NAMED_LOGIT = {"matched": 0.7, "missed": -0.8, "unknown": 0.0}
+
+
+def _fuse_confidence(sig: dict[str, Any]) -> float:
+    """Combine independent evidence signals into a single confidence in [0, 1].
+
+    Each signal shifts the log-odds up or down; the AI's own confidence is just
+    one voter (bounded weight) rather than the anchor everything scales off.
+    """
+    log_odds = _logit(_FUSION_PRIOR)
+
+    ai = sig.get("ai_conf")
+    if ai is not None:
+        log_odds += 1.3 * (2 * _clamp(float(ai)) - 1)
+
+    log_odds += _VERIFY_LOGIT.get(sig.get("verify_status"), 0.0)
+    log_odds += _SOLAR_LOGIT.get(sig.get("solar_status"), 0.0)
+    log_odds += _CLIMATE_LOGIT.get(sig.get("climate_status"), 0.0)
+    log_odds += _NAMED_LOGIT.get(sig.get("place_status"), 0.0)
+    log_odds += _NAMED_LOGIT.get(sig.get("landmark_named"), 0.0)
+    log_odds += _WATER_NAMED_LOGIT.get(sig.get("water_named"), 0.0)
+    log_odds += 3.0 * min(float(sig.get("clue_bonus", 0.0) or 0.0), 0.25)
+
+    if sig.get("landmark_corroborated"):
+        log_odds += 1.0
+
+    gap = sig.get("ambiguity_gap")
+    if gap is not None:
+        # Near-tie between top candidates -> penalty up to -0.8.
+        log_odds += -0.8 * (1 - min(float(gap) / 0.2, 1.0))
+
+    precision = sig.get("precision_m")
+    if precision is not None and precision <= NARROW_MIN_RADIUS_M * 2:
+        log_odds += 0.3
+
+    return round(_clamp(_sigmoid(log_odds)), 3)
 
 
 def _has_coords(d: Optional[dict[str, Any]]) -> bool:
@@ -152,6 +221,7 @@ def _hypotheses_for_candidate(
                 "longitude": cand["longitude"],
                 "address": None,
                 "base": _clamp(cconf + bonus),
+                "cand_conf": cconf,
                 "source": "vision_coordinates",
             }
         )
@@ -170,14 +240,79 @@ def _hypotheses_for_candidate(
                     "longitude": g["longitude"],
                     "address": g.get("display_name"),
                     "base": _clamp(cconf * 0.9 + bonus),
+                    "cand_conf": cconf,
                     "source": "vision_geocoded",
                 }
             )
     return options
 
 
+def _verify_rank(report: Optional[dict[str, Any]]) -> float:
+    """Rank a verification report, folding in named-landmark / water results."""
+    if not report:
+        return 0.0
+    score = float(report.get("match_score") or 0.0)
+    named = report.get("named") or {}
+    if named.get("place_status") == "matched":
+        score += 0.5
+    if named.get("landmark_status") == "matched":
+        score += 0.4
+    if named.get("water_status") == "matched":
+        score += 0.3
+    if named.get("place_status") == "missed":
+        score -= 0.8
+    if named.get("water_status") == "missed":
+        score -= 0.3
+    return score
+
+
+def _augment_verification(
+    latitude: float,
+    longitude: float,
+    report: dict[str, Any],
+    vision: Optional[dict[str, Any]],
+    expected: list[str],
+    place_name: Optional[str] = None,
+) -> dict[str, Any]:
+    """Copy an Overpass report and attach named-landmark / large-water checks.
+
+    Copies so we never mutate a cached Overpass result. A named-place miss
+    (e.g. 'Lake Chelan' geocodes hundreds of km away) is treated as a mismatch
+    even if some generic water tag existed nearby.
+    """
+    out = dict(report)
+    named = verify_named_and_water(
+        latitude, longitude, vision, expected, place_name=place_name
+    )
+    out["named"] = named
+    status = out.get("status")
+
+    if named.get("place_status") == "missed":
+        out["status"] = "mismatch"
+        if named.get("note"):
+            out["note"] = named["note"]
+        return out
+
+    if named.get("water_status") == "missed" and status == "verified":
+        out["status"] = "partial"
+        missing = list(out.get("missing") or [])
+        if "named_water" not in missing:
+            missing.append("named_water")
+        out["missing"] = missing
+        out["match_score"] = round(min(float(out.get("match_score") or 1.0), 0.7), 3)
+
+    if named.get("landmark_status") == "matched" or named.get("place_status") == "matched":
+        out["match_score"] = round(
+            min(1.0, float(out.get("match_score") or 0.0) + 0.25), 3
+        )
+    return out
+
+
 def _select_location(
-    candidates: list[dict[str, Any]], bonus: float, expected: list[str]
+    candidates: list[dict[str, Any]],
+    bonus: float,
+    expected: list[str],
+    vision: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Try candidate locations, crossing out those the map contradicts.
 
@@ -218,7 +353,14 @@ def _select_location(
                 alternatives.append(_alt(hyp))
                 continue
 
-            report = verify_location(hyp["latitude"], hyp["longitude"], expected)
+            report = _augment_verification(
+                hyp["latitude"],
+                hyp["longitude"],
+                verify_location(hyp["latitude"], hyp["longitude"], expected),
+                vision,
+                expected,
+                place_name=hyp.get("name"),
+            )
             attempts += 1
             hyp["verification"] = report
             status = report.get("status")
@@ -227,34 +369,41 @@ def _select_location(
                 chosen, chosen_report = hyp, report
                 break
             if status == "partial":
-                if best_partial is None or report.get("match_score", 0) > best_partial[
-                    1
-                ].get("match_score", 0):
+                if best_partial is None or _verify_rank(report) > _verify_rank(
+                    best_partial[1]
+                ):
                     best_partial = (hyp, report)
                 alternatives.append(_alt(hyp))
             elif status == "unavailable":
                 # Couldn't check this one. Keep the highest-confidence such
                 # candidate (candidates arrive best-first) as a fallback.
-                if best_unavailable is None or hyp.get("base", 0.0) > best_unavailable[
-                    0
-                ].get("base", 0.0):
+                # Prefer a candidate whose named landmark/place still matched.
+                if best_unavailable is None:
+                    best_unavailable = (hyp, report)
+                elif _verify_rank(report) > _verify_rank(best_unavailable[1]):
+                    best_unavailable = (hyp, report)
+                elif _verify_rank(report) == _verify_rank(
+                    best_unavailable[1]
+                ) and hyp.get("base", 0.0) > best_unavailable[0].get("base", 0.0):
                     best_unavailable = (hyp, report)
                 alternatives.append(_alt(hyp))
             else:  # mismatch -> cross it out
+                named_note = (report.get("named") or {}).get("note")
+                reason = named_note or (
+                    f"expected {report.get('missing')} not found within "
+                    f"{report.get('radius_m')} m"
+                )
                 rejected.append(
                     {
                         "name": hyp.get("name"),
                         "latitude": hyp.get("latitude"),
                         "longitude": hyp.get("longitude"),
-                        "reason": (
-                            f"expected {report.get('missing')} not found within "
-                            f"{report.get('radius_m')} m"
-                        ),
+                        "reason": reason,
                     }
                 )
-                if best_mismatch is None or report.get("match_score", 0) > best_mismatch[
-                    1
-                ].get("match_score", 0):
+                if best_mismatch is None or _verify_rank(report) > _verify_rank(
+                    best_mismatch[1]
+                ):
                     best_mismatch = (hyp, report)
 
         if chosen is not None:
@@ -358,7 +507,8 @@ def _determine_core(
 
     # 2. Vision candidates with iterative, map-checked verification.
     expected = detect_expected_features(vision)
-    selection = _select_location(_candidates(vision), bonus, expected)
+    _prefetch_geocode(vision)  # warm the geocode cache for all names in parallel
+    selection = _select_location(_candidates(vision), bonus, expected, vision)
     chosen = selection["chosen"]
     report = selection["report"]
 
@@ -378,6 +528,15 @@ def _determine_core(
                 "source": chosen.get("source", "vision_geocoded"),
             }
         )
+        # Collect the independent signals; confidence is recomputed by log-linear
+        # fusion at the end of this branch (see _fuse_confidence).
+        result["_signals"] = {
+            "ai_conf": chosen.get("cand_conf"),
+            "clue_bonus": bonus,
+            "ambiguity_gap": gap,
+            "verify_status": status,
+            "landmark_corroborated": False,
+        }
         result["alternatives"] = _merge_alternatives(
             vision, chosen.get("name"), selection["alternatives"]
         )
@@ -419,8 +578,21 @@ def _determine_core(
                 result["confidence"] = _clamp(result.get("confidence", 0.0) + 0.03)
 
         _apply_solar(result, metadata, vision)
+        _apply_climate(result, vision)
         _append_clue_evidence(result, metadata, vision)
         _enrich(result, vision)
+
+        # Independent log-linear fusion: recompute confidence from all signals so
+        # the answer isn't anchored to the AI's self-reported number.
+        signals = result.pop("_signals", {})
+        named = (result.get("verification") or {}).get("named") or {}
+        signals["solar_status"] = (result.get("solar") or {}).get("status")
+        signals["climate_status"] = (result.get("climate_check") or {}).get("status")
+        signals["precision_m"] = result.get("precision_m")
+        signals["place_status"] = named.get("place_status")
+        signals["landmark_named"] = named.get("landmark_status")
+        signals["water_named"] = named.get("water_status")
+        result["confidence"] = _fuse_confidence(signals)
         return result
 
     # 3. Name-only fallback (geocoding produced no coordinates to verify).
@@ -505,7 +677,12 @@ def _enrich(result: dict[str, Any], vision: Optional[dict[str, Any]]) -> None:
                 evidence.append(
                     f"Corroborated landmark '{lm}' with a nearby Wikipedia place."
                 )
-                result["confidence"] = _clamp(result.get("confidence", 0.0) + 0.05)
+                # Vision branch: fusion consumes this flag; other branches (no
+                # fusion) still get the direct bump.
+                if "_signals" in result:
+                    result["_signals"]["landmark_corroborated"] = True
+                else:
+                    result["confidence"] = _clamp(result.get("confidence", 0.0) + 0.05)
                 break
 
 
@@ -666,6 +843,76 @@ def _apply_solar(
         result["confidence"] = _clamp(result.get("confidence", 0.0) + 0.03)
 
 
+def _prefetch_geocode(vision: Optional[dict[str, Any]]) -> None:
+    """Warm the geocode cache for every candidate name in parallel.
+
+    `_select_location` geocodes candidates sequentially; pre-fetching them
+    concurrently means those cached lookups return instantly, cutting the
+    dominant network latency without changing the selection order.
+    """
+    queries: list[str] = []
+    for cand in _candidates(vision):
+        name = cand.get("name")
+        if name:
+            queries.append(name)
+            queries.append(
+                ", ".join(
+                    p for p in (name, cand.get("region"), cand.get("country")) if p
+                )
+            )
+    for name in extract_named_features(vision):
+        queries.append(name)
+    # De-dupe while preserving order.
+    seen_q: set[str] = set()
+    uniq: list[str] = []
+    for q in queries:
+        key = q.strip().lower()
+        if key and key not in seen_q:
+            seen_q.add(key)
+            uniq.append(q)
+    if uniq:
+        parallel_map(
+            lambda q: forward_geocode_candidates(q, GEO_CANDIDATES_PER_NAME), uniq
+        )
+
+
+def _apply_climate(result: dict[str, Any], vision: Optional[dict[str, Any]]) -> None:
+    """Cross-check the scene's climate/terrain claims against real-world data.
+
+    Only runs when the image describes a climate-checkable scene (snow, desert,
+    forest). Elevation and climate are fetched concurrently. A mismatch tempers
+    confidence; a match nudges it up. EXIF GPS is authoritative (info only).
+    """
+    if not _has_coords(result):
+        return
+    scene = (vision or {}).get("scene") or {}
+    if not any(scene.get(k) for k in ("desert", "snow", "forest")):
+        return
+
+    lat, lon = result["latitude"], result["longitude"]
+    elev, clim = parallel_map(lambda fn: fn(lat, lon), [elevation_m, annual_climate])
+    if elev is None and clim is None:
+        return
+
+    if elev is not None:
+        result["elevation_m"] = elev
+
+    report = climate_consistency(scene, elev, clim)
+    if report.get("status") == "unknown":
+        return
+
+    result["climate_check"] = report
+    if report.get("note"):
+        result["evidence"].append(f"Climate check: {report['note']}")
+
+    if result.get("source") == "exif_gps":
+        return
+    if report["status"] == "weak_mismatch":
+        result["confidence"] = _clamp(result.get("confidence", 0.0) * 0.92)
+    elif report["status"] == "consistent":
+        result["confidence"] = _clamp(result.get("confidence", 0.0) + 0.02)
+
+
 def _build_reasoning_trace(
     result: dict[str, Any],
     metadata: Optional[dict[str, Any]],
@@ -737,7 +984,8 @@ def _build_reasoning_trace(
 
     verification = result.get("verification") or {}
     status = verification.get("status")
-    if verification and status not in (None, "skipped"):
+    named = verification.get("named") or {}
+    if verification and (status not in (None, "skipped") or named.get("note")):
         verify_lines: list[str] = []
         if verification.get("confirmed"):
             verify_lines.append(
@@ -751,6 +999,8 @@ def _build_reasoning_trace(
             verify_lines.append(
                 "Context features: " + ", ".join(verification["context"]) + "."
             )
+        if named.get("note"):
+            verify_lines.append(named["note"])
         for rej in (result.get("rejected") or [])[:5]:
             verify_lines.append(f"Rejected {rej.get('name')}: {rej.get('reason')}.")
         if status == "unavailable":
@@ -762,12 +1012,17 @@ def _build_reasoning_trace(
     solar = result.get("solar")
     if solar and solar.get("note"):
         refine.append(f"Sun geometry: {solar['note']}")
+    climate_check = result.get("climate_check")
+    if climate_check and climate_check.get("note"):
+        refine.append(f"Climate/elevation: {climate_check['note']}")
+    if result.get("elevation_m") is not None:
+        refine.append(f"Ground elevation ~{result['elevation_m']} m.")
     if result.get("precision_m"):
         refine.append(
             f"Scene features localise to within ~{result['precision_m']} m."
         )
     if refine:
-        trace.append({"stage": "Sun & narrowing", "details": refine})
+        trace.append({"stage": "Sun, climate & narrowing", "details": refine})
 
     conclusion: list[str] = []
     if result.get("location_name"):
@@ -814,8 +1069,14 @@ def _emit_verification_evidence(
     result: dict[str, Any], report: Optional[dict[str, Any]]
 ) -> None:
     if not report or report.get("status") == "skipped":
+        named = (report or {}).get("named") or {}
+        if named.get("note"):
+            result["evidence"].append(f"Named-feature check: {named['note']}")
         return
     evidence: list[str] = result["evidence"]
+    named = report.get("named") or {}
+    if named.get("note"):
+        evidence.append(f"Named-feature check: {named['note']}")
     if report.get("status") == "unavailable":
         evidence.append("Map verification unavailable; location is unverified.")
         return
@@ -863,18 +1124,28 @@ def _verify_and_adjust(
         return
 
     expected = detect_expected_features(vision)
-    if not expected:
-        return
-
-    report = verify_location(lat, lon, expected)
+    if expected:
+        report = verify_location(lat, lon, expected)
+    else:
+        report = {
+            "status": "skipped",
+            "note": "No checkable features described in the image.",
+            "expected": [],
+            "confirmed": [],
+            "missing": [],
+            "match_score": 1.0,
+        }
+    report = _augment_verification(
+        lat, lon, report, vision, expected, place_name=result.get("location_name")
+    )
     result["verification"] = report
     status = report.get("status")
-    if status == "skipped":
+    if status == "skipped" and not (report.get("named") or {}).get("note"):
         return
 
     _emit_verification_evidence(result, report)
     is_gps = result.get("source") == "exif_gps"
-    if not is_gps:
+    if not is_gps and status != "skipped":
         _set_warning(result, status)
         result["confidence"] = _clamp(
             result.get("confidence", 0.0) * _STATUS_FACTOR.get(status, 1.0)

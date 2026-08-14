@@ -46,3 +46,35 @@ services:
         value: "3"
       - key: NARROW_MIN_RADIUS_M
         value: "500"
+      - key: CACHE_TTL_SECONDS
+        value: "86400"
+      - key: CACHE_MAX_ENTRIES
+        value: "2048"
+      - key: PARALLEL_WORKERS
+        value: "6"
+      - key: ELEVATION_ENABLED
+        value: "1"
+      - key: CLIMATE_ENABLED
+        value: "1"
+      - key: GEOENV_TIMEOUT
+        value: "8"
+      - key: VIDEO_ENABLED
+        value: "1"
+      - key: MAX_VIDEO_BYTES
+        value: "62914560"
+      - key: VIDEO_MAX_FRAMES
+        value: "5"
+      - key: VIDEO_MAX_SCAN
+        value: "40"
+      - key: VIDEO_MIN_BLUR
+        value: "40"
+      - key: VIDEO_FRAME_DIFF_MIN
+        value: "8"
+      - key: LANDMARK_VERIFY_ENABLED
+        value: "1"
+      - key: LANDMARK_PLACE_MATCH_KM
+        value: "50"
+      - key: LANDMARK_WATER_SEARCH_KM
+        value: "25"
+      - key: LANDMARK_MATCH_KM
+        value: "40"

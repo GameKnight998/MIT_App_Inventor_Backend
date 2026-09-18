@@ -11,11 +11,70 @@ services:
       # Pin the interpreter to match local development.
       - key: PYTHON_VERSION
         value: 3.13.2
-      # Set the real key in the Render dashboard (sync: false keeps it secret).
+      # Set the real keys in the Render dashboard (sync: false keeps them secret).
       - key: OPENAI_API_KEY
         sync: false
+      # Only needed when VISION_PROVIDER=anthropic.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: VISION_PROVIDER
+        value: openai
       - key: VISION_MODEL
         value: gpt-4o
+      - key: VISION_TIMEOUT
+        value: "60"
+      - key: VISION_MAX_TOKENS
+        value: "2000"
+      - key: SCENE_ROUTING_ENABLED
+        value: "1"
+      # Image enhancement runs on OpenCV, already installed for video.
+      - key: ENHANCE_ENABLED
+        value: "1"
+      - key: ENHANCE_MIN_DIM
+        value: "800"
+      - key: ENHANCE_MAX_DIM
+        value: "2048"
+      - key: ENHANCE_DARK_MEAN
+        value: "70"
+      - key: ENHANCE_BLUR_MIN
+        value: "60"
+      # Denoising and Real-ESRGAN are too slow / too heavy for the free tier.
+      - key: ENHANCE_DENOISE
+        value: "0"
+      - key: REALESRGAN_ENABLED
+        value: "0"
+      - key: STREET_REFINE_ENABLED
+        value: "1"
+      - key: STREET_REFINE_RADIUS_KM
+        value: "25"
+      - key: STREET_REFINE_MAX_QUERIES
+        value: "4"
+      - key: PHOTON_ENABLED
+        value: "1"
+      - key: VEHICLE_ID_ENABLED
+        value: "1"
+      - key: VEHICLE_DETECT_ENABLED
+        value: "1"
+      # Optional: without a Roboflow key the whole image is analysed instead.
+      - key: ROBOFLOW_API_KEY
+        sync: false
+      - key: SYNTHETIC_DETECTION_ENABLED
+        value: "1"
+      - key: SYNTHETIC_AI_THRESHOLD
+        value: "0.8"
+      # Model-based detection needs torch (~2.5 GB); it does not fit this plan.
+      - key: SYNTHETIC_MODEL_ENABLED
+        value: "0"
+      # NOTE: the free-tier disk is ephemeral, so cases are wiped on each deploy.
+      # Attach a disk and point CASE_DB_PATH at it for durable cases.
+      - key: CASE_ENABLED
+        value: "1"
+      - key: CASE_MAX_IMAGES
+        value: "6"
+      - key: CASE_PARALLEL_IMAGES
+        value: "2"
+      - key: CASE_CLUSTER_RADIUS_KM
+        value: "10"
       - key: GEOCODING_ENABLED
         value: "1"
       - key: GEOCODER_USER_AGENT

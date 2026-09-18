@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import math
 import os
+import re
 from typing import Any, Optional
 
 from utils.cache import parallel_map
@@ -30,8 +31,13 @@ from utils.geocode import (
     reverse_geocode,
 )
 from utils.geoenv import annual_climate, climate_consistency, elevation_m
-from utils.landmarks import extract_named_features, verify_named_and_water
+from utils.landmarks import (
+    extract_named_features,
+    prefetch_named_lookups,
+    verify_named_and_water,
+)
 from utils.solar import sun_consistency
+from utils.streetlevel import refine_street_level
 from utils.verify import VERIFY_RADIUS_M, detect_expected_features, verify_location
 
 MAX_VERIFY_ATTEMPTS = int(os.getenv("MAX_VERIFY_ATTEMPTS", "5"))
@@ -43,6 +49,9 @@ CLUSTER_RADIUS_KM = float(os.getenv("CLUSTER_RADIUS_KM", "150"))
 NARROW_ENABLED = os.getenv("NARROW_ENABLED", "1") not in ("0", "false", "False")
 MAX_NARROW_STEPS = int(os.getenv("MAX_NARROW_STEPS", "3"))
 NARROW_MIN_RADIUS_M = int(os.getenv("NARROW_MIN_RADIUS_M", "500"))
+# Verification statuses that make street-level refinement worth its extra vision
+# call: we only zoom in on a region the map did not contradict.
+_REFINE_STATUSES = ("verified", "partial", "skipped", "unavailable")
 
 _STATUS_FACTOR = {
     "verified": 1.0,
@@ -74,23 +83,76 @@ def _logit(p: float) -> float:
     return math.log(p / (1 - p))
 
 
+def _w(name: str, default: float) -> float:
+    """Read one fusion weight from the environment, falling back to its default.
+
+    Making every weight env-overridable is what lets `eval/tune_weights.py`
+    calibrate them against labelled data and ship the result as configuration
+    rather than a code change.
+    """
+    try:
+        return float(os.getenv(f"FUSION_{name}", default))
+    except (TypeError, ValueError):
+        return default
+
+
 # Log-odds contributions per independent evidence signal. These de-anchor the
 # final confidence from the AI's self-reported number: instead of trusting the
 # model and multiplying penalties, each signal casts an additive vote and we
-# squash the sum back into [0, 1]. Weights are heuristic (documented, tunable)
-# and are the natural thing to calibrate once a labelled eval set exists.
-_FUSION_PRIOR = 0.2
+# squash the sum back into [0, 1].
+_FUSION_PRIOR = _w("PRIOR", 0.2)
 _VERIFY_LOGIT = {
-    "verified": 1.8,
-    "partial": 0.3,
-    "mismatch": -1.6,
-    "unavailable": 0.0,
-    "skipped": 0.0,
+    "verified": _w("VERIFIED", 1.8),
+    "partial": _w("PARTIAL", 0.3),
+    "mismatch": _w("MISMATCH", -1.6),
+    "unavailable": _w("UNAVAILABLE", 0.0),
+    "skipped": _w("SKIPPED", 0.0),
 }
-_SOLAR_LOGIT = {"consistent": 0.6, "weak_mismatch": -0.4, "inconsistent": -2.0}
-_CLIMATE_LOGIT = {"consistent": 0.5, "weak_mismatch": -0.4}
-_NAMED_LOGIT = {"matched": 1.2, "missed": -0.9, "unknown": 0.0}
-_WATER_NAMED_LOGIT = {"matched": 0.7, "missed": -0.8, "unknown": 0.0}
+_SOLAR_LOGIT = {
+    "consistent": _w("SOLAR_OK", 0.6),
+    "weak_mismatch": _w("SOLAR_WEAK", -0.4),
+    "inconsistent": _w("SOLAR_BAD", -2.0),
+}
+_CLIMATE_LOGIT = {
+    "consistent": _w("CLIMATE_OK", 0.5),
+    "weak_mismatch": _w("CLIMATE_WEAK", -0.4),
+}
+_NAMED_LOGIT = {
+    "matched": _w("NAMED_OK", 1.2),
+    "missed": _w("NAMED_BAD", -0.9),
+    "unknown": 0.0,
+}
+_WATER_NAMED_LOGIT = {
+    "matched": _w("WATER_OK", 0.7),
+    "missed": _w("WATER_BAD", -0.8),
+    "unknown": 0.0,
+}
+# Script and regional spelling are among the strongest country-level signals in
+# real geolocation work (Devanagari, Icelandic thorn, Cyrillic variants), and they
+# are independent of the map checks, so they get their own vote rather than being
+# lost in the generic clue bonus.
+_TEXT_LOGIT = {"match": _w("TEXT_OK", 0.8), "conflict": _w("TEXT_BAD", -1.1)}
+_AI_WEIGHT = _w("AI", 1.3)
+_CLUE_WEIGHT = _w("CLUE", 3.0)
+_AMBIGUITY_WEIGHT = _w("AMBIGUITY", -0.8)
+_LANDMARK_CORROBORATED = _w("LANDMARK_CORROBORATED", 1.0)
+_PRECISION_BONUS = _w("PRECISION", 0.3)
+# A grounded street-level match is strong, independent corroboration: a named
+# business or address existing where the scene said it would is hard to get by
+# chance. An ungrounded model estimate earns much less.
+_STREET_LOGIT = {"geocoded": _w("STREET_OK", 0.9), "model": _w("STREET_MODEL", 0.1)}
+# Vehicles/plates pointing at a different country than the scene is a real
+# contradiction; agreement is mild corroboration.
+_VEHICLE_LOGIT = {
+    "match": _w("VEHICLE_OK", 0.5),
+    "conflict": _w("VEHICLE_BAD", -1.0),
+}
+# A generated or manipulated image has no genuine location to find.
+_SYNTHETIC_LOGIT = {
+    "synthetic": _w("SYNTHETIC", -2.5),
+    "likely_synthetic": _w("SYNTHETIC_WEAK", -1.2),
+    "manipulated": _w("MANIPULATED", -1.0),
+}
 
 
 def _fuse_confidence(sig: dict[str, Any]) -> float:
@@ -103,7 +165,7 @@ def _fuse_confidence(sig: dict[str, Any]) -> float:
 
     ai = sig.get("ai_conf")
     if ai is not None:
-        log_odds += 1.3 * (2 * _clamp(float(ai)) - 1)
+        log_odds += _AI_WEIGHT * (2 * _clamp(float(ai)) - 1)
 
     log_odds += _VERIFY_LOGIT.get(sig.get("verify_status"), 0.0)
     log_odds += _SOLAR_LOGIT.get(sig.get("solar_status"), 0.0)
@@ -111,25 +173,120 @@ def _fuse_confidence(sig: dict[str, Any]) -> float:
     log_odds += _NAMED_LOGIT.get(sig.get("place_status"), 0.0)
     log_odds += _NAMED_LOGIT.get(sig.get("landmark_named"), 0.0)
     log_odds += _WATER_NAMED_LOGIT.get(sig.get("water_named"), 0.0)
-    log_odds += 3.0 * min(float(sig.get("clue_bonus", 0.0) or 0.0), 0.25)
+    log_odds += _STREET_LOGIT.get(sig.get("street_status"), 0.0)
+    log_odds += _VEHICLE_LOGIT.get(sig.get("vehicle_status"), 0.0)
+    log_odds += _TEXT_LOGIT.get(sig.get("text_status"), 0.0)
+    log_odds += _SYNTHETIC_LOGIT.get(sig.get("synthetic_status"), 0.0)
+    log_odds += _CLUE_WEIGHT * min(float(sig.get("clue_bonus", 0.0) or 0.0), 0.25)
 
     if sig.get("landmark_corroborated"):
-        log_odds += 1.0
+        log_odds += _LANDMARK_CORROBORATED
 
     gap = sig.get("ambiguity_gap")
     if gap is not None:
-        # Near-tie between top candidates -> penalty up to -0.8.
-        log_odds += -0.8 * (1 - min(float(gap) / 0.2, 1.0))
+        # Near-tie between top candidates -> penalty up to _AMBIGUITY_WEIGHT.
+        log_odds += _AMBIGUITY_WEIGHT * (1 - min(float(gap) / 0.2, 1.0))
 
     precision = sig.get("precision_m")
     if precision is not None and precision <= NARROW_MIN_RADIUS_M * 2:
-        log_odds += 0.3
+        log_odds += _PRECISION_BONUS
 
     return round(_clamp(_sigmoid(log_odds)), 3)
 
 
 def _has_coords(d: Optional[dict[str, Any]]) -> bool:
     return bool(d) and d.get("latitude") is not None and d.get("longitude") is not None
+
+
+# Short forms and endonyms that vision models emit freely. Without them a plate
+# read as "UK" or a script analysis implying "Deutschland" would look like it
+# contradicts a place the engine named "United Kingdom" or "Germany".
+_REGION_ALIASES = {
+    "uk": "united kingdom",
+    "gb": "united kingdom",
+    "gbr": "united kingdom",
+    "britain": "united kingdom",
+    "great britain": "united kingdom",
+    "england": "united kingdom",
+    "scotland": "united kingdom",
+    "wales": "united kingdom",
+    "northern ireland": "united kingdom",
+    "us": "united states",
+    "usa": "united states",
+    "u.s.": "united states",
+    "u.s.a.": "united states",
+    "united states of america": "united states",
+    "america": "united states",
+    "uae": "united arab emirates",
+    "holland": "netherlands",
+    "the netherlands": "netherlands",
+    "deutschland": "germany",
+    "espana": "spain",
+    "españa": "spain",
+    "italia": "italy",
+    "nippon": "japan",
+    "nihon": "japan",
+    "korea": "south korea",
+    "republic of korea": "south korea",
+    "prc": "china",
+    "roc": "taiwan",
+    "czechia": "czech republic",
+    "türkiye": "turkey",
+    "turkiye": "turkey",
+}
+
+
+def _mentions(haystack: str, needle: str) -> bool:
+    """Substring test, but short needles must stand as whole words."""
+    if not needle:
+        return False
+    if len(needle) > 4:
+        return needle in haystack
+    return re.search(rf"(?<!\w){re.escape(needle)}(?!\w)", haystack) is not None
+
+
+def _place_text(result: dict[str, Any]) -> str:
+    """Everything the engine decided about *where*, as one lowercase haystack."""
+    return " ".join(
+        str(result.get(key) or "")
+        for key in ("country", "region", "location_name", "address")
+    ).lower()
+
+
+def _implied_region_status(
+    implied: Optional[list[Any]], result: dict[str, Any]
+) -> Optional[str]:
+    """Compare regions implied by an independent clue against the chosen place.
+
+    Used for both plate/vehicle regions and script/spelling analysis: each is an
+    independent read on *which country*, so agreement is corroboration and
+    disagreement is a contradiction worth reporting. Returns None when there is
+    nothing to compare, so a missing clue is never mistaken for a conflict.
+    """
+    place = _place_text(result)
+    if not place.strip():
+        return None
+
+    names: list[str] = []
+    for raw in implied or []:
+        name = str(raw).strip().lower()
+        if not name:
+            continue
+        names.append(name)
+        alias = _REGION_ALIASES.get(name)
+        if alias:
+            names.append(alias)
+    if not names:
+        return None
+
+    # Aliases run the other way too: a place named "USA" should accept an implied
+    # "United States". Short tokens need word boundaries -- "us" is a substring of
+    # "Russia", which would otherwise read as agreement with the United States.
+    haystack = place
+    for token, alias in _REGION_ALIASES.items():
+        if _mentions(place, token):
+            haystack += " " + alias
+    return "match" if any(_mentions(haystack, n) for n in names) else "conflict"
 
 
 def _clue_bonus(vision: Optional[dict[str, Any]]) -> float:
@@ -308,6 +465,65 @@ def _augment_verification(
     return out
 
 
+def _plan_hypotheses(
+    candidates: list[dict[str, Any]], bonus: float
+) -> tuple[list[tuple[dict[str, Any], dict[str, Any]]], Optional[dict[str, Any]]]:
+    """Expand candidates into a de-duplicated, ordered list of coordinates to try.
+
+    Materialising the whole plan up front (rather than generating it inside the
+    verification loop) is what makes parallel pre-fetching possible: we cannot
+    warm caches for lookups we have not decided to make yet. Order is unchanged,
+    so selection behaviour is identical.
+    """
+    plan: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    seen: set[tuple[float, float]] = set()
+    name_only: Optional[dict[str, Any]] = None
+
+    for cand in candidates:
+        cconf = _clamp(float(cand.get("confidence", 0.0) or 0.0))
+        name = cand.get("name")
+        if name and name_only is None:
+            name_only = {
+                "name": name,
+                "country": cand.get("country"),
+                "region": cand.get("region"),
+                "confidence": _clamp(cconf * 0.7 + bonus * 0.5),
+                "source": "vision_place_name",
+            }
+        for hyp in _hypotheses_for_candidate(cand, bonus):
+            key = (round(hyp["latitude"], 3), round(hyp["longitude"], 3))
+            if key in seen:
+                continue
+            seen.add(key)
+            plan.append((cand, hyp))
+    return plan, name_only
+
+
+def _prefetch_verification(
+    plan: list[tuple[dict[str, Any], dict[str, Any]]],
+    expected: list[str],
+    vision: Optional[dict[str, Any]],
+) -> None:
+    """Warm the map/named-feature caches for every hypothesis we may check.
+
+    The selection loop below must stay sequential: it exits as soon as a location
+    verifies, and that early exit is what keeps the AI's ranking meaningful. But
+    the lookups it makes are independent and network-bound, so issuing them
+    concurrently first turns a chain of round-trips into one. Only successful
+    Overpass results are cached, so an outage is still retried rather than
+    remembered.
+    """
+    if not expected:
+        return
+    coords = [
+        (hyp["latitude"], hyp["longitude"]) for _, hyp in plan[:MAX_VERIFY_ATTEMPTS]
+    ]
+    if not coords:
+        return
+    prefetch_named_lookups(coords, vision, expected)
+    parallel_map(lambda c: verify_location(c[0], c[1], expected), coords)
+
+
 def _select_location(
     candidates: list[dict[str, Any]],
     bonus: float,
@@ -321,93 +537,75 @@ def _select_location(
     fallback, and the number of verification attempts made.
     """
     attempts = 0
-    seen: set[tuple[float, float]] = set()
     rejected: list[dict[str, Any]] = []
     alternatives: list[dict[str, Any]] = []
-    name_only: Optional[dict[str, Any]] = None
     best_partial: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
     best_unavailable: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
     best_mismatch: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
     chosen: Optional[dict[str, Any]] = None
     chosen_report: Optional[dict[str, Any]] = None
 
-    for cand in candidates:
-        cconf = _clamp(float(cand.get("confidence", 0.0) or 0.0))
-        name = cand.get("name")
-        if name and name_only is None:
-            name_only = {
-                "name": name,
-                "country": cand.get("country"),
-                "region": cand.get("region"),
-                "confidence": _clamp(cconf * 0.7 + bonus * 0.5),
-                "source": "vision_place_name",
-            }
+    plan, name_only = _plan_hypotheses(candidates, bonus)
+    _prefetch_verification(plan, expected, vision)
 
-        for hyp in _hypotheses_for_candidate(cand, bonus):
-            key = (round(hyp["latitude"], 3), round(hyp["longitude"], 3))
-            if key in seen:
-                continue
-            seen.add(key)
+    for _cand, hyp in plan:
+        if attempts >= MAX_VERIFY_ATTEMPTS:
+            alternatives.append(_alt(hyp))
+            continue
 
-            if attempts >= MAX_VERIFY_ATTEMPTS:
-                alternatives.append(_alt(hyp))
-                continue
+        report = _augment_verification(
+            hyp["latitude"],
+            hyp["longitude"],
+            verify_location(hyp["latitude"], hyp["longitude"], expected),
+            vision,
+            expected,
+            place_name=hyp.get("name"),
+        )
+        attempts += 1
+        hyp["verification"] = report
+        status = report.get("status")
 
-            report = _augment_verification(
-                hyp["latitude"],
-                hyp["longitude"],
-                verify_location(hyp["latitude"], hyp["longitude"], expected),
-                vision,
-                expected,
-                place_name=hyp.get("name"),
-            )
-            attempts += 1
-            hyp["verification"] = report
-            status = report.get("status")
-
-            if status in _ACCEPT_STATUSES:
-                chosen, chosen_report = hyp, report
-                break
-            if status == "partial":
-                if best_partial is None or _verify_rank(report) > _verify_rank(
-                    best_partial[1]
-                ):
-                    best_partial = (hyp, report)
-                alternatives.append(_alt(hyp))
-            elif status == "unavailable":
-                # Couldn't check this one. Keep the highest-confidence such
-                # candidate (candidates arrive best-first) as a fallback.
-                # Prefer a candidate whose named landmark/place still matched.
-                if best_unavailable is None:
-                    best_unavailable = (hyp, report)
-                elif _verify_rank(report) > _verify_rank(best_unavailable[1]):
-                    best_unavailable = (hyp, report)
-                elif _verify_rank(report) == _verify_rank(
-                    best_unavailable[1]
-                ) and hyp.get("base", 0.0) > best_unavailable[0].get("base", 0.0):
-                    best_unavailable = (hyp, report)
-                alternatives.append(_alt(hyp))
-            else:  # mismatch -> cross it out
-                named_note = (report.get("named") or {}).get("note")
-                reason = named_note or (
-                    f"expected {report.get('missing')} not found within "
-                    f"{report.get('radius_m')} m"
-                )
-                rejected.append(
-                    {
-                        "name": hyp.get("name"),
-                        "latitude": hyp.get("latitude"),
-                        "longitude": hyp.get("longitude"),
-                        "reason": reason,
-                    }
-                )
-                if best_mismatch is None or _verify_rank(report) > _verify_rank(
-                    best_mismatch[1]
-                ):
-                    best_mismatch = (hyp, report)
-
-        if chosen is not None:
+        if status in _ACCEPT_STATUSES:
+            chosen, chosen_report = hyp, report
             break
+
+        if status == "partial":
+            if best_partial is None or _verify_rank(report) > _verify_rank(
+                best_partial[1]
+            ):
+                best_partial = (hyp, report)
+            alternatives.append(_alt(hyp))
+        elif status == "unavailable":
+            # Couldn't check this one. Keep the highest-confidence such
+            # candidate (candidates arrive best-first) as a fallback, preferring
+            # one whose named landmark/place still matched.
+            if best_unavailable is None:
+                best_unavailable = (hyp, report)
+            elif _verify_rank(report) > _verify_rank(best_unavailable[1]):
+                best_unavailable = (hyp, report)
+            elif _verify_rank(report) == _verify_rank(
+                best_unavailable[1]
+            ) and hyp.get("base", 0.0) > best_unavailable[0].get("base", 0.0):
+                best_unavailable = (hyp, report)
+            alternatives.append(_alt(hyp))
+        else:  # mismatch -> cross it out
+            named_note = (report.get("named") or {}).get("note")
+            reason = named_note or (
+                f"expected {report.get('missing')} not found within "
+                f"{report.get('radius_m')} m"
+            )
+            rejected.append(
+                {
+                    "name": hyp.get("name"),
+                    "latitude": hyp.get("latitude"),
+                    "longitude": hyp.get("longitude"),
+                    "reason": reason,
+                }
+            )
+            if best_mismatch is None or _verify_rank(report) > _verify_rank(
+                best_mismatch[1]
+            ):
+                best_mismatch = (hyp, report)
 
     if chosen is None:
         # Preference when nothing verified cleanly: a real partial match (has
@@ -434,18 +632,24 @@ def determine_location(
     metadata: dict[str, Any],
     vision: dict[str, Any],
     forensics: Optional[dict[str, Any]] = None,
+    *,
+    image_path: Optional[str] = None,
 ) -> dict[str, Any]:
     """Fuse all evidence into a location, then attach forensics, clustered
     alternatives and an auditable reasoning trace.
 
+    `image_path` enables the street-level refinement pass, which needs to look at
+    the image again once a region is known. Omitting it simply skips refinement,
+    which is what the offline eval harness does.
+
     The core fusion logic lives in `_determine_core`; this wrapper enriches the
-    result with the cross-cutting fields (#10 forensics, #11 clusters, #13 trace)
-    so those are computed once regardless of which evidence path produced the
-    answer.
+    result with the cross-cutting fields (forensics, clusters, trace) so those
+    are computed once regardless of which evidence path produced the answer.
     """
-    result = _determine_core(metadata, vision)
+    result = _determine_core(metadata, vision, image_path=image_path, forensics=forensics)
     result["forensics"] = forensics or {}
     result["alternative_clusters"] = _cluster_candidates(vision)
+    _warn_if_synthetic(result, forensics)
     if forensics and forensics.get("notes"):
         # Surface the most useful provenance note in the evidence list.
         for note in forensics["notes"]:
@@ -459,7 +663,11 @@ def determine_location(
 
 
 def _determine_core(
-    metadata: dict[str, Any], vision: dict[str, Any]
+    metadata: dict[str, Any],
+    vision: dict[str, Any],
+    *,
+    image_path: Optional[str] = None,
+    forensics: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Fuse metadata + vision clues into a best-estimate, map-verified location."""
     evidence: list[str] = []
@@ -577,6 +785,12 @@ def _determine_core(
             if precision_m <= NARROW_MIN_RADIUS_M * 2:
                 result["confidence"] = _clamp(result.get("confidence", 0.0) + 0.03)
 
+        # Street-level refinement: with a region the map did not contradict, look
+        # again for the exact spot. Runs before the environmental checks so those
+        # describe the refined point rather than the regional centroid.
+        _apply_street_refinement(result, vision, image_path, status)
+
+        _prefetch_context(result, vision)
         _apply_solar(result, metadata, vision)
         _apply_climate(result, vision)
         _append_clue_evidence(result, metadata, vision)
@@ -586,13 +800,24 @@ def _determine_core(
         # the answer isn't anchored to the AI's self-reported number.
         signals = result.pop("_signals", {})
         named = (result.get("verification") or {}).get("named") or {}
+        street = result.get("street_level") or {}
         signals["solar_status"] = (result.get("solar") or {}).get("status")
         signals["climate_status"] = (result.get("climate_check") or {}).get("status")
         signals["precision_m"] = result.get("precision_m")
         signals["place_status"] = named.get("place_status")
         signals["landmark_named"] = named.get("landmark_status")
         signals["water_named"] = named.get("water_status")
+        if street.get("refined"):
+            signals["street_status"] = (
+                "model" if street.get("method") == "model_estimate" else "geocoded"
+            )
+        signals["synthetic_status"] = (forensics or {}).get("authenticity")
+        _apply_text_signal(result, vision, signals)
         result["confidence"] = _fuse_confidence(signals)
+        # Retained so later, independently-obtained evidence (vehicle
+        # identification) can be added as one more voter instead of being
+        # bolted on as an ad-hoc multiplier.
+        result["fusion_signals"] = signals
         return result
 
     # 3. Name-only fallback (geocoding produced no coordinates to verify).
@@ -806,6 +1031,167 @@ def _narrow_location(
     return precision, steps
 
 
+def _apply_street_refinement(
+    result: dict[str, Any],
+    vision: Optional[dict[str, Any]],
+    image_path: Optional[str],
+    status: Optional[str],
+) -> None:
+    """Move the answer from a region to an exact spot when the image supports it.
+
+    Gated on a verification status that did not contradict the region: refining
+    inside an area we already believe is wrong would just produce a precise wrong
+    answer. On success the coordinates, address and precision are all replaced,
+    and the source is relabelled so the client can say how the point was found.
+    """
+    if not _has_coords(result) or not image_path:
+        return
+    if status not in _REFINE_STATUSES:
+        return
+
+    city_hint = result.get("region") or result.get("country")
+    street = refine_street_level(
+        result["latitude"],
+        result["longitude"],
+        vision,
+        image_path=image_path,
+        place_label=result.get("address") or result.get("location_name"),
+        city_hint=result.get("location_name") or city_hint,
+    )
+    result["street_level"] = street
+    for line in street.get("evidence", []):
+        result["evidence"].append(line)
+
+    if not street.get("refined"):
+        if street.get("attempted") and street.get("note"):
+            result["evidence"].append(f"Street-level: {street['note']}")
+        return
+
+    result["latitude"] = street["latitude"]
+    result["longitude"] = street["longitude"]
+    if street.get("address"):
+        result["address"] = street["address"]
+        result["location_name"] = street["address"].split(",")[0].strip() or result[
+            "location_name"
+        ]
+    result["precision_m"] = street.get("precision_m") or result.get("precision_m")
+    result["source"] = "street_level"
+
+
+def _warn_if_synthetic(
+    result: dict[str, Any], forensics: Optional[dict[str, Any]]
+) -> None:
+    """Say plainly when the image may not depict a real place.
+
+    A generated image can still produce a coherent-looking location, so this must
+    be surfaced as a warning rather than left in a nested forensics field.
+    """
+    synthetic = (forensics or {}).get("synthetic") or {}
+    status = synthetic.get("status")
+    if status not in ("synthetic", "likely_synthetic", "manipulated"):
+        return
+
+    result["authenticity"] = status
+    note = synthetic.get("note") or "This image may not be a genuine photograph."
+    result["evidence"].append(f"Authenticity: {note}")
+    # A synthetic image outranks any location warning already set.
+    result["warning"] = note
+    if status == "synthetic":
+        # Never present a confident location for a generated image.
+        result["confidence"] = min(float(result.get("confidence", 0.0)), 0.15)
+
+
+def _apply_text_signal(
+    result: dict[str, Any],
+    vision: Optional[dict[str, Any]],
+    signals: dict[str, Any],
+) -> None:
+    """Score the script/spelling read against the chosen place.
+
+    Writing systems and regional spellings are close to decisive at country level
+    -- Devanagari, Icelandic thorn, or traditional vs simplified Chinese rule out
+    most of the map on their own -- so this is treated as its own signal rather
+    than one more entry in the generic clue bonus.
+    """
+    text = (vision or {}).get("text_analysis") or {}
+    implied = text.get("implied_countries") or []
+    status = _implied_region_status(implied, result)
+    if status is None:
+        return
+
+    signals["text_status"] = status
+    shown = ", ".join(str(c) for c in implied[:3])
+    script = text.get("primary_script")
+    if status == "match":
+        detail = f"{script} script" if script else "the visible text"
+        result["evidence"].append(
+            f"Text cross-check: {detail} is consistent with {shown}."
+        )
+    else:
+        note = (
+            f"The visible text points to {shown}, which does not match the "
+            "chosen region."
+        )
+        result["evidence"].append(f"Text cross-check: {note}")
+        if not result.get("warning"):
+            result["warning"] = note
+
+
+def apply_vehicle_signal(
+    result: dict[str, Any], vehicle: Optional[dict[str, Any]]
+) -> None:
+    """Fold vehicle/plate evidence into an already-computed location.
+
+    Vehicle identification runs concurrently with the rest of the pipeline (it is
+    an independent vision call), so it arrives after fusion. Rather than applying
+    an ad-hoc multiplier, the result is added as one more voter and the same
+    fusion is recomputed, keeping a single definition of how confidence is built.
+
+    Plate-implied regions are the useful part: a French plate in a scene the
+    engine placed in Ontario is a genuine contradiction worth reporting.
+    """
+    if not vehicle or not vehicle.get("available"):
+        return
+
+    from utils.vehicle import vehicle_evidence
+
+    for line in vehicle_evidence(vehicle):
+        result["evidence"].append(line)
+
+    result["vehicle"] = vehicle
+    status = _implied_region_status(vehicle.get("implied_regions"), result)
+    if status is None:
+        return
+
+    matched = status == "match"
+    result["vehicle_check"] = {
+        "status": status,
+        "implied_regions": vehicle.get("implied_regions", [])[:4],
+        "note": (
+            "Vehicles and plates are consistent with the chosen region."
+            if matched
+            else "Vehicles/plates suggest "
+            + ", ".join(vehicle.get("implied_regions", [])[:3])
+            + ", which does not match the chosen region."
+        ),
+    }
+    result["evidence"].append(f"Vehicle cross-check: {result['vehicle_check']['note']}")
+
+    # EXIF GPS is authoritative; a plate never overrides it.
+    if result.get("source") == "exif_gps":
+        return
+
+    signals = result.get("fusion_signals")
+    if isinstance(signals, dict):
+        signals["vehicle_status"] = status
+        result["confidence"] = _fuse_confidence(signals)
+    elif status == "conflict":
+        result["confidence"] = _clamp(result.get("confidence", 0.0) * 0.85)
+
+    if status == "conflict" and not result.get("warning"):
+        result["warning"] = result["vehicle_check"]["note"]
+
+
 def _apply_solar(
     result: dict[str, Any],
     metadata: Optional[dict[str, Any]],
@@ -876,6 +1262,27 @@ def _prefetch_geocode(vision: Optional[dict[str, Any]]) -> None:
         )
 
 
+def _prefetch_context(
+    result: dict[str, Any], vision: Optional[dict[str, Any]]
+) -> None:
+    """Fetch Wikipedia, elevation and climate for the final point concurrently.
+
+    These three are independent of each other and each costs a round-trip. The
+    functions that consume them stay sequential and readable; they just find the
+    answers already cached.
+    """
+    if not _has_coords(result):
+        return
+    lat, lon = result["latitude"], result["longitude"]
+
+    jobs = [lambda: enrich_location(lat, lon)]
+    scene = (vision or {}).get("scene") or {}
+    if any(scene.get(k) for k in ("desert", "snow", "forest")):
+        jobs.append(lambda: elevation_m(lat, lon))
+        jobs.append(lambda: annual_climate(lat, lon))
+    parallel_map(lambda fn: fn(), jobs)
+
+
 def _apply_climate(result: dict[str, Any], vision: Optional[dict[str, Any]]) -> None:
     """Cross-check the scene's climate/terrain claims against real-world data.
 
@@ -932,8 +1339,22 @@ def _build_reasoning_trace(
             meta_lines.append(f"Camera: {label}.")
     if forensics:
         meta_lines.extend(forensics.get("notes", []))
+        synthetic = forensics.get("synthetic") or {}
+        for signal in synthetic.get("signals", [])[:3]:
+            meta_lines.append(signal)
     if meta_lines:
         trace.append({"stage": "Metadata & forensics", "details": meta_lines})
+
+    vehicle = result.get("vehicle") or {}
+    if vehicle.get("available") and vehicle.get("vehicles_present"):
+        from utils.vehicle import vehicle_evidence
+
+        vehicle_lines = vehicle_evidence(vehicle)
+        check = result.get("vehicle_check") or {}
+        if check.get("note"):
+            vehicle_lines.append(check["note"])
+        if vehicle_lines:
+            trace.append({"stage": "Vehicle analysis", "details": vehicle_lines})
 
     clue_lines: list[str] = []
     if vision:
@@ -1007,6 +1428,19 @@ def _build_reasoning_trace(
             verify_lines.append("Map service unavailable, so this is unverified.")
         if verify_lines:
             trace.append({"stage": "Map verification", "details": verify_lines})
+
+    street = result.get("street_level") or {}
+    if street.get("attempted"):
+        street_lines: list[str] = list(street.get("evidence") or [])
+        if not street.get("refined") and street.get("note"):
+            street_lines.append(street["note"])
+        for cand in (street.get("candidates") or [])[:3]:
+            street_lines.append(
+                f"Map match for '{cand.get('query')}': {cand.get('name')} "
+                f"({cand.get('distance_km')} km, {cand.get('provider')})."
+            )
+        if street_lines:
+            trace.append({"stage": "Street-level refinement", "details": street_lines})
 
     refine: list[str] = []
     solar = result.get("solar")

@@ -18,6 +18,7 @@ _SOURCE_LABELS = {
     "vision_coordinates": "AI visual analysis",
     "vision_geocoded": "AI visual analysis + map lookup",
     "vision_place_name": "AI visual analysis",
+    "street_level": "Street-level match on the map",
     "exif_caption": "Photo caption",
     "unknown": "Could not determine",
     "error": "Error",
@@ -68,6 +69,7 @@ def build_response(
     vision: dict[str, Any],
     location: dict[str, Any],
     forensics: dict[str, Any] | None = None,
+    image_quality: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Assemble the JSON payload returned to the client."""
     lat = location.get("latitude")
@@ -132,6 +134,19 @@ def build_response(
         # unless the scene had a checkable climate feature).
         "climate_check": location.get("climate_check"),
         "landmark_check": (location.get("verification") or {}).get("named"),
+        # Street-level refinement: the exact-spot pass and what it matched.
+        "street_level": location.get("street_level"),
+        # Whether the image is a genuine photograph at all. "synthetic" means the
+        # depicted place may not exist, so confidence is capped and warned about.
+        "authenticity": (location.get("forensics", forensics or {}) or {}).get(
+            "authenticity", "unknown"
+        ),
+        # Vehicles and license plates read from the image, plus whether the
+        # regions they imply agree with the chosen location.
+        "vehicle": location.get("vehicle"),
+        "vehicle_check": location.get("vehicle_check"),
+        # What was done to the image before analysis (upscaled, brightened, ...).
+        "image_quality": image_quality,
         # Full breakdown for debugging / richer clients.
         "details": {
             "source_code": source_code,
@@ -139,6 +154,8 @@ def build_response(
             "exif": metadata,
             "vision": vision,
             "evidence": location.get("evidence", []),
+            # The individual log-odds voters behind `confidence`.
+            "fusion_signals": location.get("fusion_signals"),
         },
     }
 
@@ -175,4 +192,9 @@ def error_response(message: str, *, filename: str | None = None) -> dict[str, An
         "elevation_m": None,
         "climate_check": None,
         "landmark_check": None,
+        "street_level": None,
+        "authenticity": "unknown",
+        "vehicle": None,
+        "vehicle_check": None,
+        "image_quality": None,
     }

@@ -1,10 +1,15 @@
-"""Lightweight image forensics: what the file itself says about its origin.
+"""Image forensics: what the file itself says about its origin.
 
-This does NOT try to detect AI-generated art. It answers a narrower, more useful
-question for geolocation: is a MISSING GPS tag *expected* (a screenshot, or an
-export that had its metadata stripped) or *surprising* (an original camera photo
-that would normally carry GPS)? That context changes how we talk about a missing
-location and feeds the reasoning trace, without hard-blocking analysis.
+Two questions, both of which change how the result should be read:
+
+  1. Is a MISSING GPS tag *expected* (a screenshot, or an export that had its
+     metadata stripped) or *surprising* (an original camera photo that would
+     normally carry GPS)? That context changes how we talk about a missing
+     location and feeds the reasoning trace, without hard-blocking analysis.
+  2. Is this a photograph at all? Synthetic-media assessment is delegated to
+     `utils.synthetic` and folded in here, because a generated image has no real
+     location and the pipeline must say so rather than confidently geolocate a
+     picture of a place that does not exist.
 
 Fail-soft: any error returns a minimal, safe assessment so the pipeline runs.
 """
@@ -14,6 +19,8 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from PIL import Image
+
+from utils.synthetic import assess_synthetic, is_unreliable
 
 # Software signatures that indicate the file was edited / re-exported.
 _EDIT_SOFTWARE = (
@@ -96,6 +103,12 @@ def assess_forensics(
             "No GPS despite original camera metadata - unusual (possibly removed)."
         )
 
+    synthetic = assess_synthetic(image_path, metadata, fmt, width, height)
+    if synthetic.get("note") and synthetic.get("status") != "authentic":
+        notes.append(synthetic["note"])
+    if synthetic.get("provenance_credentials"):
+        notes.append("File carries signed Content Credentials (C2PA).")
+
     return {
         "format": fmt or None,
         "width": width,
@@ -108,5 +121,9 @@ def assess_forensics(
         "editing_software": camera.get("software") if edited else None,
         "metadata_stripped": metadata_stripped,
         "gps_missing_expected": gps_missing_expected,
+        # Whether the image can be trusted to depict a real place at all.
+        "synthetic": synthetic,
+        "authenticity": synthetic.get("status", "unknown"),
+        "trustworthy_as_photo": not is_unreliable(synthetic),
         "notes": notes,
     }

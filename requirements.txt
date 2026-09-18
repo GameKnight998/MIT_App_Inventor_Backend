@@ -19,3 +19,27 @@ starlette==1.3.1
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 uvicorn==0.49.0
+
+# Alternative vision provider, selected with VISION_PROVIDER=anthropic.
+# Small SDK (reuses httpx/pydantic, already present) and unused unless selected.
+anthropic>=0.40,<1.0
+
+# ---------------------------------------------------------------------------
+# Deliberately NOT installed by default: torch, torchvision, transformers,
+# realesrgan.
+#
+# They are ~2.5 GB installed and would load models into RAM, which does not fit
+# Render's 512 MB free tier; torch also has no wheels for the Python 3.13 pinned
+# in render.yaml, so adding it fails the build outright rather than degrading.
+#
+# The features that could use them work without them:
+#   * image enhancement runs on OpenCV (CLAHE, Lanczos, unsharp mask), which is
+#     already a dependency for video frame extraction;
+#   * synthetic-media detection reads C2PA manifests, IPTC DigitalSourceType and
+#     generator metadata, which is conclusive when present and needs no model.
+#
+# To add the model-based detector on a paid instance with >=2 GB RAM:
+#   pip install torch torchvision transformers
+#   SYNTHETIC_MODEL_ENABLED=1
+# Or point SYNTHETIC_API_URL at a hosted detector to keep this instance small.
+# ---------------------------------------------------------------------------

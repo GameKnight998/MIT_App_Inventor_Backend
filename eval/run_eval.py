@@ -95,6 +95,24 @@ def _distance_km(pred_lat, pred_lon, expected: dict[str, Any]) -> Optional[float
     return round(_haversine_km(float(pred_lat), float(pred_lon), float(elat), float(elon)), 1)
 
 
+def _confidence_band(conf: float, expected: dict[str, Any]) -> Optional[bool]:
+    """Whether confidence sits inside the band this case demands.
+
+    A separate check from accuracy: getting the place right but claiming 95%
+    certainty on an ambiguous forest, or 90% on a generated image, is a
+    calibration failure even though the coordinates pass.
+    """
+    low = expected.get("min_confidence")
+    high = expected.get("max_confidence")
+    if low is None and high is None:
+        return None
+    if low is not None and conf < float(low):
+        return False
+    if high is not None and conf > float(high):
+        return False
+    return True
+
+
 def score_case(pred: dict[str, Any], expected: dict[str, Any]) -> dict[str, Any]:
     country = _country_hit(pred.get("country"), expected)
     region = _region_hit(pred.get("region"), expected)
@@ -102,6 +120,7 @@ def score_case(pred: dict[str, Any], expected: dict[str, Any]) -> dict[str, Any]
     within = _within_radius(pred.get("latitude"), pred.get("longitude"), expected)
     dist = _distance_km(pred.get("latitude"), pred.get("longitude"), expected)
     conf = float(pred.get("confidence") or 0.0)
+    band = _confidence_band(conf, expected)
     # Brier vs "within radius" (or unknown-success). Skip if that metric is N/A.
     outcome = None
     if within is not None:
@@ -116,6 +135,7 @@ def score_case(pred: dict[str, Any], expected: dict[str, Any]) -> dict[str, Any]
         "within_radius": within,
         "distance_km": dist,
         "confidence": round(conf, 3),
+        "confidence_band": band,
         "brier": brier,
         "location_name": pred.get("location_name"),
         "named": (pred.get("verification") or {}).get("named"),
@@ -234,6 +254,7 @@ def run_eval(live: bool = False) -> dict[str, Any]:
         "region_accuracy": rate("region"),
         "name_accuracy": rate("name"),
         "within_radius_accuracy": rate("within_radius"),
+        "confidence_band_accuracy": rate("confidence_band"),
         "mean_brier": round(sum(briers) / len(briers), 4) if briers else None,
         "mean_confidence_when_correct": round(sum(correct_conf) / len(correct_conf), 3)
         if correct_conf
@@ -261,20 +282,22 @@ def _print_human(summary: dict[str, Any]) -> None:
         f"name={summary['name_accuracy']}  within_radius={summary['within_radius_accuracy']}"
     )
     print(
-        f"  mean Brier={summary['mean_brier']}  "
+        f"  conf_band={summary['confidence_band_accuracy']}  "
+        f"mean Brier={summary['mean_brier']}  "
         f"conf|correct={summary['mean_confidence_when_correct']}  "
         f"conf|wrong={summary['mean_confidence_when_wrong']}  "
         f"gap={summary['calibration_gap']}"
     )
     print()
-    print(f"{'id':<28} {'ok?':<5} {'dist_km':<8} {'conf':<6} {'name'}")
+    print(f"{'id':<28} {'ok?':<5} {'band':<6} {'dist_km':<8} {'conf':<6} {'name'}")
     for row in summary["cases"]:
         ok = "Y" if row.get("within_radius") else ("-" if row.get("within_radius") is None else "N")
         if row.get("within_radius") is None and row.get("country"):
             ok = "c"
+        band = {True: "ok", False: "OUT", None: "-"}[row.get("confidence_band")]
         dist = "-" if row["distance_km"] is None else str(row["distance_km"])
         print(
-            f"{row['id']:<28} {ok:<5} {dist:<8} {row['confidence']:<6} "
+            f"{row['id']:<28} {ok:<5} {band:<6} {dist:<8} {row['confidence']:<6} "
             f"{row.get('location_name')}"
         )
 

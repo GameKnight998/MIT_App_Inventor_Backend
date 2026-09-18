@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image Locator - Visual OSINT</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">◎</span>
+    <div>
+      <h1>Image Locator</h1>
+      <p class="tagline">Open-source visual OSINT &mdash; locate a photo from its pixels</p>
+    </div>
+  </div>
+  <div class="status" id="health" role="status">Checking backend&hellip;</div>
+</header>
+
+<main>
+  <!-- ------------------------------------------------------------------ -->
+  <section class="panel upload-panel">
+    <div class="dropzone" id="dropzone" tabindex="0" role="button"
+         aria-label="Choose or drop files to analyse">
+      <input type="file" id="fileInput" accept="image/*,video/*" multiple hidden>
+      <div class="dz-inner">
+        <span class="dz-icon" aria-hidden="true">↑</span>
+        <p class="dz-title">Drop an image, a video, or several photos</p>
+        <p class="dz-sub">
+          One image &rarr; full analysis &middot; several images &rarr; cross-referenced case
+          &middot; video &rarr; key frames fused
+        </p>
+      </div>
+    </div>
+
+    <div class="file-list" id="fileList" hidden></div>
+
+    <div class="actions">
+      <button class="btn primary" id="analyzeBtn" disabled>Analyse</button>
+      <button class="btn ghost" id="resetBtn" hidden>Clear</button>
+      <span class="hint" id="modeHint"></span>
+    </div>
+
+    <div class="progress" id="progress" hidden>
+      <div class="spinner" aria-hidden="true"></div>
+      <div>
+        <p class="progress-text" id="progressText">Analysing&hellip;</p>
+        <p class="progress-sub">
+          Reading metadata, running vision analysis, then cross-checking the guess
+          against OpenStreetMap. This can take 15&ndash;60 seconds.
+        </p>
+      </div>
+    </div>
+
+    <div class="error" id="error" hidden></div>
+  </section>
+
+  <!-- ------------------------------------------------------------------ -->
+  <section class="results" id="results" hidden>
+    <div class="result-header">
+      <div>
+        <h2 id="placeName">&mdash;</h2>
+        <p class="address" id="address"></p>
+        <p class="coords" id="coords"></p>
+      </div>
+      <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noopener">
+        Open in Google Maps
+      </a>
+    </div>
+
+    <div class="badges" id="badges"></div>
+
+    <div class="confidence">
+      <div class="conf-row">
+        <span>Confidence</span>
+        <strong id="confValue">0%</strong>
+      </div>
+      <div class="conf-track"><div class="conf-fill" id="confFill"></div></div>
+      <p class="conf-note" id="confNote"></p>
+    </div>
+
+    <div class="warning" id="warning" hidden></div>
+
+    <div id="map" class="map" aria-label="Map of the estimated location"></div>
+    <div class="legend">
+      <span><i class="dot primary"></i>Best estimate</span>
+      <span><i class="dot alt"></i>Alternative</span>
+      <span><i class="dot rejected"></i>Ruled out by the map</span>
+      <span><i class="dot cluster"></i>Case consensus</span>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <details class="raw">
+      <summary>Raw JSON response</summary>
+      <pre id="rawJson"></pre>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <p>
+    Evidence comes from EXIF, an AI vision model, OpenStreetMap (Nominatim,
+    Overpass, Photon), Wikipedia GeoSearch, Open-Elevation and Open-Meteo.
+    Results are investigative leads, not confirmed locations.
+  </p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

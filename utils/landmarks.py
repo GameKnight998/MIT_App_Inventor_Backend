@@ -21,6 +21,7 @@ import os
 import re
 from typing import Any, Optional
 
+from utils.cache import parallel_map
 from utils.geocode import forward_geocode_candidates, search_nearby
 
 LANDMARK_ENABLED = os.getenv("LANDMARK_VERIFY_ENABLED", "1") not in (
@@ -177,6 +178,35 @@ def _is_water_hit(hit: dict[str, Any]) -> bool:
 def _geocode_one(query: str) -> Optional[dict[str, Any]]:
     hits = forward_geocode_candidates(query, limit=3)
     return hits[0] if hits else None
+
+
+def prefetch_named_lookups(
+    coords: list[tuple[float, float]],
+    vision: Optional[dict[str, Any]] = None,
+    expected: Optional[list[str]] = None,
+) -> None:
+    """Warm the cached Nominatim lookups this module will make, concurrently.
+
+    `verify_named_and_water` is called once per candidate inside a sequential
+    selection loop, and each call is network-bound. Firing the same lookups in
+    parallel first means those calls hit the cache instead of the network, which
+    removes most of the wall-clock cost without altering selection order.
+    """
+    if not LANDMARK_ENABLED:
+        return
+
+    jobs: list[Any] = []
+    for name in extract_named_features(vision):
+        jobs.append(lambda n=name: forward_geocode_candidates(n, limit=3))
+    if _scene_wants_water(vision, expected or []):
+        for lat, lon in coords:
+            jobs.append(
+                lambda la=lat, lo=lon: search_nearby(
+                    "lake", la, lo, WATER_SEARCH_KM, limit=5
+                )
+            )
+    if jobs:
+        parallel_map(lambda fn: fn(), jobs)
 
 
 def _empty_named() -> dict[str, Any]:

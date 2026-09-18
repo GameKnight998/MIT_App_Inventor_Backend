@@ -79,12 +79,20 @@ def cached(func: Callable | None = None, *, cache_empty: bool = False):
     return decorator(func) if func is not None else decorator
 
 
-def parallel_map(func: Callable, items: Iterable) -> list:
-    """Run `func` over `items` concurrently (threads; good for blocking I/O)."""
+def parallel_map(
+    func: Callable, items: Iterable, workers: int | None = None
+) -> list:
+    """Run `func` over `items` concurrently (threads; good for blocking I/O).
+
+    `workers` caps concurrency below PARALLEL_WORKERS for jobs that are heavier
+    than a single HTTP request (e.g. a whole per-image pipeline), so one request
+    cannot saturate a small instance.
+    """
     items = list(items)
     if not items:
         return []
     if len(items) == 1:
         return [func(items[0])]
-    with ThreadPoolExecutor(max_workers=min(PARALLEL_WORKERS, len(items))) as ex:
+    limit = min(workers or PARALLEL_WORKERS, PARALLEL_WORKERS, len(items))
+    with ThreadPoolExecutor(max_workers=max(1, limit)) as ex:
         return list(ex.map(func, items))

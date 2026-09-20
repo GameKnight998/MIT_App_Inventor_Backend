@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
+from utils.osint import DEFINED_RADIUS_KM, DEFINED_RADIUS_M
+
 # Turn the internal machine source codes into readable labels (no underscores).
 _SOURCE_LABELS = {
     "exif_gps": "GPS metadata",
@@ -40,11 +42,21 @@ def _coord_display(value: Optional[float]) -> str:
     return str(value) if value is not None else "Unknown"
 
 
+def _radius_phrase(meets: Optional[bool]) -> str:
+    target = f"Defined radius: {DEFINED_RADIUS_KM:g} km"
+    if meets is True:
+        return f"{target} (estimate meets this)."
+    if meets is False:
+        return f"{target} (estimate is coarser than this)."
+    return target
+
+
 def _build_summary(
     name: Optional[str],
     country: Optional[str],
     lat: Optional[float],
     lon: Optional[float],
+    meets: Optional[bool] = None,
 ) -> str:
     """A single human-readable sentence describing the result."""
     place = name
@@ -52,14 +64,15 @@ def _build_summary(
         place = f"{name}, {country}"
 
     has_coords = lat is not None and lon is not None
+    radius = _radius_phrase(meets)
 
     if place and has_coords:
-        return f"{place} (Latitude {lat} Longitude {lon})"
+        return f"{place} (Latitude {lat} Longitude {lon}). {radius}"
     if place:
-        return f"{place} (exact coordinates unavailable)"
+        return f"{place} (exact coordinates unavailable). {radius}"
     if has_coords:
-        return f"Latitude {lat} Longitude {lon}"
-    return "Location could not be determined from this image."
+        return f"Latitude {lat} Longitude {lon}. {radius}"
+    return f"Location could not be determined from this image. {radius}"
 
 
 def build_response(
@@ -79,6 +92,9 @@ def build_response(
     region = location.get("region")
     address = location.get("address")
     source_code = location.get("source") or "unknown"
+    defined_km = location.get("defined_radius_km", DEFINED_RADIUS_KM)
+    defined_m = location.get("defined_radius_m", DEFINED_RADIUS_M)
+    meets = location.get("meets_defined_radius")
 
     return {
         "success": True,
@@ -103,7 +119,13 @@ def build_response(
         "confidence": round(float(location.get("confidence", 0.0)), 3),
         # Friendly, underscore-free source label for display.
         "source": _source_label(source_code),
-        "summary": _build_summary(name, country, lat, lon),
+        "summary": _build_summary(name, country, lat, lon, meets),
+        # Product accuracy target. The pin is a success only if it sits inside
+        # this radius of the real viewpoint; clients should display it.
+        "defined_radius_km": defined_km,
+        "defined_radius_m": defined_m,
+        "defined_radius": f"{defined_km:g} km",
+        "meets_defined_radius": meets,
         # Plausibility check of the coordinates vs. the described scene.
         "verified": location.get("verification", {}).get("status", "skipped"),
         "warning": location.get("warning", ""),
@@ -179,6 +201,10 @@ def error_response(message: str, *, filename: str | None = None) -> dict[str, An
         "confidence": 0.0,
         "source": "Error",
         "summary": message,
+        "defined_radius_km": DEFINED_RADIUS_KM,
+        "defined_radius_m": DEFINED_RADIUS_M,
+        "defined_radius": f"{DEFINED_RADIUS_KM:g} km",
+        "meets_defined_radius": None,
         "verified": "skipped",
         "warning": "",
         "alternatives": [],

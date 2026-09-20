@@ -202,7 +202,10 @@ _SYSTEM_PROMPT = (
     "short or long, and whether the sun looks low, medium or high. Leave fields "
     "null/false if not visible. Do NOT infer these from the guessed location.\n"
     "- Provide up to 3 candidates. Each confidence and the top-level confidence "
-    "are 0.0-1.0. Do not invent text you cannot actually read."
+    "are 0.0-1.0. Do not invent text you cannot actually read.\n"
+    "- Pin each candidate on the specific landmark, street, building or "
+    "shoreline in the photo, not the city or region centroid. Coordinates must "
+    "be accurate to within 2 km of the real camera position."
 )
 
 _ROUTER_SYSTEM = (

@@ -261,8 +261,15 @@ function list(items) {
 function renderSingle(d) {
   els.placeName.textContent = d.location_name || 'Location could not be determined';
   els.address.textContent = d.address && d.address !== d.location_name ? d.address : '';
+  const radiusBits = [];
+  if (d.defined_radius) radiusBits.push(`defined radius ${d.defined_radius}`);
+  if (d.precision_m) radiusBits.push(`±${d.precision_m} m estimated`);
+  if (d.meets_defined_radius === true) radiusBits.push('meets target');
+  if (d.meets_defined_radius === false) radiusBits.push('coarser than target');
   els.coords.textContent =
-    d.latitude != null ? `${d.coordinates}${d.precision_m ? ` · ±${d.precision_m} m` : ''}` : '';
+    d.latitude != null
+      ? `${d.coordinates}${radiusBits.length ? ` · ${radiusBits.join(' · ')}` : ''}`
+      : radiusBits.join(' · ');
 
   els.mapLink.href = d.map_url || '#';
   show(els.mapLink, Boolean(d.map_url));
@@ -272,6 +279,16 @@ function renderSingle(d) {
     badges.push(badge(`Authenticity: ${d.authenticity.replace(/_/g, ' ')}`, 'bad'));
   }
   if (d.street_level && d.street_level.refined) badges.push(badge('Street-level match', 'good'));
+  if (d.defined_radius) {
+    badges.push(
+      badge(
+        d.meets_defined_radius === true
+          ? `Within ${d.defined_radius}`
+          : `Defined radius ${d.defined_radius}`,
+        d.meets_defined_radius === true ? 'good' : 'info'
+      )
+    );
+  }
   if (d.media_type === 'video' && d.video) {
     badges.push(badge(`${d.video.frames_analyzed} frames fused`, 'info'));
   }

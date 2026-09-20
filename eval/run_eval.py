@@ -84,7 +84,7 @@ def _within_radius(pred_lat, pred_lon, expected: dict[str, Any]) -> Optional[boo
         return None
     if pred_lat is None or pred_lon is None:
         return False
-    radius = float(expected.get("radius_km") or 50)
+    radius = float(expected.get("radius_km") or 2)
     return _haversine_km(float(pred_lat), float(pred_lon), float(elat), float(elon)) <= radius
 
 

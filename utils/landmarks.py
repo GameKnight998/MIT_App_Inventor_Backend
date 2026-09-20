@@ -248,6 +248,10 @@ def verify_named_and_water(
             specific = kind in _SPECIFIC_TYPES or _looks_like_named_feature(place_name)
             if specific and dist <= PLACE_MATCH_KM:
                 report["place_status"] = "matched"
+                report["place_name"] = place_name
+                report["place_latitude"] = geo["latitude"]
+                report["place_longitude"] = geo["longitude"]
+                report["place_osm_type"] = geo.get("osm_type") or geo.get("addresstype")
                 notes.append(
                     f"'{place_name}' geocodes {dist:.0f} km from this point."
                 )
@@ -273,6 +277,8 @@ def verify_named_and_water(
                     "distance_km": round(dist, 1),
                     "latitude": geo["latitude"],
                     "longitude": geo["longitude"],
+                    "osm_type": geo.get("osm_type") or geo.get("addresstype"),
+                    "category": geo.get("category"),
                 }
             )
     if matched:
@@ -307,6 +313,8 @@ def verify_named_and_water(
                 "name": water.get("name") or water.get("display_name"),
                 "distance_km": round(dist, 1),
                 "osm_type": water.get("osm_type"),
+                "latitude": water["latitude"],
+                "longitude": water["longitude"],
             }
             notes.append(
                 f"Named water nearby: {report['matched_water']['name']} "

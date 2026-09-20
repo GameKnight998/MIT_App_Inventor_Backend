@@ -681,6 +681,108 @@ def _t18():
         O.refine_street_level = original
 
 
+@check("verified landmarks snap the pin inside the 2 km defined radius")
+def _t18b():
+    import utils.osint as O
+
+    original = O.reverse_geocode
+    O.reverse_geocode = lambda lat, lon: {
+        "display_name": "Eiffel Tower, Paris, France",
+        "country": "France",
+        "region": "Île-de-France",
+        "name": "Eiffel Tower",
+    }
+    try:
+        result = {
+            "latitude": 48.8566,
+            "longitude": 2.3522,
+            "location_name": "Paris",
+            "country": "France",
+            "region": "Île-de-France",
+            "source": "vision_geocoded",
+            "evidence": [],
+            "verification": {
+                "named": {
+                    "landmark_status": "matched",
+                    "matched_landmarks": [
+                        {
+                            "name": "Eiffel Tower",
+                            "distance_km": 4.3,
+                            "latitude": 48.8584,
+                            "longitude": 2.2945,
+                            "osm_type": "attraction",
+                        }
+                    ],
+                }
+            },
+        }
+        O._snap_to_verified_feature(result)
+        assert abs(result["latitude"] - 48.8584) < 1e-6, result
+        assert result["location_name"] == "Eiffel Tower", result
+        assert result["snapped_to"]["kind"] == "landmark", result
+        O._attach_defined_radius(result)
+        assert result["defined_radius_km"] == 2, result
+        assert result["defined_radius_m"] == 2000, result
+        assert result["meets_defined_radius"] is True, result
+        assert result["precision_m"] <= 2000, result
+
+        gps = {
+            "latitude": 47.606,
+            "longitude": -122.332,
+            "source": "exif_gps",
+            "evidence": [],
+            "verification": {
+                "named": {
+                    "matched_landmarks": [
+                        {"name": "Space Needle", "latitude": 47.62, "longitude": -122.35}
+                    ]
+                }
+            },
+        }
+        O._snap_to_verified_feature(gps)
+        assert gps["latitude"] == 47.606, "EXIF GPS must never be snapped"
+        O._attach_defined_radius(gps)
+        assert gps["meets_defined_radius"] is True, gps
+
+        peak = {
+            "latitude": 46.0207,
+            "longitude": 7.7491,
+            "location_name": "Zermatt",
+            "source": "vision_geocoded",
+            "evidence": [],
+            "verification": {
+                "named": {
+                    "landmark_status": "matched",
+                    "matched_landmarks": [
+                        {
+                            "name": "Matterhorn",
+                            "distance_km": 8.6,
+                            "latitude": 45.9763,
+                            "longitude": 7.6586,
+                            "osm_type": "peak",
+                        }
+                    ],
+                }
+            },
+        }
+        O._snap_to_verified_feature(peak)
+        assert peak["latitude"] == 46.0207, "a distant peak is the subject, not the camera"
+
+        coarse = {
+            "latitude": 44.0,
+            "longitude": -120.5,
+            "source": "vision_geocoded",
+            "evidence": [],
+            "verification": {"named": {}},
+        }
+        O._snap_to_verified_feature(coarse)
+        O._attach_defined_radius(coarse)
+        assert coarse["meets_defined_radius"] is False, coarse
+        assert any("defined radius" in e.lower() for e in coarse["evidence"]), coarse
+    finally:
+        O.reverse_geocode = original
+
+
 # --------------------------------------------------------------------------
 # 8. Multi-image clustering
 # --------------------------------------------------------------------------
@@ -829,10 +931,23 @@ def _t22():
     assert payload["vehicle_check"]["status"] == "match"
     assert payload["image_quality"]["enhanced"] is True
     assert payload["details"]["fusion_signals"]["verify_status"] == "verified"
+    assert payload["defined_radius_km"] == 2, payload["defined_radius_km"]
+    assert payload["defined_radius"] == "2 km", payload["defined_radius"]
+    assert "Defined radius" in payload["summary"], payload["summary"]
 
     err = error_response("bad input")
-    for key in ("street_level", "authenticity", "vehicle", "vehicle_check", "image_quality"):
+    for key in (
+        "street_level",
+        "authenticity",
+        "vehicle",
+        "vehicle_check",
+        "image_quality",
+        "defined_radius_km",
+        "defined_radius",
+        "meets_defined_radius",
+    ):
         assert key in err, f"error envelope must define {key}"
+    assert err["defined_radius_km"] == 2
 
 
 @check("the API exposes every new route and reports capabilities")
@@ -855,8 +970,10 @@ def _t23():
         "synthetic_detection_enabled",
         "scene_routing_enabled",
         "photon_enabled",
+        "defined_radius_km",
     ):
         assert key in health, f"health must report {key}"
+    assert health["defined_radius_km"] == 2, health["defined_radius_km"]
     assert health["enhancement_enabled"] is True, "OpenCV should be installed"
     # App Inventor cannot read nested objects out of a response.
     assert all(

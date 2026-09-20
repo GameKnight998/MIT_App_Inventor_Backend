@@ -55,7 +55,7 @@ from utils.cache import parallel_map
 from utils.clustering import cluster_multi_image_candidates
 from utils.exif import extract_exif
 from utils.forensics import assess_forensics
-from utils.osint import apply_vehicle_signal, determine_location
+from utils.osint import DEFINED_RADIUS_KM, apply_vehicle_signal, determine_location
 from utils.preprocess import enhance_image, enhancement_available
 from utils.response import build_response, error_response
 from utils.vehicle import identify_vehicles, should_identify
@@ -167,6 +167,7 @@ def health() -> dict[str, object]:
         "synthetic_detection_enabled": synthetic.SYNTHETIC_ENABLED,
         "scene_routing_enabled": SCENE_ROUTING_ENABLED,
         "photon_enabled": geocode.PHOTON_ENABLED,
+        "defined_radius_km": DEFINED_RADIUS_KM,
     }
 
 
@@ -652,6 +653,9 @@ def _case_summary(payload: dict[str, Any]) -> dict[str, Any]:
         "verified": payload.get("verified"),
         "authenticity": payload.get("authenticity"),
         "precision_m": payload.get("precision_m"),
+        "defined_radius_km": payload.get("defined_radius_km", DEFINED_RADIUS_KM),
+        "defined_radius": payload.get("defined_radius") or f"{DEFINED_RADIUS_KM:g} km",
+        "meets_defined_radius": payload.get("meets_defined_radius"),
         "source": payload.get("source"),
         "map_url": payload.get("map_url"),
         "alternatives": payload.get("alternatives", []),

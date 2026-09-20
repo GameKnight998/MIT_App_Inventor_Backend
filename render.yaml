@@ -137,3 +137,5 @@ services:
         value: "25"
       - key: LANDMARK_MATCH_KM
         value: "40"
+      - key: DEFINED_RADIUS_KM
+        value: "2"

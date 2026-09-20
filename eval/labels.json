@@ -8,7 +8,8 @@
     "cases use.",
     "",
     "expected fields: country, country_aliases, region, latitude, longitude,",
-    "radius_km, name_contains, expect_unknown, min_confidence, max_confidence.",
+    "radius_km (max 2 km; the product defined radius), name_contains,",
+    "expect_unknown, min_confidence, max_confidence.",
     "The confidence bands are calibration assertions: a scene with a named",
     "landmark should score high, an ambiguous forest should not, and a generated",
     "image must never score high whatever the scene suggests."
@@ -356,26 +357,57 @@
       "description": "Large lake + arid hillside; vision names Lake Chelan at the right coords.",
       "expected": {
         "country": "United States",
-        "country_aliases": ["USA", "United States of America"],
+        "country_aliases": [
+          "USA",
+          "United States of America"
+        ],
         "region": "Washington",
         "latitude": 47.841,
         "longitude": -120.046,
-        "radius_km": 50,
-        "name_contains": ["chelan"],
+        "radius_km": 2,
+        "name_contains": [
+          "chelan"
+        ],
         "min_confidence": 0.6
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"lake": true, "hills": true, "mountains": true, "rural": true, "forest": false},
-        "landmarks": ["Lake Chelan"],
+        "scene": {
+          "lake": true,
+          "hills": true,
+          "mountains": true,
+          "rural": true,
+          "forest": false
+        },
+        "landmarks": [
+          "Lake Chelan"
+        ],
         "candidates": [
-          {"name": "Lake Chelan", "region": "Washington", "country": "USA",
-           "latitude": 47.842, "longitude": -120.016, "confidence": 0.6,
-           "why": "large lake and dry hills"},
-          {"name": "Lake Sevan", "region": "Gegharkunik", "country": "Armenia",
-           "latitude": 40.317, "longitude": 45.35, "confidence": 0.4,
-           "why": "similar large lake"}
+          {
+            "name": "Lake Chelan",
+            "region": "Washington",
+            "country": "USA",
+            "latitude": 47.842,
+            "longitude": -120.016,
+            "confidence": 0.6,
+            "why": "large lake and dry hills"
+          },
+          {
+            "name": "Lake Sevan",
+            "region": "Gegharkunik",
+            "country": "Armenia",
+            "latitude": 40.317,
+            "longitude": 45.35,
+            "confidence": 0.4,
+            "why": "similar large lake"
+          }
         ],
         "confidence": 0.6,
         "reasoning": "Large lake with surrounding hills."
@@ -386,24 +418,53 @@
       "description": "Vision labels Lake Chelan but drops the pin in Eastern Oregon (no named lake).",
       "expected": {
         "country": "United States",
-        "country_aliases": ["USA"],
+        "country_aliases": [
+          "USA"
+        ],
         "region": "Washington",
         "latitude": 47.841,
         "longitude": -120.046,
-        "radius_km": 80,
-        "name_contains": ["chelan"]
+        "radius_km": 2,
+        "name_contains": [
+          "chelan"
+        ]
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"lake": true, "hills": true, "rural": true},
-        "landmarks": ["Lake Chelan"],
+        "scene": {
+          "lake": true,
+          "hills": true,
+          "rural": true
+        },
+        "landmarks": [
+          "Lake Chelan"
+        ],
         "candidates": [
-          {"name": "Lake Chelan", "region": "Oregon", "country": "USA",
-           "latitude": 44.0, "longitude": -120.5, "confidence": 0.7, "why": "wrong pin"},
-          {"name": "Lake Chelan", "region": "Washington", "country": "USA",
-           "latitude": 47.842, "longitude": -120.016, "confidence": 0.55,
-           "why": "correct pin, slightly lower AI conf"}
+          {
+            "name": "Lake Chelan",
+            "region": "Oregon",
+            "country": "USA",
+            "latitude": 44.0,
+            "longitude": -120.5,
+            "confidence": 0.7,
+            "why": "wrong pin"
+          },
+          {
+            "name": "Lake Chelan",
+            "region": "Washington",
+            "country": "USA",
+            "latitude": 47.842,
+            "longitude": -120.016,
+            "confidence": 0.55,
+            "why": "correct pin, slightly lower AI conf"
+          }
         ],
         "confidence": 0.7,
         "reasoning": "AI pinned the name at the wrong coordinates first."
@@ -414,23 +475,44 @@
       "description": "Named landmark (Eiffel Tower) near Paris coordinates.",
       "expected": {
         "country": "France",
-        "country_aliases": ["FR"],
+        "country_aliases": [
+          "FR"
+        ],
         "region": "Île-de-France",
         "latitude": 48.858,
         "longitude": 2.294,
-        "radius_km": 25,
-        "name_contains": ["paris", "eiffel"],
+        "radius_km": 2,
+        "name_contains": [
+          "paris",
+          "eiffel"
+        ],
         "min_confidence": 0.6
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"urban": true},
-        "landmarks": ["Eiffel Tower"],
+        "scene": {
+          "urban": true
+        },
+        "landmarks": [
+          "Eiffel Tower"
+        ],
         "candidates": [
-          {"name": "Paris", "region": "Île-de-France", "country": "France",
-           "latitude": 48.8566, "longitude": 2.3522, "confidence": 0.85,
-           "why": "tower visible"}
+          {
+            "name": "Paris",
+            "region": "Île-de-France",
+            "country": "France",
+            "latitude": 48.8566,
+            "longitude": 2.3522,
+            "confidence": 0.85,
+            "why": "tower visible"
+          }
         ],
         "confidence": 0.85,
         "reasoning": "Eiffel Tower."
@@ -441,24 +523,34 @@
       "description": "Embedded GPS is authoritative; vision is ignored for the pin.",
       "expected": {
         "country": "United States",
-        "country_aliases": ["USA"],
+        "country_aliases": [
+          "USA"
+        ],
         "region": "Washington",
         "latitude": 47.606,
         "longitude": -122.332,
-        "radius_km": 5,
+        "radius_km": 2,
         "name_contains": [],
         "min_confidence": 0.9
       },
       "metadata": {
         "has_exif": true,
-        "gps": {"latitude": 47.606, "longitude": -122.332},
-        "camera": {"make": "Apple", "model": "iPhone"},
+        "gps": {
+          "latitude": 47.606,
+          "longitude": -122.332
+        },
+        "camera": {
+          "make": "Apple",
+          "model": "iPhone"
+        },
         "timestamp": "2024:06:01 12:00:00",
         "raw": {}
       },
       "vision": {
         "available": true,
-        "scene": {"urban": true},
+        "scene": {
+          "urban": true
+        },
         "candidates": [],
         "confidence": 0.2,
         "reasoning": "city street"
@@ -469,25 +561,55 @@
       "description": "Generic pine-forest scene; two similar PNW guesses, no named landmark.",
       "expected": {
         "country": "United States",
-        "country_aliases": ["USA"],
+        "country_aliases": [
+          "USA"
+        ],
         "region": "Washington",
         "latitude": 47.25,
         "longitude": -120.9,
-        "radius_km": 250,
-        "name_contains": ["washington", "oregon", "pacific"],
+        "radius_km": 2,
+        "name_contains": [
+          "washington",
+          "oregon",
+          "pacific"
+        ],
         "max_confidence": 0.7
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"forest": true, "rural": true, "hills": true, "lake": false},
+        "scene": {
+          "forest": true,
+          "rural": true,
+          "hills": true,
+          "lake": false
+        },
         "landmarks": [],
         "candidates": [
-          {"name": "Eastern Oregon", "region": "Oregon", "country": "USA",
-           "latitude": 44.0, "longitude": -120.5, "confidence": 0.55,
-           "why": "dry pine forest"},
-          {"name": "Central Washington", "region": "Washington", "country": "USA",
-           "latitude": 47.0, "longitude": -120.0, "confidence": 0.5, "why": "similar"}
+          {
+            "name": "Eastern Oregon",
+            "region": "Oregon",
+            "country": "USA",
+            "latitude": 44.0,
+            "longitude": -120.5,
+            "confidence": 0.55,
+            "why": "dry pine forest"
+          },
+          {
+            "name": "Central Washington",
+            "region": "Washington",
+            "country": "USA",
+            "latitude": 47.0,
+            "longitude": -120.0,
+            "confidence": 0.5,
+            "why": "similar"
+          }
         ],
         "confidence": 0.55,
         "reasoning": "Generic PNW forest."
@@ -507,7 +629,13 @@
         "expect_unknown": true,
         "max_confidence": 0.1
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
         "scene": {},
@@ -522,27 +650,60 @@
       "description": "UK street: left-hand traffic, English signage, no natural features to verify.",
       "expected": {
         "country": "United Kingdom",
-        "country_aliases": ["UK", "Great Britain"],
+        "country_aliases": [
+          "UK",
+          "Great Britain"
+        ],
         "region": "England",
         "latitude": 51.5074,
         "longitude": -0.1278,
-        "radius_km": 30,
-        "name_contains": ["london"]
+        "radius_km": 2,
+        "name_contains": [
+          "london"
+        ]
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"urban": true},
+        "scene": {
+          "urban": true
+        },
         "road_side": "left",
-        "ocr_text": ["WAY OUT", "Oxford Street"],
-        "signage": ["Underground roundel"],
-        "languages": ["English"],
-        "text_analysis": {"primary_script": "Latin", "regional_spelling": ["centre"],
-                          "implied_countries": ["United Kingdom"]},
+        "ocr_text": [
+          "WAY OUT",
+          "Oxford Street"
+        ],
+        "signage": [
+          "Underground roundel"
+        ],
+        "languages": [
+          "English"
+        ],
+        "text_analysis": {
+          "primary_script": "Latin",
+          "regional_spelling": [
+            "centre"
+          ],
+          "implied_countries": [
+            "United Kingdom"
+          ]
+        },
         "candidates": [
-          {"name": "London", "region": "England", "country": "United Kingdom",
-           "latitude": 51.5074, "longitude": -0.1278, "confidence": 0.78,
-           "why": "Underground roundel, left-hand traffic"}
+          {
+            "name": "London",
+            "region": "England",
+            "country": "United Kingdom",
+            "latitude": 51.5074,
+            "longitude": -0.1278,
+            "confidence": 0.78,
+            "why": "Underground roundel, left-hand traffic"
+          }
         ],
         "confidence": 0.78,
         "reasoning": "London Underground branding and left-hand traffic."
@@ -553,28 +714,58 @@
       "description": "Japanese script plus a named tower; script narrows the country hard.",
       "expected": {
         "country": "Japan",
-        "country_aliases": ["JP"],
+        "country_aliases": [
+          "JP"
+        ],
         "region": "Kanto",
         "latitude": 35.6762,
         "longitude": 139.6503,
-        "radius_km": 40,
-        "name_contains": ["tokyo"],
+        "radius_km": 2,
+        "name_contains": [
+          "tokyo"
+        ],
         "min_confidence": 0.6
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"urban": true},
+        "scene": {
+          "urban": true
+        },
         "road_side": "left",
-        "ocr_text": ["東京タワー", "新宿"],
-        "languages": ["Japanese"],
-        "landmarks": ["Tokyo Tower"],
-        "text_analysis": {"primary_script": "Japanese", "regional_spelling": [],
-                          "implied_countries": ["Japan"]},
+        "ocr_text": [
+          "東京タワー",
+          "新宿"
+        ],
+        "languages": [
+          "Japanese"
+        ],
+        "landmarks": [
+          "Tokyo Tower"
+        ],
+        "text_analysis": {
+          "primary_script": "Japanese",
+          "regional_spelling": [],
+          "implied_countries": [
+            "Japan"
+          ]
+        },
         "candidates": [
-          {"name": "Tokyo", "region": "Kanto", "country": "Japan",
-           "latitude": 35.6762, "longitude": 139.6503, "confidence": 0.8,
-           "why": "Japanese signage and Tokyo Tower"}
+          {
+            "name": "Tokyo",
+            "region": "Kanto",
+            "country": "Japan",
+            "latitude": 35.6762,
+            "longitude": 139.6503,
+            "confidence": 0.8,
+            "why": "Japanese signage and Tokyo Tower"
+          }
         ],
         "confidence": 0.8,
         "reasoning": "Japanese script and a recognisable tower."
@@ -585,24 +776,46 @@
       "description": "Coastal city with a world landmark; named-water and landmark checks both fire.",
       "expected": {
         "country": "Australia",
-        "country_aliases": ["AU"],
+        "country_aliases": [
+          "AU"
+        ],
         "region": "New South Wales",
         "latitude": -33.8688,
         "longitude": 151.2093,
-        "radius_km": 30,
-        "name_contains": ["sydney"],
+        "radius_km": 2,
+        "name_contains": [
+          "sydney"
+        ],
         "min_confidence": 0.6
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"urban": true, "coastline": true, "ocean_or_sea": true},
-        "landmarks": ["Sydney Opera House"],
+        "scene": {
+          "urban": true,
+          "coastline": true,
+          "ocean_or_sea": true
+        },
+        "landmarks": [
+          "Sydney Opera House"
+        ],
         "road_side": "left",
         "candidates": [
-          {"name": "Sydney", "region": "New South Wales", "country": "Australia",
-           "latitude": -33.8688, "longitude": 151.2093, "confidence": 0.82,
-           "why": "Opera House sails and harbour"}
+          {
+            "name": "Sydney",
+            "region": "New South Wales",
+            "country": "Australia",
+            "latitude": -33.8688,
+            "longitude": 151.2093,
+            "confidence": 0.82,
+            "why": "Opera House sails and harbour"
+          }
         ],
         "confidence": 0.82,
         "reasoning": "Sydney Opera House on the harbour."
@@ -613,25 +826,52 @@
       "description": "Canal city: water verification plus Italian signage.",
       "expected": {
         "country": "Italy",
-        "country_aliases": ["IT"],
+        "country_aliases": [
+          "IT"
+        ],
         "region": "Veneto",
         "latitude": 45.4408,
         "longitude": 12.3155,
-        "radius_km": 25,
-        "name_contains": ["venice", "venezia"]
+        "radius_km": 2,
+        "name_contains": [
+          "venice",
+          "venezia"
+        ]
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"urban": true, "river": true},
-        "ocr_text": ["Calle Larga", "Vaporetto"],
-        "languages": ["Italian"],
+        "scene": {
+          "urban": true,
+          "river": true
+        },
+        "ocr_text": [
+          "Calle Larga",
+          "Vaporetto"
+        ],
+        "languages": [
+          "Italian"
+        ],
         "architecture_style": "Venetian Gothic",
-        "architecture_regions": ["Veneto"],
+        "architecture_regions": [
+          "Veneto"
+        ],
         "candidates": [
-          {"name": "Venice", "region": "Veneto", "country": "Italy",
-           "latitude": 45.4408, "longitude": 12.3155, "confidence": 0.75,
-           "why": "canals, vaporetto signage, Venetian Gothic facades"}
+          {
+            "name": "Venice",
+            "region": "Veneto",
+            "country": "Italy",
+            "latitude": 45.4408,
+            "longitude": 12.3155,
+            "confidence": 0.75,
+            "why": "canals, vaporetto signage, Venetian Gothic facades"
+          }
         ],
         "confidence": 0.75,
         "reasoning": "Canal-side Venetian architecture."
@@ -642,23 +882,46 @@
       "description": "Distinctive peak: named-landmark verification should confirm it.",
       "expected": {
         "country": "Switzerland",
-        "country_aliases": ["CH"],
+        "country_aliases": [
+          "CH"
+        ],
         "region": "Valais",
         "latitude": 46.0207,
         "longitude": 7.7491,
-        "radius_km": 30,
-        "name_contains": ["zermatt", "matterhorn"],
+        "radius_km": 2,
+        "name_contains": [
+          "zermatt",
+          "matterhorn"
+        ],
         "min_confidence": 0.6
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"mountains": true, "snow": true, "rural": true},
-        "landmarks": ["Matterhorn"],
+        "scene": {
+          "mountains": true,
+          "snow": true,
+          "rural": true
+        },
+        "landmarks": [
+          "Matterhorn"
+        ],
         "candidates": [
-          {"name": "Zermatt", "region": "Valais", "country": "Switzerland",
-           "latitude": 46.0207, "longitude": 7.7491, "confidence": 0.8,
-           "why": "unmistakable Matterhorn profile"}
+          {
+            "name": "Zermatt",
+            "region": "Valais",
+            "country": "Switzerland",
+            "latitude": 46.0207,
+            "longitude": 7.7491,
+            "confidence": 0.8,
+            "why": "unmistakable Matterhorn profile"
+          }
         ],
         "confidence": 0.8,
         "reasoning": "The Matterhorn's pyramidal profile is unique."
@@ -669,22 +932,45 @@
       "description": "Named alpine lake in Canada; lake + mountain + snow all checkable.",
       "expected": {
         "country": "Canada",
-        "country_aliases": ["CA"],
+        "country_aliases": [
+          "CA"
+        ],
         "region": "Alberta",
         "latitude": 51.4254,
         "longitude": -116.1773,
-        "radius_km": 30,
-        "name_contains": ["louise"]
+        "radius_km": 2,
+        "name_contains": [
+          "louise"
+        ]
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"lake": true, "mountains": true, "snow": true, "forest": true},
-        "landmarks": ["Lake Louise"],
+        "scene": {
+          "lake": true,
+          "mountains": true,
+          "snow": true,
+          "forest": true
+        },
+        "landmarks": [
+          "Lake Louise"
+        ],
         "candidates": [
-          {"name": "Lake Louise", "region": "Alberta", "country": "Canada",
-           "latitude": 51.4254, "longitude": -116.1773, "confidence": 0.7,
-           "why": "turquoise glacial lake below a glaciated peak"}
+          {
+            "name": "Lake Louise",
+            "region": "Alberta",
+            "country": "Canada",
+            "latitude": 51.4254,
+            "longitude": -116.1773,
+            "confidence": 0.7,
+            "why": "turquoise glacial lake below a glaciated peak"
+          }
         ],
         "confidence": 0.7,
         "reasoning": "Glacial lake in the Canadian Rockies."
@@ -695,23 +981,43 @@
       "description": "Featureless dunes: correct region but the answer must stay coarse.",
       "expected": {
         "country": "Morocco",
-        "country_aliases": ["MA"],
+        "country_aliases": [
+          "MA"
+        ],
         "region": "Drâa-Tafilalet",
         "latitude": 31.1,
         "longitude": -4.0,
-        "radius_km": 200,
-        "name_contains": ["erg", "chebbi"],
+        "radius_km": 2,
+        "name_contains": [
+          "erg",
+          "chebbi"
+        ],
         "max_confidence": 0.75
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"desert": true, "rural": true},
+        "scene": {
+          "desert": true,
+          "rural": true
+        },
         "landmarks": [],
         "candidates": [
-          {"name": "Erg Chebbi", "region": "Drâa-Tafilalet", "country": "Morocco",
-           "latitude": 31.1, "longitude": -4.0, "confidence": 0.45,
-           "why": "orange sand dunes"}
+          {
+            "name": "Erg Chebbi",
+            "region": "Drâa-Tafilalet",
+            "country": "Morocco",
+            "latitude": 31.1,
+            "longitude": -4.0,
+            "confidence": 0.45,
+            "why": "orange sand dunes"
+          }
         ],
         "confidence": 0.45,
         "reasoning": "Sand dunes with no human features."
@@ -722,25 +1028,58 @@
       "description": "Icelandic city in snow; Icelandic characters in signage.",
       "expected": {
         "country": "Iceland",
-        "country_aliases": ["IS"],
+        "country_aliases": [
+          "IS"
+        ],
         "region": "Capital Region",
         "latitude": 64.1466,
         "longitude": -21.9426,
-        "radius_km": 30,
-        "name_contains": ["reykjav"]
+        "radius_km": 2,
+        "name_contains": [
+          "reykjav"
+        ]
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"urban": true, "snow": true, "coastline": true},
-        "ocr_text": ["Laugavegur", "Þingholtsstræti"],
-        "languages": ["Icelandic"],
-        "text_analysis": {"primary_script": "Latin", "regional_spelling": ["Þ", "æ"],
-                          "implied_countries": ["Iceland"]},
+        "scene": {
+          "urban": true,
+          "snow": true,
+          "coastline": true
+        },
+        "ocr_text": [
+          "Laugavegur",
+          "Þingholtsstræti"
+        ],
+        "languages": [
+          "Icelandic"
+        ],
+        "text_analysis": {
+          "primary_script": "Latin",
+          "regional_spelling": [
+            "Þ",
+            "æ"
+          ],
+          "implied_countries": [
+            "Iceland"
+          ]
+        },
         "candidates": [
-          {"name": "Reykjavik", "region": "Capital Region", "country": "Iceland",
-           "latitude": 64.1466, "longitude": -21.9426, "confidence": 0.76,
-           "why": "Icelandic thorn character in street names"}
+          {
+            "name": "Reykjavik",
+            "region": "Capital Region",
+            "country": "Iceland",
+            "latitude": 64.1466,
+            "longitude": -21.9426,
+            "confidence": 0.76,
+            "why": "Icelandic thorn character in street names"
+          }
         ],
         "confidence": 0.76,
         "reasoning": "Icelandic orthography is unique to Iceland."
@@ -751,27 +1090,58 @@
       "description": "Indian street scene: Devanagari script plus left-hand traffic.",
       "expected": {
         "country": "India",
-        "country_aliases": ["IN"],
+        "country_aliases": [
+          "IN"
+        ],
         "region": "Maharashtra",
         "latitude": 19.076,
         "longitude": 72.8777,
-        "radius_km": 40,
-        "name_contains": ["mumbai"]
+        "radius_km": 2,
+        "name_contains": [
+          "mumbai"
+        ]
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"urban": true},
+        "scene": {
+          "urban": true
+        },
         "road_side": "left",
-        "ocr_text": ["मुंबई", "Dadar"],
-        "languages": ["Marathi", "English"],
-        "vehicles_plates": ["MH 01 AB 1234"],
-        "text_analysis": {"primary_script": "Devanagari", "regional_spelling": [],
-                          "implied_countries": ["India"]},
+        "ocr_text": [
+          "मुंबई",
+          "Dadar"
+        ],
+        "languages": [
+          "Marathi",
+          "English"
+        ],
+        "vehicles_plates": [
+          "MH 01 AB 1234"
+        ],
+        "text_analysis": {
+          "primary_script": "Devanagari",
+          "regional_spelling": [],
+          "implied_countries": [
+            "India"
+          ]
+        },
         "candidates": [
-          {"name": "Mumbai", "region": "Maharashtra", "country": "India",
-           "latitude": 19.076, "longitude": 72.8777, "confidence": 0.74,
-           "why": "MH plate series and Devanagari signage"}
+          {
+            "name": "Mumbai",
+            "region": "Maharashtra",
+            "country": "India",
+            "latitude": 19.076,
+            "longitude": 72.8777,
+            "confidence": 0.74,
+            "why": "MH plate series and Devanagari signage"
+          }
         ],
         "confidence": 0.74,
         "reasoning": "Maharashtra plate prefix and Devanagari script."
@@ -782,23 +1152,46 @@
       "description": "Flat-topped mountain above a coastal city; landmark plus coast checks.",
       "expected": {
         "country": "South Africa",
-        "country_aliases": ["ZA"],
+        "country_aliases": [
+          "ZA"
+        ],
         "region": "Western Cape",
         "latitude": -33.9249,
         "longitude": 18.4241,
-        "radius_km": 35,
-        "name_contains": ["cape town"]
+        "radius_km": 2,
+        "name_contains": [
+          "cape town"
+        ]
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"mountains": true, "urban": true, "coastline": true, "ocean_or_sea": true},
-        "landmarks": ["Table Mountain"],
+        "scene": {
+          "mountains": true,
+          "urban": true,
+          "coastline": true,
+          "ocean_or_sea": true
+        },
+        "landmarks": [
+          "Table Mountain"
+        ],
         "road_side": "left",
         "candidates": [
-          {"name": "Cape Town", "region": "Western Cape", "country": "South Africa",
-           "latitude": -33.9249, "longitude": 18.4241, "confidence": 0.79,
-           "why": "Table Mountain's flat summit above the bay"}
+          {
+            "name": "Cape Town",
+            "region": "Western Cape",
+            "country": "South Africa",
+            "latitude": -33.9249,
+            "longitude": 18.4241,
+            "confidence": 0.79,
+            "why": "Table Mountain's flat summit above the bay"
+          }
         ],
         "confidence": 0.79,
         "reasoning": "Table Mountain is unmistakable."
@@ -809,23 +1202,45 @@
       "description": "Andean terraces and a named site; steep-mountain verification.",
       "expected": {
         "country": "Peru",
-        "country_aliases": ["PE"],
+        "country_aliases": [
+          "PE"
+        ],
         "region": "Cusco",
         "latitude": -13.1631,
         "longitude": -72.545,
-        "radius_km": 30,
-        "name_contains": ["machu"],
+        "radius_km": 2,
+        "name_contains": [
+          "machu"
+        ],
         "min_confidence": 0.6
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"mountains": true, "forest": true, "rural": true},
-        "landmarks": ["Machu Picchu"],
+        "scene": {
+          "mountains": true,
+          "forest": true,
+          "rural": true
+        },
+        "landmarks": [
+          "Machu Picchu"
+        ],
         "candidates": [
-          {"name": "Machu Picchu", "region": "Cusco", "country": "Peru",
-           "latitude": -13.1631, "longitude": -72.545, "confidence": 0.85,
-           "why": "Inca dry-stone terraces on a granite ridge"}
+          {
+            "name": "Machu Picchu",
+            "region": "Cusco",
+            "country": "Peru",
+            "latitude": -13.1631,
+            "longitude": -72.545,
+            "confidence": 0.85,
+            "why": "Inca dry-stone terraces on a granite ridge"
+          }
         ],
         "confidence": 0.85,
         "reasoning": "Inca stonework on a steep Andean ridge."
@@ -836,25 +1251,52 @@
       "description": "Dutch canal houses and a named waterway.",
       "expected": {
         "country": "Netherlands",
-        "country_aliases": ["NL", "Holland"],
+        "country_aliases": [
+          "NL",
+          "Holland"
+        ],
         "region": "North Holland",
         "latitude": 52.3676,
         "longitude": 4.9041,
-        "radius_km": 25,
-        "name_contains": ["amsterdam"]
+        "radius_km": 2,
+        "name_contains": [
+          "amsterdam"
+        ]
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "vision": {
         "available": true,
-        "scene": {"urban": true, "river": true},
-        "ocr_text": ["Prinsengracht", "Fietspad"],
-        "languages": ["Dutch"],
+        "scene": {
+          "urban": true,
+          "river": true
+        },
+        "ocr_text": [
+          "Prinsengracht",
+          "Fietspad"
+        ],
+        "languages": [
+          "Dutch"
+        ],
         "architecture_style": "Dutch canal house",
-        "architecture_regions": ["Netherlands"],
+        "architecture_regions": [
+          "Netherlands"
+        ],
         "candidates": [
-          {"name": "Amsterdam", "region": "North Holland", "country": "Netherlands",
-           "latitude": 52.3676, "longitude": 4.9041, "confidence": 0.77,
-           "why": "gabled canal houses and 'gracht' street names"}
+          {
+            "name": "Amsterdam",
+            "region": "North Holland",
+            "country": "Netherlands",
+            "latitude": 52.3676,
+            "longitude": 4.9041,
+            "confidence": 0.77,
+            "why": "gabled canal houses and 'gracht' street names"
+          }
         ],
         "confidence": 0.77,
         "reasoning": "Dutch gabled canal houses."
@@ -865,36 +1307,61 @@
       "description": "A convincing but AI-generated cityscape: confidence must be capped.",
       "expected": {
         "country": "France",
-        "country_aliases": ["FR"],
+        "country_aliases": [
+          "FR"
+        ],
         "region": "Île-de-France",
-        "latitude": 48.8566,
-        "longitude": 2.3522,
-        "radius_km": 30,
-        "name_contains": ["paris"],
+        "latitude": 48.858,
+        "longitude": 2.294,
+        "radius_km": 2,
+        "name_contains": [
+          "paris",
+          "eiffel"
+        ],
         "max_confidence": 0.2
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "forensics": {
         "format": "PNG",
         "authenticity": "synthetic",
         "trustworthy_as_photo": false,
-        "notes": ["Metadata declares AI origin."],
+        "notes": [
+          "Metadata declares AI origin."
+        ],
         "synthetic": {
           "status": "synthetic",
           "ai_generated_probability": 0.97,
           "generator": "Midjourney",
           "note": "This image declares AI generation (Midjourney); any location it depicts may not be real.",
-          "signals": ["Generator signature found in metadata: Midjourney."]
+          "signals": [
+            "Generator signature found in metadata: Midjourney."
+          ]
         }
       },
       "vision": {
         "available": true,
-        "scene": {"urban": true},
-        "landmarks": ["Eiffel Tower"],
+        "scene": {
+          "urban": true
+        },
+        "landmarks": [
+          "Eiffel Tower"
+        ],
         "candidates": [
-          {"name": "Paris", "region": "Île-de-France", "country": "France",
-           "latitude": 48.8566, "longitude": 2.3522, "confidence": 0.9,
-           "why": "tower and Haussmann facades"}
+          {
+            "name": "Paris",
+            "region": "Île-de-France",
+            "country": "France",
+            "latitude": 48.8566,
+            "longitude": 2.3522,
+            "confidence": 0.9,
+            "why": "tower and Haussmann facades"
+          }
         ],
         "confidence": 0.9,
         "reasoning": "Looks like central Paris."
@@ -905,31 +1372,58 @@
       "description": "Screenshot with no EXIF: missing GPS is expected, and the landmark still locates it.",
       "expected": {
         "country": "France",
-        "country_aliases": ["FR"],
+        "country_aliases": [
+          "FR"
+        ],
         "region": "Île-de-France",
-        "latitude": 48.8566,
-        "longitude": 2.3522,
-        "radius_km": 30,
-        "name_contains": ["paris"]
+        "latitude": 48.858,
+        "longitude": 2.294,
+        "radius_km": 2,
+        "name_contains": [
+          "paris",
+          "eiffel"
+        ]
       },
-      "metadata": {"has_exif": false, "gps": null, "camera": {}, "timestamp": null, "raw": {}},
+      "metadata": {
+        "has_exif": false,
+        "gps": null,
+        "camera": {},
+        "timestamp": null,
+        "raw": {}
+      },
       "forensics": {
         "format": "PNG",
         "authenticity": "unknown",
         "trustworthy_as_photo": true,
         "is_screenshot": true,
         "gps_missing_expected": true,
-        "notes": ["Looks like a screenshot (UI image format, no camera data)."],
-        "synthetic": {"status": "unknown", "signals": [], "note": ""}
+        "notes": [
+          "Looks like a screenshot (UI image format, no camera data)."
+        ],
+        "synthetic": {
+          "status": "unknown",
+          "signals": [],
+          "note": ""
+        }
       },
       "vision": {
         "available": true,
-        "scene": {"urban": true},
-        "landmarks": ["Eiffel Tower"],
+        "scene": {
+          "urban": true
+        },
+        "landmarks": [
+          "Eiffel Tower"
+        ],
         "candidates": [
-          {"name": "Paris", "region": "Île-de-France", "country": "France",
-           "latitude": 48.8566, "longitude": 2.3522, "confidence": 0.7,
-           "why": "Eiffel Tower in frame"}
+          {
+            "name": "Paris",
+            "region": "Île-de-France",
+            "country": "France",
+            "latitude": 48.8566,
+            "longitude": 2.3522,
+            "confidence": 0.7,
+            "why": "Eiffel Tower in frame"
+          }
         ],
         "confidence": 0.7,
         "reasoning": "Screenshot of a Paris photo."

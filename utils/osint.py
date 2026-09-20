@@ -49,6 +49,12 @@ CLUSTER_RADIUS_KM = float(os.getenv("CLUSTER_RADIUS_KM", "150"))
 NARROW_ENABLED = os.getenv("NARROW_ENABLED", "1") not in ("0", "false", "False")
 MAX_NARROW_STEPS = int(os.getenv("MAX_NARROW_STEPS", "3"))
 NARROW_MIN_RADIUS_M = int(os.getenv("NARROW_MIN_RADIUS_M", "500"))
+# Product accuracy target: a pin is only treated as a successful placement if it
+# sits within this many kilometres of the real viewpoint. Eval, the API, and the
+# landmark-snap pass all share this number so the client, the tests and the
+# engine agree on what "close enough" means.
+DEFINED_RADIUS_KM = float(os.getenv("DEFINED_RADIUS_KM", "2"))
+DEFINED_RADIUS_M = int(round(DEFINED_RADIUS_KM * 1000))
 # Verification statuses that make street-level refinement worth its extra vision
 # call: we only zoom in on a region the map did not contradict.
 _REFINE_STATUSES = ("verified", "partial", "skipped", "unavailable")
@@ -656,6 +662,7 @@ def determine_location(
             if "expected" in note or "unusual" in note:
                 result["evidence"].append(f"Forensics: {note}")
                 break
+    _attach_defined_radius(result)
     result["reasoning_trace"] = _build_reasoning_trace(
         result, metadata, vision, forensics
     )
@@ -772,6 +779,11 @@ def _determine_core(
                     "This scene lacks distinctive features; multiple regions are "
                     "plausible and the exact one is uncertain."
                 )
+
+        # Snap a city-centroid pin onto a verified landmark / named water body
+        # before narrowing or street refinement, so those passes search around
+        # the feature rather than the regional centre.
+        _snap_to_verified_feature(result)
 
         # Iterative narrowing: only when the map fully confirmed the scene, so
         # tightening the radius is meaningful. Tight precision -> small boost.
@@ -1029,6 +1041,174 @@ def _narrow_location(
             )
             break
     return precision, steps
+
+
+# Features photographed from far away: snapping the pin onto the object would
+# miss the camera (a Matterhorn shot is taken from Zermatt, not the summit).
+_DISTANT_VIEW_TYPES = {
+    "peak",
+    "volcano",
+    "ridge",
+    "glacier",
+    "mountain",
+}
+# Features the camera is typically standing next to.
+_CLOSE_RANGE_TYPES = {
+    "attraction",
+    "monument",
+    "museum",
+    "building",
+    "house",
+    "retail",
+    "shop",
+    "station",
+    "park",
+}
+_WATER_FEATURE_TYPES = {
+    "lake",
+    "reservoir",
+    "pond",
+    "lagoon",
+}
+
+
+def _snap_targets(result: dict[str, Any]) -> list[dict[str, Any]]:
+    """Named map features we already confirmed sit near the current pin.
+
+    Distant-view landmarks (peaks) are omitted: the photo is of them, not at
+    them. Generic nearby water is omitted for the same reason (a city pin
+    should not jump to the bay). A lake the scene actually named is kept,
+    because that name *is* the location.
+    """
+    named = (result.get("verification") or {}).get("named") or {}
+    targets: list[dict[str, Any]] = []
+
+    for mark in named.get("matched_landmarks") or []:
+        if mark.get("latitude") is None or mark.get("longitude") is None:
+            continue
+        osm = str(mark.get("osm_type") or mark.get("category") or "").lower()
+        if osm in _DISTANT_VIEW_TYPES:
+            continue
+        targets.append(
+            {
+                "name": mark.get("name"),
+                "latitude": mark["latitude"],
+                "longitude": mark["longitude"],
+                "kind": "landmark",
+                "osm_type": osm,
+            }
+        )
+
+    if named.get("place_status") == "matched":
+        plat = named.get("place_latitude")
+        plon = named.get("place_longitude")
+        osm = str(named.get("place_osm_type") or "").lower()
+        if plat is not None and plon is not None and osm not in _DISTANT_VIEW_TYPES:
+            if osm in _CLOSE_RANGE_TYPES or osm in _WATER_FEATURE_TYPES:
+                targets.append(
+                    {
+                        "name": named.get("place_name") or result.get("location_name"),
+                        "latitude": plat,
+                        "longitude": plon,
+                        "kind": "place",
+                        "osm_type": osm,
+                    }
+                )
+
+    return targets
+
+
+def _snap_to_verified_feature(result: dict[str, Any]) -> None:
+    """Move a regional pin onto the nearest verified named feature.
+
+    Vision often drops a city or county centroid (Paris, Eastern Oregon) even
+    when it correctly named a landmark a few kilometres away. The 2 km product
+    radius cannot be met from a city centroid, so once Nominatim has confirmed
+    the landmark we treat its coordinates as the answer.
+    """
+    if result.get("source") == "exif_gps" or not _has_coords(result):
+        return
+
+    best: Optional[dict[str, Any]] = None
+    best_dist = 1e9
+    for target in _snap_targets(result):
+        dist = _haversine_km(
+            result["latitude"],
+            result["longitude"],
+            target["latitude"],
+            target["longitude"],
+        )
+        target["distance_km"] = dist
+        # Prefer landmarks over a lake centroid or the place's own geocode.
+        rank = {"landmark": 0, "place": 1, "water": 2}.get(target["kind"], 3)
+        current_rank = {"landmark": 0, "place": 1, "water": 2}.get(
+            (best or {}).get("kind"), 3
+        )
+        if best is None or rank < current_rank or (rank == current_rank and dist < best_dist):
+            best = target
+            best_dist = dist
+
+    # Already on the feature, or nothing confirmed.
+    if best is None or best_dist < 0.05:
+        return
+
+    result["latitude"] = best["latitude"]
+    result["longitude"] = best["longitude"]
+    if best.get("name"):
+        result["location_name"] = best["name"]
+    result["precision_m"] = min(
+        int(result.get("precision_m") or DEFINED_RADIUS_M),
+        DEFINED_RADIUS_M,
+    )
+    result["snapped_to"] = {
+        "name": best.get("name"),
+        "kind": best["kind"],
+        "distance_moved_km": round(best_dist, 3),
+    }
+    result["evidence"].append(
+        f"Snapped the pin {best_dist:.1f} km onto the verified {best['kind']} "
+        f"'{best.get('name')}' so the estimate sits inside the "
+        f"{DEFINED_RADIUS_KM:g} km target radius."
+    )
+    # Address was for the old centroid; refresh it at the snapped point.
+    rev = reverse_geocode(best["latitude"], best["longitude"])
+    if rev:
+        result["address"] = rev.get("display_name") or result.get("address")
+        result["country"] = result.get("country") or rev.get("country")
+        result["region"] = result.get("region") or rev.get("region")
+
+
+def _attach_defined_radius(result: dict[str, Any]) -> None:
+    """Publish the 2 km accuracy target and whether this pin claims to meet it."""
+    result["defined_radius_km"] = DEFINED_RADIUS_KM
+    result["defined_radius_m"] = DEFINED_RADIUS_M
+
+    if result.get("source") == "exif_gps" and result.get("precision_m") is None:
+        result["precision_m"] = 15
+
+    if not _has_coords(result):
+        result["meets_defined_radius"] = None
+        return
+
+    precision = result.get("precision_m")
+    if precision is None and result.get("source") == "street_level":
+        precision = DEFINED_RADIUS_M
+        result["precision_m"] = precision
+    if precision is None and result.get("snapped_to"):
+        precision = DEFINED_RADIUS_M
+        result["precision_m"] = precision
+
+    meets = precision is not None and float(precision) <= DEFINED_RADIUS_M
+    result["meets_defined_radius"] = meets
+    if meets:
+        return
+    note = (
+        f"This pin is a regional estimate, not a placement within the "
+        f"{DEFINED_RADIUS_KM:g} km defined radius."
+    )
+    result["evidence"].append(note)
+    if not result.get("warning"):
+        result["warning"] = note
 
 
 def _apply_street_refinement(
@@ -1467,6 +1647,22 @@ def _build_reasoning_trace(
         )
     else:
         conclusion.append("Location could not be determined from this image.")
+    if result.get("defined_radius_km") is not None:
+        if result.get("meets_defined_radius") is True:
+            conclusion.append(
+                f"Estimate is within the {result['defined_radius_km']:g} km "
+                "defined radius."
+            )
+        elif result.get("meets_defined_radius") is False:
+            conclusion.append(
+                f"Estimate does not claim the {result['defined_radius_km']:g} km "
+                "defined radius (regional pin only)."
+            )
+        else:
+            conclusion.append(
+                f"Defined radius is {result['defined_radius_km']:g} km; "
+                "no coordinates were produced."
+            )
     if result.get("warning"):
         conclusion.append(result["warning"])
     trace.append({"stage": "Conclusion", "details": conclusion})

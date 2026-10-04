@@ -1,0 +1,1137 @@
+{
+  "geoagent": {
+    "atacama": {
+      "model": "geoagent",
+      "answer": "Chile; Atacama; San Pedro de Atacama",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Desert landscape",
+              "Volcanic mountain",
+              "Arid vegetation",
+              "Clear blue sky"
+            ],
+            "Reasoning": "The image depicts a desert landscape with a volcanic mountain, which is characteristic of South American countries. The arid vegetation and clear blue sky are consistent with high-altitude desert environments. These clues strongly suggest Chile, a South American country known for its desert regions and volcanic landscapes. Conclusion: Chile. Uncertainty: Low",
+            "Conclusion": "Chile",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Desert landscape",
+              "Volcanic mountain",
+              "Arid vegetation",
+              "Clear blue sky",
+              "South American context"
+            ],
+            "Reasoning": "The desert landscape with a volcanic mountain and arid vegetation is characteristic of South American countries. The clear blue sky and the arid environment suggest a high-altitude desert region. These features are consistent with Chile, a South American country known for its desert landscapes and volcanic mountains. Conclusion: Chile. Uncertainty: Low",
+            "Conclusion": "Chile",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Desert landscape",
+              "Volcanic mountain",
+              "Arid vegetation",
+              "Clear blue sky",
+              "South American context"
+            ],
+            "Reasoning": "The desert landscape with a volcanic mountain and arid vegetation is characteristic of South America, which narrows the location to South American countries. The clear blue sky and arid environment suggest a high-altitude desert region, which is consistent with Chile, a South American country known for its desert landscapes and volcanic mountains. These clues strongly suggest San Pedro de Atacama as the precise localization. Conclusion: San Pedro de Atacama. Uncertainty: Low",
+            "Conclusion": "San Pedro de Atacama",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Chile; Atacama; San Pedro de Atacama"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Desert landscape\",\n        \"Volcanic mountain\",\n        \"Arid vegetation\",\n        \"Clear blue sky\"\n      ],\n      \"Reasoning\": \"The image depicts a desert landscape with a volcanic mountain, which is characteristic of South American countries. The arid vegetation and clear blue sky are consistent with high-altitude desert environments. These clues strongly suggest Chile, a South American country known for its desert regions and volcanic landscapes. Conclusion: Chile. Uncertainty: Low\",\n      \"Conclusion\": \"Chile\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Desert landscape\",\n        \"Volcanic mountain\",\n        \"Arid vegetation\",\n        \"Clear blue sky\",\n        \"South American context\"\n      ],\n      \"Reasoning\": \"The desert landscape with a volcanic mountain and arid vegetation is characteristic of South American countries. The clear blue sky and the arid environment suggest a high-altitude desert region. These features are consistent with Chile, a South American country known for its desert landscapes and volcanic mountains. Conclusion: Chile. Uncertainty: Low\",\n      \"Conclusion\": \"Chile\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Desert landscape\",\n        \"Volcanic mountain\",\n        \"Arid vegetation\",\n        \"Clear blue sky\",\n        \"South American context\"\n      ],\n      \"Reasoning\": \"The desert landscape with a volcanic mountain and arid vegetation is characteristic of South America, which narrows the location to South American countries. The clear blue sky and arid environment suggest a high-altitude desert region, which is consistent with Chile, a South American country known for its desert landscapes and volcanic mountains. These clues strongly suggest San Pedro de Atacama as the precise localization. Conclusion: San Pedro de Atacama. Uncertainty: Low\",\n      \"Conclusion\": \"San Pedro de Atacama\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Chile; Atacama; San Pedro de Atacama\"\n}\n```",
+      "latency_s": 30.93
+    },
+    "altiplano": {
+      "model": "geoagent",
+      "answer": "Bolivia; Potosí; Uyuni",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Desert landscape",
+              "High-altitude mountains",
+              "Clear blue sky",
+              "Dry vegetation",
+              "Salt flats"
+            ],
+            "Reasoning": "The image depicts a desert landscape with high-altitude mountains, dry vegetation, and salt flats, which are characteristic of South American countries. These features are commonly associated with arid regions in South America, particularly in the Andean region. The combination of these elements strongly suggests Bolivia, a South American country known for its high-altitude desert landscapes. Conclusion: Bolivia. Uncertainty: Low",
+            "Conclusion": "Bolivia",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Desert landscape",
+              "High-altitude mountains",
+              "Salt flats",
+              "Dry vegetation",
+              "South American context"
+            ],
+            "Reasoning": "The image shows a desert landscape with high-altitude mountains, salt flats, and dry vegetation, which are characteristic of South American countries. These features are most commonly associated with Bolivia, a South American country known for its high-altitude desert landscapes. The combination of these elements strongly suggests Bolivia as the regional guess. Conclusion: Bolivia. Uncertainty: Low",
+            "Conclusion": "Bolivia",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Desert landscape",
+              "High-altitude mountains",
+              "Salt flats",
+              "Dry vegetation",
+              "South American context"
+            ],
+            "Reasoning": "The image shows a desert landscape with high-altitude mountains, salt flats, and dry vegetation, which are characteristic of South American countries. These features are most commonly associated with Bolivia, a South American country known for its high-altitude desert landscapes. The combination of these elements strongly suggests the precise localization of Uyuni, a city in Bolivia known for its salt flats. Conclusion: Uyuni. Uncertainty: Low",
+            "Conclusion": "Uyuni",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Bolivia; Potosí; Uyuni"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Desert landscape\",\n        \"High-altitude mountains\",\n        \"Clear blue sky\",\n        \"Dry vegetation\",\n        \"Salt flats\"\n      ],\n      \"Reasoning\": \"The image depicts a desert landscape with high-altitude mountains, dry vegetation, and salt flats, which are characteristic of South American countries. These features are commonly associated with arid regions in South America, particularly in the Andean region. The combination of these elements strongly suggests Bolivia, a South American country known for its high-altitude desert landscapes. Conclusion: Bolivia. Uncertainty: Low\",\n      \"Conclusion\": \"Bolivia\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Desert landscape\",\n        \"High-altitude mountains\",\n        \"Salt flats\",\n        \"Dry vegetation\",\n        \"South American context\"\n      ],\n      \"Reasoning\": \"The image shows a desert landscape with high-altitude mountains, salt flats, and dry vegetation, which are characteristic of South American countries. These features are most commonly associated with Bolivia, a South American country known for its high-altitude desert landscapes. The combination of these elements strongly suggests Bolivia as the regional guess. Conclusion: Bolivia. Uncertainty: Low\",\n      \"Conclusion\": \"Bolivia\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Desert landscape\",\n        \"High-altitude mountains\",\n        \"Salt flats\",\n        \"Dry vegetation\",\n        \"South American context\"\n      ],\n      \"Reasoning\": \"The image shows a desert landscape with high-altitude mountains, salt flats, and dry vegetation, which are characteristic of South American countries. These features are most commonly associated with Bolivia, a South American country known for its high-altitude desert landscapes. The combination of these elements strongly suggests the precise localization of Uyuni, a city in Bolivia known for its salt flats. Conclusion: Uyuni. Uncertainty: Low\",\n      \"Conclusion\": \"Uyuni\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Bolivia; Potosí; Uyuni\"\n}\n```",
+      "latency_s": 28.62
+    },
+    "patagonia": {
+      "model": "geoagent",
+      "answer": "Argentina; Neuquén; San Martin de los Andes",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Sheep grazing",
+              "Dry grassland",
+              "Reflection in water",
+              "Southern hemisphere vegetation"
+            ],
+            "Reasoning": "The image shows sheep grazing in a dry grassland with a reflection in water, which is characteristic of temperate grassland ecosystems. The Southern Hemisphere vegetation and the clear reflection suggest a temperate climate, which is common in South America. These clues strongly suggest that the location is in an English-speaking country in South America, likely Argentina, a country known for its sheep farming and temperate grasslands. Conclusion: Australia. Uncertainty: Low",
+            "Conclusion": "Australia",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Sheep grazing",
+              "Dry grassland",
+              "Southern Hemisphere vegetation",
+              "Clear reflection in water"
+            ],
+            "Reasoning": "The image shows sheep grazing in a dry grassland with a clear reflection in water, which is characteristic of temperate grassland ecosystems. The Southern Hemisphere vegetation and the clear reflection suggest a temperate climate, which is common in South America. These clues strongly suggest that the location is in Argentina, a country known for its sheep farming and temperate grasslands. Conclusion: Argentina. Uncertainty: Low",
+            "Conclusion": "Argentina",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Sheep grazing",
+              "Dry grassland",
+              "Southern Hemisphere vegetation",
+              "Clear reflection in water"
+            ],
+            "Reasoning": "The image shows sheep grazing in a dry grassland with a clear reflection in water, which is characteristic of temperate grassland ecosystems. The Southern Hemisphere vegetation and the clear reflection suggest a temperate climate, which is common in South America. These clues strongly suggest that the location is in Argentina, a country known for its sheep farming and temperate grasslands. Conclusion: San Martin de los Andes. Uncertainty: Low",
+            "Conclusion": "San Martin de los Andes",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Argentina; Neuquén; San Martin de los Andes"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Sheep grazing\",\n        \"Dry grassland\",\n        \"Reflection in water\",\n        \"Southern hemisphere vegetation\"\n      ],\n      \"Reasoning\": \"The image shows sheep grazing in a dry grassland with a reflection in water, which is characteristic of temperate grassland ecosystems. The Southern Hemisphere vegetation and the clear reflection suggest a temperate climate, which is common in South America. These clues strongly suggest that the location is in an English-speaking country in South America, likely Argentina, a country known for its sheep farming and temperate grasslands. Conclusion: Australia. Uncertainty: Low\",\n      \"Conclusion\": \"Australia\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Sheep grazing\",\n        \"Dry grassland\",\n        \"Southern Hemisphere vegetation\",\n        \"Clear reflection in water\"\n      ],\n      \"Reasoning\": \"The image shows sheep grazing in a dry grassland with a clear reflection in water, which is characteristic of temperate grassland ecosystems. The Southern Hemisphere vegetation and the clear reflection suggest a temperate climate, which is common in South America. These clues strongly suggest that the location is in Argentina, a country known for its sheep farming and temperate grasslands. Conclusion: Argentina. Uncertainty: Low\",\n      \"Conclusion\": \"Argentina\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Sheep grazing\",\n        \"Dry grassland\",\n        \"Southern Hemisphere vegetation\",\n        \"Clear reflection in water\"\n      ],\n      \"Reasoning\": \"The image shows sheep grazing in a dry grassland with a clear reflection in water, which is characteristic of temperate grassland ecosystems. The Southern Hemisphere vegetation and the clear reflection suggest a temperate climate, which is common in South America. These clues strongly suggest that the location is in Argentina, a country known for its sheep farming and temperate grasslands. Conclusion: San Martin de los Andes. Uncertainty: Low\",\n      \"Conclusion\": \"San Martin de los Andes\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Argentina; Neuquén; San Martin de los Andes\"\n}\n```",
+      "latency_s": 29.85
+    },
+    "tierra_del_fuego": {
+      "model": "geoagent",
+      "answer": "Argentina; Tierra del Fuego; Ushuaia",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Mountainous terrain",
+              "Oceanic environment",
+              "Snow-capped mountains",
+              "Temperate climate",
+              "English language"
+            ],
+            "Reasoning": "The image shows a mountainous landscape with snow-capped peaks, which is characteristic of a temperate, maritime environment. The presence of English as the primary language suggests a South American country, as English is not commonly spoken in South America. These clues strongly suggest Argentina as the country of origin. Conclusion: Argentina. Uncertainty: Low",
+            "Conclusion": "Argentina",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Mountainous terrain",
+              "Oceanic environment",
+              "English language",
+              "Temperate climate",
+              "South American location"
+            ],
+            "Reasoning": "The image features a mountainous landscape with snow-capped peaks, which is characteristic of a temperate, maritime environment. The English language spoken in the image suggests a South American country, as English is not commonly spoken in South America. These clues strongly suggest Argentina as the country, a South American country with a temperate climate and English as an official language. Conclusion: Argentina. Uncertainty: Low",
+            "Conclusion": "Argentina",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Mountainous terrain",
+              "Oceanic environment",
+              "English language",
+              "Temperate climate",
+              "South American location"
+            ],
+            "Reasoning": "The image shows a mountainous landscape with snow-capped peaks and an oceanic environment, which is characteristic of a temperate, maritime climate. The English language spoken in the image suggests a South American country, as English is not commonly spoken in South America. These clues strongly suggest Argentina as the country and Ushuaia as the city, a major port town in Patagonia. Conclusion: Ushuaia. Uncertainty: Low",
+            "Conclusion": "Ushuaia",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Argentina; Tierra del Fuego; Ushuaia"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Oceanic environment\",\n        \"Snow-capped mountains\",\n        \"Temperate climate\",\n        \"English language\"\n      ],\n      \"Reasoning\": \"The image shows a mountainous landscape with snow-capped peaks, which is characteristic of a temperate, maritime environment. The presence of English as the primary language suggests a South American country, as English is not commonly spoken in South America. These clues strongly suggest Argentina as the country of origin. Conclusion: Argentina. Uncertainty: Low\",\n      \"Conclusion\": \"Argentina\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Oceanic environment\",\n        \"English language\",\n        \"Temperate climate\",\n        \"South American location\"\n      ],\n      \"Reasoning\": \"The image features a mountainous landscape with snow-capped peaks, which is characteristic of a temperate, maritime environment. The English language spoken in the image suggests a South American country, as English is not commonly spoken in South America. These clues strongly suggest Argentina as the country, a South American country with a temperate climate and English as an official language. Conclusion: Argentina. Uncertainty: Low\",\n      \"Conclusion\": \"Argentina\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Oceanic environment\",\n        \"English language\",\n        \"Temperate climate\",\n        \"South American location\"\n      ],\n      \"Reasoning\": \"The image shows a mountainous landscape with snow-capped peaks and an oceanic environment, which is characteristic of a temperate, maritime climate. The English language spoken in the image suggests a South American country, as English is not commonly spoken in South America. These clues strongly suggest Argentina as the country and Ushuaia as the city, a major port town in Patagonia. Conclusion: Ushuaia. Uncertainty: Low\",\n      \"Conclusion\": \"Ushuaia\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Argentina; Tierra del Fuego; Ushuaia\"\n}\n```",
+      "latency_s": 28.95
+    },
+    "damaraland": {
+      "model": "geoagent",
+      "answer": "Namibia; Namibia; Twyfelfontein",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Reddish rock formations",
+              "Arid landscape",
+              "Clear blue sky",
+              "Desert-like environment"
+            ],
+            "Reasoning": "The image shows reddish rock formations in a desert-like environment, which are characteristic of arid regions. The clear blue sky and the arid landscape suggest a tropical or subtropical climate, which is common in southern Africa. These clues strongly suggest Namibia as the country of origin, a country known for its desert landscapes and unique rock formations. Conclusion: Namibia. Uncertainty: Low",
+            "Conclusion": "Namibia",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Reddish rock formations",
+              "Arid desert-like environment",
+              "Clear blue sky",
+              "Southern African climate"
+            ],
+            "Reasoning": "The reddish rock formations and arid desert-like environment are characteristic of Namibia, a country known for its unique geological formations and desert landscapes. The clear blue sky and southern African climate further support this regional guess. These clues strongly suggest Namibia as the regional guess. Conclusion: Namibia. Uncertainty: Low",
+            "Conclusion": "Namibia",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Reddish rock formations",
+              "Arid desert-like environment",
+              "Clear blue sky",
+              "Southern African climate"
+            ],
+            "Reasoning": "The reddish rock formations and arid desert-like environment are characteristic of Namibia, a country known for its unique geological formations and desert landscapes. The clear blue sky and southern African climate further support this precise localization guess. These clues strongly suggest Twyfelfontein as the precise localization. Conclusion: Twyfelfontein. Uncertainty: Low",
+            "Conclusion": "Twyfelfontein",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Namibia; Namibia; Twyfelfontein"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Reddish rock formations\",\n        \"Arid landscape\",\n        \"Clear blue sky\",\n        \"Desert-like environment\"\n      ],\n      \"Reasoning\": \"The image shows reddish rock formations in a desert-like environment, which are characteristic of arid regions. The clear blue sky and the arid landscape suggest a tropical or subtropical climate, which is common in southern Africa. These clues strongly suggest Namibia as the country of origin, a country known for its desert landscapes and unique rock formations. Conclusion: Namibia. Uncertainty: Low\",\n      \"Conclusion\": \"Namibia\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Reddish rock formations\",\n        \"Arid desert-like environment\",\n        \"Clear blue sky\",\n        \"Southern African climate\"\n      ],\n      \"Reasoning\": \"The reddish rock formations and arid desert-like environment are characteristic of Namibia, a country known for its unique geological formations and desert landscapes. The clear blue sky and southern African climate further support this regional guess. These clues strongly suggest Namibia as the regional guess. Conclusion: Namibia. Uncertainty: Low\",\n      \"Conclusion\": \"Namibia\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Reddish rock formations\",\n        \"Arid desert-like environment\",\n        \"Clear blue sky\",\n        \"Southern African climate\"\n      ],\n      \"Reasoning\": \"The reddish rock formations and arid desert-like environment are characteristic of Namibia, a country known for its unique geological formations and desert landscapes. The clear blue sky and southern African climate further support this precise localization guess. These clues strongly suggest Twyfelfontein as the precise localization. Conclusion: Twyfelfontein. Uncertainty: Low\",\n      \"Conclusion\": \"Twyfelfontein\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Namibia; Namibia; Twyfelfontein\"\n}\n```",
+      "latency_s": 27.36
+    },
+    "namib": {
+      "model": "geoagent",
+      "answer": "Namibia; Hardap Region; Sossusvlei",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Desert landscape",
+              "Red sand dunes",
+              "Sparse vegetation",
+              "Arid climate"
+            ],
+            "Reasoning": "The image depicts a desert landscape with red sand dunes and sparse vegetation, which are characteristic of arid regions. These features are commonly associated with desert environments found in Africa. The combination of red sand dunes and arid climate strongly suggests a location in a desert region, which narrows the country to Namibia, a country known for its desert landscapes. Conclusion: Namibia. Uncertainty: Low",
+            "Conclusion": "Namibia",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Red sand dunes",
+              "Sparse vegetation",
+              "Arid climate",
+              "Desert landscape"
+            ],
+            "Reasoning": "The red sand dunes and arid climate are characteristic of desert regions, which are uncommon in most temperate or tropical countries. These features are most commonly associated with Namibia, a country in southern Africa known for its desert landscapes. Conclusion: Namibia. Uncertainty: Low",
+            "Conclusion": "Namibia",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Red sand dunes",
+              "Sparse vegetation",
+              "Arid climate",
+              "Desert landscape"
+            ],
+            "Reasoning": "The red sand dunes and arid climate are characteristic of a desert environment, which is uncommon in most temperate or tropical countries. These features are most commonly associated with Namibia, a country known for its desert landscapes. The red sand dunes and sparse vegetation are particularly characteristic of Sossusvlei, a famous tourist destination in Namibia. Conclusion: Sossusvlei. Uncertainty: Low",
+            "Conclusion": "Sossusvlei",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Namibia; Hardap Region; Sossusvlei"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Desert landscape\",\n        \"Red sand dunes\",\n        \"Sparse vegetation\",\n        \"Arid climate\"\n      ],\n      \"Reasoning\": \"The image depicts a desert landscape with red sand dunes and sparse vegetation, which are characteristic of arid regions. These features are commonly associated with desert environments found in Africa. The combination of red sand dunes and arid climate strongly suggests a location in a desert region, which narrows the country to Namibia, a country known for its desert landscapes. Conclusion: Namibia. Uncertainty: Low\",\n      \"Conclusion\": \"Namibia\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Red sand dunes\",\n        \"Sparse vegetation\",\n        \"Arid climate\",\n        \"Desert landscape\"\n      ],\n      \"Reasoning\": \"The red sand dunes and arid climate are characteristic of desert regions, which are uncommon in most temperate or tropical countries. These features are most commonly associated with Namibia, a country in southern Africa known for its desert landscapes. Conclusion: Namibia. Uncertainty: Low\",\n      \"Conclusion\": \"Namibia\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Red sand dunes\",\n        \"Sparse vegetation\",\n        \"Arid climate\",\n        \"Desert landscape\"\n      ],\n      \"Reasoning\": \"The red sand dunes and arid climate are characteristic of a desert environment, which is uncommon in most temperate or tropical countries. These features are most commonly associated with Namibia, a country known for its desert landscapes. The red sand dunes and sparse vegetation are particularly characteristic of Sossusvlei, a famous tourist destination in Namibia. Conclusion: Sossusvlei. Uncertainty: Low\",\n      \"Conclusion\": \"Sossusvlei\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Namibia; Hardap Region; Sossusvlei\"\n}\n```",
+      "latency_s": 27.33
+    },
+    "tassili": {
+      "model": "geoagent",
+      "answer": "Egypt; Siwa Oasis; Siwa Oasis",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Desert landscape",
+              "Road markings",
+              "Arid climate",
+              "Sandy terrain"
+            ],
+            "Reasoning": "The image depicts a desert landscape with sandy terrain and a road with European-style road markings, which are not typical of most African countries. The arid climate and desert environment are characteristic of North Africa. These clues strongly suggest that the location is in North Africa, which narrows it down to Egypt, a country known for its desert regions and European-style infrastructure. Conclusion: Egypt. Uncertainty: Low",
+            "Conclusion": "Egypt",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Desert landscape",
+              "European-style road markings",
+              "Arid climate",
+              "Sandy terrain"
+            ],
+            "Reasoning": "The desert landscape with sandy terrain and European-style road markings is characteristic of North Africa, which narrows the country to Egypt, a country known for its arid regions and European-style infrastructure. The combination of the desert environment and the road markings strongly suggests Egypt as the regional guess. Conclusion: Egypt. Uncertainty: Low",
+            "Conclusion": "Egypt",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Desert landscape",
+              "European-style road markings",
+              "Arid climate",
+              "Sandy terrain"
+            ],
+            "Reasoning": "The desert landscape with sandy terrain and European-style road markings is characteristic of North Africa, which narrows the country to Egypt, a country known for its arid regions and European-style infrastructure. These clues strongly suggest the precise localization of Siwa Oasis, a town in Egypt known for its desert environment and European-style infrastructure. Conclusion: Siwa Oasis. Uncertainty: Low",
+            "Conclusion": "Siwa Oasis",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Egypt; Siwa Oasis; Siwa Oasis"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Desert landscape\",\n        \"Road markings\",\n        \"Arid climate\",\n        \"Sandy terrain\"\n      ],\n      \"Reasoning\": \"The image depicts a desert landscape with sandy terrain and a road with European-style road markings, which are not typical of most African countries. The arid climate and desert environment are characteristic of North Africa. These clues strongly suggest that the location is in North Africa, which narrows it down to Egypt, a country known for its desert regions and European-style infrastructure. Conclusion: Egypt. Uncertainty: Low\",\n      \"Conclusion\": \"Egypt\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Desert landscape\",\n        \"European-style road markings\",\n        \"Arid climate\",\n        \"Sandy terrain\"\n      ],\n      \"Reasoning\": \"The desert landscape with sandy terrain and European-style road markings is characteristic of North Africa, which narrows the country to Egypt, a country known for its arid regions and European-style infrastructure. The combination of the desert environment and the road markings strongly suggests Egypt as the regional guess. Conclusion: Egypt. Uncertainty: Low\",\n      \"Conclusion\": \"Egypt\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Desert landscape\",\n        \"European-style road markings\",\n        \"Arid climate\",\n        \"Sandy terrain\"\n      ],\n      \"Reasoning\": \"The desert landscape with sandy terrain and European-style road markings is characteristic of North Africa, which narrows the country to Egypt, a country known for its arid regions and European-style infrastructure. These clues strongly suggest the precise localization of Siwa Oasis, a town in Egypt known for its desert environment and European-style infrastructure. Conclusion: Siwa Oasis. Uncertainty: Low\",\n      \"Conclusion\": \"Siwa Oasis\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Egypt; Siwa Oasis; Siwa Oasis\"\n}\n```",
+      "latency_s": 26.98
+    },
+    "simien": {
+      "model": "geoagent",
+      "answer": "Ethiopia; Ethiopia; Simien National Park",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Mountainous terrain",
+              "Cattle grazing",
+              "Arid vegetation",
+              "Clear blue sky"
+            ],
+            "Reasoning": "The image shows a mountainous landscape with arid vegetation and cattle grazing, which are characteristic of tropical highlands. These features are commonly associated with tropical African countries. The clear blue sky and the rugged terrain suggest a subtropical or tropical climate, which narrows the possibilities to African countries. Ethiopia is the most likely country due to its highland terrain and tropical climate.",
+            "Conclusion": "Ethiopia",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Mountainous terrain",
+              "Arid vegetation",
+              "Cattle grazing",
+              "Clear blue sky",
+              "Tropical highland environment"
+            ],
+            "Reasoning": "The mountainous terrain, arid vegetation, and tropical highland environment are characteristic of East African countries. The clear blue sky and rugged terrain suggest a subtropical or tropical climate, which is consistent with Ethiopia's tropical highland environment. These clues strongly suggest Ethiopia as the regional guess. Conclusion: Ethiopia. Uncertainty: Low",
+            "Conclusion": "Ethiopia",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Mountainous terrain",
+              "Arid vegetation",
+              "Cattle grazing",
+              "Clear blue sky",
+              "Tropical highland environment"
+            ],
+            "Reasoning": "The mountainous terrain, arid vegetation, and tropical highland environment are characteristic of Ethiopia, a country known for its highland regions. The clear blue sky and rugged terrain are consistent with the tropical highland environment. These clues strongly suggest the precise localization of Simien National Park, a well-known tourist destination in Ethiopia. Conclusion: Simien National Park. Uncertainty: Low",
+            "Conclusion": "Simien National Park",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Ethiopia; Ethiopia; Simien National Park"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Cattle grazing\",\n        \"Arid vegetation\",\n        \"Clear blue sky\"\n      ],\n      \"Reasoning\": \"The image shows a mountainous landscape with arid vegetation and cattle grazing, which are characteristic of tropical highlands. These features are commonly associated with tropical African countries. The clear blue sky and the rugged terrain suggest a subtropical or tropical climate, which narrows the possibilities to African countries. Ethiopia is the most likely country due to its highland terrain and tropical climate.\",\n      \"Conclusion\": \"Ethiopia\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Arid vegetation\",\n        \"Cattle grazing\",\n        \"Clear blue sky\",\n        \"Tropical highland environment\"\n      ],\n      \"Reasoning\": \"The mountainous terrain, arid vegetation, and tropical highland environment are characteristic of East African countries. The clear blue sky and rugged terrain suggest a subtropical or tropical climate, which is consistent with Ethiopia's tropical highland environment. These clues strongly suggest Ethiopia as the regional guess. Conclusion: Ethiopia. Uncertainty: Low\",\n      \"Conclusion\": \"Ethiopia\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Arid vegetation\",\n        \"Cattle grazing\",\n        \"Clear blue sky\",\n        \"Tropical highland environment\"\n      ],\n      \"Reasoning\": \"The mountainous terrain, arid vegetation, and tropical highland environment are characteristic of Ethiopia, a country known for its highland regions. The clear blue sky and rugged terrain are consistent with the tropical highland environment. These clues strongly suggest the precise localization of Simien National Park, a well-known tourist destination in Ethiopia. Conclusion: Simien National Park. Uncertainty: Low\",\n      \"Conclusion\": \"Simien National Park\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Ethiopia; Ethiopia; Simien National Park\"\n}\n```",
+      "latency_s": 27.95
+    },
+    "maasai_mara": {
+      "model": "geoagent",
+      "answer": "Kenya; Kenya; Masai Mara",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Presence of zebras",
+              "Savanna-like landscape",
+              "African savanna vegetation"
+            ],
+            "Reasoning": "The image shows zebras in a savanna-like environment, which is characteristic of tropical or subtropical regions. These features are commonly associated with Africa, a continent known for its wildlife and savanna ecosystems. The combination of zebras and the savanna landscape strongly suggests that this location is in Africa, a continent with tropical and subtropical climates.",
+            "Conclusion": "Kenya",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Presence of zebras",
+              "Savanna-like landscape",
+              "African savanna vegetation",
+              "English language"
+            ],
+            "Reasoning": "The image shows zebras in a savanna-like environment, which is characteristic of tropical or subtropical regions. This suggests the location is in Africa, a continent known for its savanna ecosystems. The presence of zebras and the savanna-like landscape are strongly associated with East Africa, a region known for its wildlife. The English language spoken in the image further supports this as English is the official language of Kenya. These clues strongly suggest the regional guess of Kenya. Conclusion: Kenya. Uncertainty: Low",
+            "Conclusion": "Kenya",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Presence of zebras",
+              "Savanna-like landscape",
+              "English language",
+              "African savanna vegetation"
+            ],
+            "Reasoning": "The image shows zebras in a savanna-like environment, which is characteristic of tropical or subtropical regions. This suggests the location is in Africa, a continent known for its savanna ecosystems. The presence of zebras and the savanna-like landscape are strongly associated with East Africa, a region known for its wildlife. The English language spoken in the image further supports this as English is the official language of Kenya. These clues strongly suggest the precise localization of Masai Mara, a well-known wildlife reserve in Kenya. Conclusion: Masai Mara. Uncertainty: Low",
+            "Conclusion": "Masai Mara",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Kenya; Kenya; Masai Mara"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Presence of zebras\",\n        \"Savanna-like landscape\",\n        \"African savanna vegetation\"\n      ],\n      \"Reasoning\": \"The image shows zebras in a savanna-like environment, which is characteristic of tropical or subtropical regions. These features are commonly associated with Africa, a continent known for its wildlife and savanna ecosystems. The combination of zebras and the savanna landscape strongly suggests that this location is in Africa, a continent with tropical and subtropical climates.\",\n      \"Conclusion\": \"Kenya\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Presence of zebras\",\n        \"Savanna-like landscape\",\n        \"African savanna vegetation\",\n        \"English language\"\n      ],\n      \"Reasoning\": \"The image shows zebras in a savanna-like environment, which is characteristic of tropical or subtropical regions. This suggests the location is in Africa, a continent known for its savanna ecosystems. The presence of zebras and the savanna-like landscape are strongly associated with East Africa, a region known for its wildlife. The English language spoken in the image further supports this as English is the official language of Kenya. These clues strongly suggest the regional guess of Kenya. Conclusion: Kenya. Uncertainty: Low\",\n      \"Conclusion\": \"Kenya\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Presence of zebras\",\n        \"Savanna-like landscape\",\n        \"English language\",\n        \"African savanna vegetation\"\n      ],\n      \"Reasoning\": \"The image shows zebras in a savanna-like environment, which is characteristic of tropical or subtropical regions. This suggests the location is in Africa, a continent known for its savanna ecosystems. The presence of zebras and the savanna-like landscape are strongly associated with East Africa, a region known for its wildlife. The English language spoken in the image further supports this as English is the official language of Kenya. These clues strongly suggest the precise localization of Masai Mara, a well-known wildlife reserve in Kenya. Conclusion: Masai Mara. Uncertainty: Low\",\n      \"Conclusion\": \"Masai Mara\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Kenya; Kenya; Masai Mara\"\n}\n```",
+      "latency_s": 31.13
+    },
+    "iceland_highlands": {
+      "model": "geoagent",
+      "answer": "Iceland; Haukadalur; Haukadalur",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Volcanic landscape",
+              "Geothermal features",
+              "Rocky terrain",
+              "Northern European-style vegetation"
+            ],
+            "Reasoning": "The image depicts a volcanic landscape with geothermal features, which are characteristic of Iceland, a country known for its unique geological features. The rocky terrain and northern European-style vegetation further support this identification. These clues strongly suggest Iceland as the country of origin.",
+            "Conclusion": "Iceland",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Volcanic landscape",
+              "Geothermal features",
+              "Northern European-style vegetation",
+              "Rocky terrain"
+            ],
+            "Reasoning": "The image shows a volcanic landscape with geothermal features, which are characteristic of Iceland, a country known for its volcanic activity and geothermal resources. The rocky terrain and northern European-style vegetation are also consistent with Iceland's geography. These clues strongly suggest Iceland as the country and Haukadalur as the regional guess. Conclusion: Iceland. Uncertainty: Low",
+            "Conclusion": "Iceland",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Volcanic landscape",
+              "Geothermal features",
+              "Northern European-style vegetation",
+              "Rocky terrain"
+            ],
+            "Reasoning": "The image shows a volcanic landscape with geothermal features, which are characteristic of Iceland, a country known for its volcanic activity and geothermal resources. The rocky terrain and northern European-style vegetation are consistent with Iceland's geography. These clues strongly suggest the precise localization of Haukadalur as the most likely location. Conclusion: Haukadalur. Uncertainty: Low",
+            "Conclusion": "Haukadalur",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Iceland; Haukadalur; Haukadalur"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Volcanic landscape\",\n        \"Geothermal features\",\n        \"Rocky terrain\",\n        \"Northern European-style vegetation\"\n      ],\n      \"Reasoning\": \"The image depicts a volcanic landscape with geothermal features, which are characteristic of Iceland, a country known for its unique geological features. The rocky terrain and northern European-style vegetation further support this identification. These clues strongly suggest Iceland as the country of origin.\",\n      \"Conclusion\": \"Iceland\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Volcanic landscape\",\n        \"Geothermal features\",\n        \"Northern European-style vegetation\",\n        \"Rocky terrain\"\n      ],\n      \"Reasoning\": \"The image shows a volcanic landscape with geothermal features, which are characteristic of Iceland, a country known for its volcanic activity and geothermal resources. The rocky terrain and northern European-style vegetation are also consistent with Iceland's geography. These clues strongly suggest Iceland as the country and Haukadalur as the regional guess. Conclusion: Iceland. Uncertainty: Low\",\n      \"Conclusion\": \"Iceland\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Volcanic landscape\",\n        \"Geothermal features\",\n        \"Northern European-style vegetation\",\n        \"Rocky terrain\"\n      ],\n      \"Reasoning\": \"The image shows a volcanic landscape with geothermal features, which are characteristic of Iceland, a country known for its volcanic activity and geothermal resources. The rocky terrain and northern European-style vegetation are consistent with Iceland's geography. These clues strongly suggest the precise localization of Haukadalur as the most likely location. Conclusion: Haukadalur. Uncertainty: Low\",\n      \"Conclusion\": \"Haukadalur\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Iceland; Haukadalur; Haukadalur\"\n}\n```",
+      "latency_s": 26.52
+    },
+    "glen_coe": {
+      "model": "geoagent",
+      "answer": "United Kingdom; Scotland; Glencoe",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Mountainous terrain",
+              "Green vegetation",
+              "Cloudy sky",
+              "Stone path",
+              "European-style architecture"
+            ],
+            "Reasoning": "The image depicts a mountainous landscape with lush green vegetation, which is characteristic of temperate climates. The stone path and European-style architecture suggest a European country. These clues strongly suggest the United Kingdom as the country of origin, which is a European nation known for its mountainous regions and temperate climate. Conclusion: United Kingdom. Uncertainty: Low",
+            "Conclusion": "United Kingdom",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Mountainous terrain",
+              "Green vegetation",
+              "Stone path",
+              "European-style architecture",
+              "English language"
+            ],
+            "Reasoning": "The image shows a mountainous landscape with lush green vegetation, which is characteristic of temperate climates. The stone path and European-style architecture suggest a European country. The English language spoken in the image further supports the United Kingdom as the country. These clues strongly suggest Scotland as the regional guess, a country in the United Kingdom known for its mountainous landscapes and temperate climate. Conclusion: United Kingdom. Uncertainty: Low",
+            "Conclusion": "United Kingdom",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Mountainous terrain",
+              "Green vegetation",
+              "Stone path",
+              "European-style architecture",
+              "English language"
+            ],
+            "Reasoning": "The image shows a mountainous landscape with lush green vegetation, which is characteristic of temperate climates. The stone path and European-style architecture suggest a European country. The English language spoken in the image further supports the United Kingdom as the country. These clues strongly suggest the United Kingdom as the country and Scotland as the regional guess, a country known for its mountainous landscapes and temperate climate. Conclusion: United Kingdom. Uncertainty: Low",
+            "Conclusion": "United Kingdom",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "United Kingdom; Scotland; Glencoe"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Green vegetation\",\n        \"Cloudy sky\",\n        \"Stone path\",\n        \"European-style architecture\"\n      ],\n      \"Reasoning\": \"The image depicts a mountainous landscape with lush green vegetation, which is characteristic of temperate climates. The stone path and European-style architecture suggest a European country. These clues strongly suggest the United Kingdom as the country of origin, which is a European nation known for its mountainous regions and temperate climate. Conclusion: United Kingdom. Uncertainty: Low\",\n      \"Conclusion\": \"United Kingdom\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Green vegetation\",\n        \"Stone path\",\n        \"European-style architecture\",\n        \"English language\"\n      ],\n      \"Reasoning\": \"The image shows a mountainous landscape with lush green vegetation, which is characteristic of temperate climates. The stone path and European-style architecture suggest a European country. The English language spoken in the image further supports the United Kingdom as the country. These clues strongly suggest Scotland as the regional guess, a country in the United Kingdom known for its mountainous landscapes and temperate climate. Conclusion: United Kingdom. Uncertainty: Low\",\n      \"Conclusion\": \"United Kingdom\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Green vegetation\",\n        \"Stone path\",\n        \"European-style architecture\",\n        \"English language\"\n      ],\n      \"Reasoning\": \"The image shows a mountainous landscape with lush green vegetation, which is characteristic of temperate climates. The stone path and European-style architecture suggest a European country. The English language spoken in the image further supports the United Kingdom as the country. These clues strongly suggest the United Kingdom as the country and Scotland as the regional guess, a country known for its mountainous landscapes and temperate climate. Conclusion: United Kingdom. Uncertainty: Low\",\n      \"Conclusion\": \"United Kingdom\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"United Kingdom; Scotland; Glencoe\"\n}\n```",
+      "latency_s": 28.6
+    },
+    "svalbard": {
+      "model": "geoagent",
+      "answer": "Iceland; Reykjavík; Reykjavík",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Snow-covered landscape",
+              "Nighttime scene",
+              "Mountainous terrain",
+              "Northern European-style clothing",
+              "Northern European-style architecture"
+            ],
+            "Reasoning": "The image depicts a snowy landscape with a mountainous terrain, which is characteristic of a northern European country. The Northern European-style clothing and architecture further support this. These clues strongly suggest Iceland, a country known for its polar climate and mountainous regions. Conclusion: Iceland. Uncertainty: Low",
+            "Conclusion": "Iceland",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Snow-covered landscape",
+              "Mountainous terrain",
+              "Northern European-style clothing",
+              "Northern European-style architecture",
+              "Nighttime scene"
+            ],
+            "Reasoning": "The snowy landscape and mountainous terrain are characteristic of a northern European country, which narrows the possibilities to Iceland, a Scandinavian island nation known for its polar climate and rugged terrain. The Northern European-style clothing and architecture further support this. These clues strongly suggest Iceland as the regional guess. Conclusion: Reykjavík. Uncertainty: Low",
+            "Conclusion": "Reykjavík",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Snow-covered landscape",
+              "Mountainous terrain",
+              "Northern European-style clothing",
+              "Northern European-style architecture",
+              "Nighttime scene"
+            ],
+            "Reasoning": "The snowy landscape and mountainous terrain are characteristic of a northern European country, which narrows the possibilities to Iceland, a Scandinavian island nation known for its polar climate and rugged terrain. The Northern European-style clothing and architecture further support this. These clues strongly suggest Reykjavík as the precise localization. Conclusion: Reykjavík. Uncertainty: Low",
+            "Conclusion": "Reykjavík",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Iceland; Reykjavík; Reykjavík"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Snow-covered landscape\",\n        \"Nighttime scene\",\n        \"Mountainous terrain\",\n        \"Northern European-style clothing\",\n        \"Northern European-style architecture\"\n      ],\n      \"Reasoning\": \"The image depicts a snowy landscape with a mountainous terrain, which is characteristic of a northern European country. The Northern European-style clothing and architecture further support this. These clues strongly suggest Iceland, a country known for its polar climate and mountainous regions. Conclusion: Iceland. Uncertainty: Low\",\n      \"Conclusion\": \"Iceland\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Snow-covered landscape\",\n        \"Mountainous terrain\",\n        \"Northern European-style clothing\",\n        \"Northern European-style architecture\",\n        \"Nighttime scene\"\n      ],\n      \"Reasoning\": \"The snowy landscape and mountainous terrain are characteristic of a northern European country, which narrows the possibilities to Iceland, a Scandinavian island nation known for its polar climate and rugged terrain. The Northern European-style clothing and architecture further support this. These clues strongly suggest Iceland as the regional guess. Conclusion: Reykjavík. Uncertainty: Low\",\n      \"Conclusion\": \"Reykjavík\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Snow-covered landscape\",\n        \"Mountainous terrain\",\n        \"Northern European-style clothing\",\n        \"Northern European-style architecture\",\n        \"Nighttime scene\"\n      ],\n      \"Reasoning\": \"The snowy landscape and mountainous terrain are characteristic of a northern European country, which narrows the possibilities to Iceland, a Scandinavian island nation known for its polar climate and rugged terrain. The Northern European-style clothing and architecture further support this. These clues strongly suggest Reykjavík as the precise localization. Conclusion: Reykjavík. Uncertainty: Low\",\n      \"Conclusion\": \"Reykjavík\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Iceland; Reykjavík; Reykjavík\"\n}\n```",
+      "latency_s": 27.91
+    },
+    "lapland": {
+      "model": "geoagent",
+      "answer": "Norway; Oppland; Rondane National Park",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Mountainous terrain",
+              "Northern European vegetation",
+              "Northern European climate",
+              "Traditional wooden hut",
+              "Northern European infrastructure"
+            ],
+            "Reasoning": "The image depicts a mountainous landscape with northern European vegetation, which is characteristic of Nordic countries. The traditional wooden hut and the infrastructure suggest a Scandinavian country. These clues strongly suggest Norway as the country of origin, a highly probable conclusion with low uncertainty.",
+            "Conclusion": "Norway",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Mountainous terrain",
+              "Northern European vegetation",
+              "Northern European climate",
+              "Traditional wooden hut",
+              "Northern European infrastructure"
+            ],
+            "Reasoning": "The mountainous terrain and northern European vegetation are characteristic of Nordic countries, which narrows the location to Northern Europe. The traditional wooden hut and the infrastructure suggest a Scandinavian country. These clues strongly suggest Norway as the regional guess, a highly probable conclusion with low uncertainty. Conclusion: Norway. Uncertainty: Low",
+            "Conclusion": "Norway",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Mountainous terrain",
+              "Northern European vegetation",
+              "Traditional wooden hut",
+              "Northern European infrastructure"
+            ],
+            "Reasoning": "The mountainous terrain and northern European vegetation are characteristic of Nordic countries, which narrows the location to Northern Europe. The traditional wooden hut and the infrastructure suggest a Scandinavian country. These clues strongly suggest Rondane National Park as the precise localization, a highly probable conclusion with low uncertainty. Conclusion: Rondane National Park. Uncertainty: Low",
+            "Conclusion": "Rondane National Park",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Norway; Oppland; Rondane National Park"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Northern European vegetation\",\n        \"Northern European climate\",\n        \"Traditional wooden hut\",\n        \"Northern European infrastructure\"\n      ],\n      \"Reasoning\": \"The image depicts a mountainous landscape with northern European vegetation, which is characteristic of Nordic countries. The traditional wooden hut and the infrastructure suggest a Scandinavian country. These clues strongly suggest Norway as the country of origin, a highly probable conclusion with low uncertainty.\",\n      \"Conclusion\": \"Norway\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Northern European vegetation\",\n        \"Northern European climate\",\n        \"Traditional wooden hut\",\n        \"Northern European infrastructure\"\n      ],\n      \"Reasoning\": \"The mountainous terrain and northern European vegetation are characteristic of Nordic countries, which narrows the location to Northern Europe. The traditional wooden hut and the infrastructure suggest a Scandinavian country. These clues strongly suggest Norway as the regional guess, a highly probable conclusion with low uncertainty. Conclusion: Norway. Uncertainty: Low\",\n      \"Conclusion\": \"Norway\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Northern European vegetation\",\n        \"Traditional wooden hut\",\n        \"Northern European infrastructure\"\n      ],\n      \"Reasoning\": \"The mountainous terrain and northern European vegetation are characteristic of Nordic countries, which narrows the location to Northern Europe. The traditional wooden hut and the infrastructure suggest a Scandinavian country. These clues strongly suggest Rondane National Park as the precise localization, a highly probable conclusion with low uncertainty. Conclusion: Rondane National Park. Uncertainty: Low\",\n      \"Conclusion\": \"Rondane National Park\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Norway; Oppland; Rondane National Park\"\n}\n```",
+      "latency_s": 25.7
+    },
+    "altai": {
+      "model": "geoagent",
+      "answer": "France; Aosta Valley; Aosta",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Mountainous terrain",
+              "Larch trees",
+              "Alpine vegetation",
+              "European-style infrastructure"
+            ],
+            "Reasoning": "The image depicts a mountainous landscape with alpine vegetation, which is characteristic of European alpine regions. The presence of larch trees and European-style infrastructure further supports this. These clues strongly suggest Switzerland, a country known for its alpine terrain and European-style infrastructure. Conclusion: Switzerland. Uncertainty: Low",
+            "Conclusion": "Switzerland",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Mountainous terrain",
+              "Larch trees",
+              "Alpine vegetation",
+              "European-style infrastructure"
+            ],
+            "Reasoning": "The image shows a mountainous landscape with alpine vegetation, which is characteristic of European alpine regions. The presence of larch trees and European-style infrastructure suggests a European country. These clues strongly suggest Switzerland, a country known for its alpine terrain and European-style infrastructure. Conclusion: Switzerland. Uncertainty: Low",
+            "Conclusion": "Switzerland",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Mountainous terrain",
+              "Larch trees",
+              "Alpine vegetation",
+              "European-style infrastructure"
+            ],
+            "Reasoning": "The image shows a mountainous landscape with alpine vegetation and larch trees, which are characteristic of European alpine regions. The European-style infrastructure and the mountainous terrain suggest a European country. These clues strongly suggest Switzerland, a country known for its alpine regions. Conclusion: Aosta Valley. Uncertainty: Low",
+            "Conclusion": "Aosta Valley",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "France; Aosta Valley; Aosta"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Larch trees\",\n        \"Alpine vegetation\",\n        \"European-style infrastructure\"\n      ],\n      \"Reasoning\": \"The image depicts a mountainous landscape with alpine vegetation, which is characteristic of European alpine regions. The presence of larch trees and European-style infrastructure further supports this. These clues strongly suggest Switzerland, a country known for its alpine terrain and European-style infrastructure. Conclusion: Switzerland. Uncertainty: Low\",\n      \"Conclusion\": \"Switzerland\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Larch trees\",\n        \"Alpine vegetation\",\n        \"European-style infrastructure\"\n      ],\n      \"Reasoning\": \"The image shows a mountainous landscape with alpine vegetation, which is characteristic of European alpine regions. The presence of larch trees and European-style infrastructure suggests a European country. These clues strongly suggest Switzerland, a country known for its alpine terrain and European-style infrastructure. Conclusion: Switzerland. Uncertainty: Low\",\n      \"Conclusion\": \"Switzerland\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Larch trees\",\n        \"Alpine vegetation\",\n        \"European-style infrastructure\"\n      ],\n      \"Reasoning\": \"The image shows a mountainous landscape with alpine vegetation and larch trees, which are characteristic of European alpine regions. The European-style infrastructure and the mountainous terrain suggest a European country. These clues strongly suggest Switzerland, a country known for its alpine regions. Conclusion: Aosta Valley. Uncertainty: Low\",\n      \"Conclusion\": \"Aosta Valley\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"France; Aosta Valley; Aosta\"\n}\n```",
+      "latency_s": 24.77
+    },
+    "charyn": {
+      "model": "geoagent",
+      "answer": "China; Xinjiang; Turpan",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Desert-like landscape",
+              "Rugged terrain",
+              "Sparse vegetation",
+              "Arid climate"
+            ],
+            "Reasoning": "The image depicts a desert-like landscape with rugged terrain and sparse vegetation, which is characteristic of arid regions. These features are commonly associated with Central Asia, a region known for its desert environments. The combination of these clues strongly suggests China, a major country in Central Asia with such landscapes. Conclusion: China. Uncertainty: Low",
+            "Conclusion": "China",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Desert-like landscape",
+              "Rugged terrain",
+              "Sparse vegetation",
+              "Arid climate",
+              "Chinese characters on signs"
+            ],
+            "Reasoning": "The desert-like landscape with rugged terrain and sparse vegetation is characteristic of arid regions, which are common in Central Asia. The Chinese characters on the signs suggest a Chinese-speaking country. These clues strongly suggest China as the country of origin. Conclusion: China. Uncertainty: Low",
+            "Conclusion": "China",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Desert-like landscape",
+              "Rugged terrain",
+              "Sparse vegetation",
+              "Arid climate",
+              "Chinese characters on signs"
+            ],
+            "Reasoning": "The desert-like landscape with rugged terrain and sparse vegetation is characteristic of arid regions, which are common in Central Asia. The Chinese characters on the signs suggest a Chinese-speaking country. These features are most consistent with China, a major country in Central Asia with such landscapes. Conclusion: Turpan. Uncertainty: Low",
+            "Conclusion": "Turpan",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "China; Xinjiang; Turpan"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Desert-like landscape\",\n        \"Rugged terrain\",\n        \"Sparse vegetation\",\n        \"Arid climate\"\n      ],\n      \"Reasoning\": \"The image depicts a desert-like landscape with rugged terrain and sparse vegetation, which is characteristic of arid regions. These features are commonly associated with Central Asia, a region known for its desert environments. The combination of these clues strongly suggests China, a major country in Central Asia with such landscapes. Conclusion: China. Uncertainty: Low\",\n      \"Conclusion\": \"China\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Desert-like landscape\",\n        \"Rugged terrain\",\n        \"Sparse vegetation\",\n        \"Arid climate\",\n        \"Chinese characters on signs\"\n      ],\n      \"Reasoning\": \"The desert-like landscape with rugged terrain and sparse vegetation is characteristic of arid regions, which are common in Central Asia. The Chinese characters on the signs suggest a Chinese-speaking country. These clues strongly suggest China as the country of origin. Conclusion: China. Uncertainty: Low\",\n      \"Conclusion\": \"China\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Desert-like landscape\",\n        \"Rugged terrain\",\n        \"Sparse vegetation\",\n        \"Arid climate\",\n        \"Chinese characters on signs\"\n      ],\n      \"Reasoning\": \"The desert-like landscape with rugged terrain and sparse vegetation is characteristic of arid regions, which are common in Central Asia. The Chinese characters on the signs suggest a Chinese-speaking country. These features are most consistent with China, a major country in Central Asia with such landscapes. Conclusion: Turpan. Uncertainty: Low\",\n      \"Conclusion\": \"Turpan\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"China; Xinjiang; Turpan\"\n}\n```",
+      "latency_s": 25.4
+    },
+    "song_kol": {
+      "model": "geoagent",
+      "answer": "Mongolia; Buryatia; Ulaanbaatar",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Steppe landscape",
+              "Mountainous terrain",
+              "Clear blue sky",
+              "Landscape resembling a lake",
+              "Mongolian script visible on the text"
+            ],
+            "Reasoning": "The image depicts a steppe landscape with a mountainous backdrop and a clear blue sky, which is characteristic of Central Asia. The Mongolian script visible on the text further supports this, as it is a distinctive feature of Mongolia. These clues strongly suggest that the location is in Mongolia, a landlocked country in Central Asia. Conclusion: Mongolia. Uncertainty: Low",
+            "Conclusion": "Mongolia",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Steppe landscape",
+              "Mountainous terrain",
+              "Clear blue sky",
+              "Landscape resembling a lake",
+              "Mongolian script visible on the text"
+            ],
+            "Reasoning": "The steppe landscape, mountainous terrain, and clear blue sky are characteristic of Central Asia, which narrows the location to Mongolia, a landlocked country in this region. The Mongolian script visible on the text further confirms this, as it is the official script of Mongolia. These clues strongly suggest the regional guess of Mongolia. Conclusion: Mongolia. Uncertainty: Low",
+            "Conclusion": "Mongolia",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Steppe landscape",
+              "Mountainous terrain",
+              "Clear blue sky",
+              "Landscape resembling a lake",
+              "Mongolian script visible on the text"
+            ],
+            "Reasoning": "The steppe landscape, mountainous terrain, and clear blue sky are characteristic of Central Asia, which narrows the location to Mongolia, a landlocked country in this region. The Mongolian script visible on the text further confirms this, as it is the official script of Mongolia. These clues strongly suggest the precise localization of Ulaanbaatar, the capital city of Mongolia. Conclusion: Ulaanbaatar. Uncertainty: Low",
+            "Conclusion": "Ulaanbaatar",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Mongolia; Buryatia; Ulaanbaatar"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Steppe landscape\",\n        \"Mountainous terrain\",\n        \"Clear blue sky\",\n        \"Landscape resembling a lake\",\n        \"Mongolian script visible on the text\"\n      ],\n      \"Reasoning\": \"The image depicts a steppe landscape with a mountainous backdrop and a clear blue sky, which is characteristic of Central Asia. The Mongolian script visible on the text further supports this, as it is a distinctive feature of Mongolia. These clues strongly suggest that the location is in Mongolia, a landlocked country in Central Asia. Conclusion: Mongolia. Uncertainty: Low\",\n      \"Conclusion\": \"Mongolia\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Steppe landscape\",\n        \"Mountainous terrain\",\n        \"Clear blue sky\",\n        \"Landscape resembling a lake\",\n        \"Mongolian script visible on the text\"\n      ],\n      \"Reasoning\": \"The steppe landscape, mountainous terrain, and clear blue sky are characteristic of Central Asia, which narrows the location to Mongolia, a landlocked country in this region. The Mongolian script visible on the text further confirms this, as it is the official script of Mongolia. These clues strongly suggest the regional guess of Mongolia. Conclusion: Mongolia. Uncertainty: Low\",\n      \"Conclusion\": \"Mongolia\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Steppe landscape\",\n        \"Mountainous terrain\",\n        \"Clear blue sky\",\n        \"Landscape resembling a lake\",\n        \"Mongolian script visible on the text\"\n      ],\n      \"Reasoning\": \"The steppe landscape, mountainous terrain, and clear blue sky are characteristic of Central Asia, which narrows the location to Mongolia, a landlocked country in this region. The Mongolian script visible on the text further confirms this, as it is the official script of Mongolia. These clues strongly suggest the precise localization of Ulaanbaatar, the capital city of Mongolia. Conclusion: Ulaanbaatar. Uncertainty: Low\",\n      \"Conclusion\": \"Ulaanbaatar\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Mongolia; Buryatia; Ulaanbaatar\"\n}\n```",
+      "latency_s": 30.71
+    },
+    "ladakh": {
+      "model": "geoagent",
+      "answer": "India; Ladakh; Leh",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Rugged mountainous terrain",
+              "Dry climate",
+              "Road infrastructure",
+              "Presence of snow-capped mountains in the distance"
+            ],
+            "Reasoning": "The image shows a rugged mountainous terrain with dry climate characteristics, which are typical of high-altitude regions. The presence of snow-capped mountains in the distance suggests a Himalayan setting, which is common in South Asia. These clues strongly suggest India as the country of origin, a major South Asian nation known for its mountainous regions. Conclusion: India. Uncertainty: Low",
+            "Conclusion": "India",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Rugged mountainous terrain",
+              "Dry climate",
+              "Road infrastructure",
+              "Presence of snow-capped mountains in the distance"
+            ],
+            "Reasoning": "The rugged mountainous terrain and dry climate are characteristic of high-altitude regions, which are common in South Asia. The presence of snow-capped mountains in the distance suggests a Himalayan setting. These features are consistent with India, a country known for its mountainous regions. Conclusion: India. Uncertainty: Low",
+            "Conclusion": "India",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Rugged mountainous terrain",
+              "Dry climate",
+              "Road infrastructure",
+              "Presence of snow-capped mountains in the distance"
+            ],
+            "Reasoning": "The rugged mountainous terrain and dry climate are characteristic of high-altitude regions, which are common in South Asia. The presence of snow-capped mountains in the distance suggests a Himalayan setting. These features are consistent with India, a country known for its mountainous regions. The road infrastructure and arid environment are also consistent with a Himalayan region. Conclusion: Leh. Uncertainty: Low",
+            "Conclusion": "Leh",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "India; Ladakh; Leh"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Rugged mountainous terrain\",\n        \"Dry climate\",\n        \"Road infrastructure\",\n        \"Presence of snow-capped mountains in the distance\"\n      ],\n      \"Reasoning\": \"The image shows a rugged mountainous terrain with dry climate characteristics, which are typical of high-altitude regions. The presence of snow-capped mountains in the distance suggests a Himalayan setting, which is common in South Asia. These clues strongly suggest India as the country of origin, a major South Asian nation known for its mountainous regions. Conclusion: India. Uncertainty: Low\",\n      \"Conclusion\": \"India\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Rugged mountainous terrain\",\n        \"Dry climate\",\n        \"Road infrastructure\",\n        \"Presence of snow-capped mountains in the distance\"\n      ],\n      \"Reasoning\": \"The rugged mountainous terrain and dry climate are characteristic of high-altitude regions, which are common in South Asia. The presence of snow-capped mountains in the distance suggests a Himalayan setting. These features are consistent with India, a country known for its mountainous regions. Conclusion: India. Uncertainty: Low\",\n      \"Conclusion\": \"India\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Rugged mountainous terrain\",\n        \"Dry climate\",\n        \"Road infrastructure\",\n        \"Presence of snow-capped mountains in the distance\"\n      ],\n      \"Reasoning\": \"The rugged mountainous terrain and dry climate are characteristic of high-altitude regions, which are common in South Asia. The presence of snow-capped mountains in the distance suggests a Himalayan setting. These features are consistent with India, a country known for its mountainous regions. The road infrastructure and arid environment are also consistent with a Himalayan region. Conclusion: Leh. Uncertainty: Low\",\n      \"Conclusion\": \"Leh\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"India; Ladakh; Leh\"\n}\n```",
+      "latency_s": 27.45
+    },
+    "mongolia_steppe": {
+      "model": "geoagent",
+      "answer": "Mongolia; Mongolia; Ulaanbaatar",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Przewalski's horse",
+              "Grassland landscape",
+              "Mongolian script",
+              "Hilly terrain"
+            ],
+            "Reasoning": "The image features a Przewalski's horse, a rare wild horse species, which is native to Mongolia. The grassland landscape and hilly terrain are characteristic of the Mongolian steppe. The Mongolian script visible on the horse's marking is a strong indicator of Mongolia, a country known for its unique wildlife and steppe environment. These clues strongly suggest Mongolia as the country of origin. Conclusion: Mongolia. Uncertainty: Low",
+            "Conclusion": "Mongolia",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Przewalski's horse",
+              "Grassland landscape",
+              "Mongolian script",
+              "Hilly terrain"
+            ],
+            "Reasoning": "The image features a Przewalski's horse, a rare wild horse species native to Mongolia, which immediately suggests Mongolia as the country. The grassland landscape and hilly terrain are characteristic of the Mongolian steppe, a region known for its unique wildlife and natural environment. The Mongolian script visible on the horse's marking is a strong indicator of Mongolia, a country that uses this script. These clues strongly suggest Mongolia as the regional guess. Conclusion: Ulaanbaatar. Uncertainty: Low",
+            "Conclusion": "Ulaanbaatar",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Przewalski's horse",
+              "Grassland landscape",
+              "Hilly terrain",
+              "Mongolian script"
+            ],
+            "Reasoning": "The image features a Przewalski's horse, a rare wild horse species native to Mongolia, which is a strong indicator of Mongolia as the country. The grassland landscape and hilly terrain are characteristic of the Mongolian steppe, a region known for its unique wildlife and natural environment. The Mongolian script visible on the horse's marking is a strong indicator of Mongolia, a country that uses this script. These clues strongly suggest Ulaanbaatar as the precise localization. Conclusion: Ulaanbaatar. Uncertainty: Low",
+            "Conclusion": "Ulaanbaatar",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Mongolia; Mongolia; Ulaanbaatar"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Przewalski's horse\",\n        \"Grassland landscape\",\n        \"Mongolian script\",\n        \"Hilly terrain\"\n      ],\n      \"Reasoning\": \"The image features a Przewalski's horse, a rare wild horse species, which is native to Mongolia. The grassland landscape and hilly terrain are characteristic of the Mongolian steppe. The Mongolian script visible on the horse's marking is a strong indicator of Mongolia, a country known for its unique wildlife and steppe environment. These clues strongly suggest Mongolia as the country of origin. Conclusion: Mongolia. Uncertainty: Low\",\n      \"Conclusion\": \"Mongolia\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Przewalski's horse\",\n        \"Grassland landscape\",\n        \"Mongolian script\",\n        \"Hilly terrain\"\n      ],\n      \"Reasoning\": \"The image features a Przewalski's horse, a rare wild horse species native to Mongolia, which immediately suggests Mongolia as the country. The grassland landscape and hilly terrain are characteristic of the Mongolian steppe, a region known for its unique wildlife and natural environment. The Mongolian script visible on the horse's marking is a strong indicator of Mongolia, a country that uses this script. These clues strongly suggest Mongolia as the regional guess. Conclusion: Ulaanbaatar. Uncertainty: Low\",\n      \"Conclusion\": \"Ulaanbaatar\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Przewalski's horse\",\n        \"Grassland landscape\",\n        \"Hilly terrain\",\n        \"Mongolian script\"\n      ],\n      \"Reasoning\": \"The image features a Przewalski's horse, a rare wild horse species native to Mongolia, which is a strong indicator of Mongolia as the country. The grassland landscape and hilly terrain are characteristic of the Mongolian steppe, a region known for its unique wildlife and natural environment. The Mongolian script visible on the horse's marking is a strong indicator of Mongolia, a country that uses this script. These clues strongly suggest Ulaanbaatar as the precise localization. Conclusion: Ulaanbaatar. Uncertainty: Low\",\n      \"Conclusion\": \"Ulaanbaatar\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Mongolia; Mongolia; Ulaanbaatar\"\n}\n```",
+      "latency_s": 33.02
+    },
+    "gobi": {
+      "model": "geoagent",
+      "answer": "China; Qinghai; Xining",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Yellow circular sign with a red border",
+              "Image of a goat with a cross through it",
+              "Mountainous terrain",
+              "Cloudy sky"
+            ],
+            "Reasoning": "The yellow circular sign with a red border and the image of a goat with a cross through it are characteristic of Central Asian countries, as they use this type of sign for livestock crossing restrictions. The mountainous terrain and cloudy sky are consistent with a high-altitude region. These clues strongly suggest China as the country of origin, given its proximity to Central Asia and the use of such signage. Conclusion: China. Uncertainty: Low",
+            "Conclusion": "China",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Yellow circular sign with a red border",
+              "Image of a goat with a cross through it",
+              "Mountainous terrain",
+              "Cloudy sky"
+            ],
+            "Reasoning": "The yellow circular sign with a red border and the image of a goat with a cross through it are characteristic of Central Asian countries, as they use this type of sign for livestock crossing restrictions. The mountainous terrain and cloudy sky are consistent with a high-altitude region. These clues strongly suggest China as the country of origin, as it is the only major country in the region with such signage. Conclusion: China. Uncertainty: Low",
+            "Conclusion": "China",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Yellow circular sign with a red border",
+              "Image of a goat with a cross through it",
+              "Mountainous terrain",
+              "Cloudy sky"
+            ],
+            "Reasoning": "The yellow circular sign with a red border and the image of a goat with a cross through it are characteristic of Central Asian countries, as they use this type of sign for livestock crossing restrictions. The mountainous terrain and cloudy sky are consistent with a high-altitude region. These clues strongly suggest China as the country of origin, as it is the only major country in the region with such signage. Conclusion: China. Uncertainty: Low",
+            "Conclusion": "China",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "China; Qinghai; Xining"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Yellow circular sign with a red border\",\n        \"Image of a goat with a cross through it\",\n        \"Mountainous terrain\",\n        \"Cloudy sky\"\n      ],\n      \"Reasoning\": \"The yellow circular sign with a red border and the image of a goat with a cross through it are characteristic of Central Asian countries, as they use this type of sign for livestock crossing restrictions. The mountainous terrain and cloudy sky are consistent with a high-altitude region. These clues strongly suggest China as the country of origin, given its proximity to Central Asia and the use of such signage. Conclusion: China. Uncertainty: Low\",\n      \"Conclusion\": \"China\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Yellow circular sign with a red border\",\n        \"Image of a goat with a cross through it\",\n        \"Mountainous terrain\",\n        \"Cloudy sky\"\n      ],\n      \"Reasoning\": \"The yellow circular sign with a red border and the image of a goat with a cross through it are characteristic of Central Asian countries, as they use this type of sign for livestock crossing restrictions. The mountainous terrain and cloudy sky are consistent with a high-altitude region. These clues strongly suggest China as the country of origin, as it is the only major country in the region with such signage. Conclusion: China. Uncertainty: Low\",\n      \"Conclusion\": \"China\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Yellow circular sign with a red border\",\n        \"Image of a goat with a cross through it\",\n        \"Mountainous terrain\",\n        \"Cloudy sky\"\n      ],\n      \"Reasoning\": \"The yellow circular sign with a red border and the image of a goat with a cross through it are characteristic of Central Asian countries, as they use this type of sign for livestock crossing restrictions. The mountainous terrain and cloudy sky are consistent with a high-altitude region. These clues strongly suggest China as the country of origin, as it is the only major country in the region with such signage. Conclusion: China. Uncertainty: Low\",\n      \"Conclusion\": \"China\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"China; Qinghai; Xining\"\n}\n```",
+      "latency_s": 30.86
+    },
+    "wahiba": {
+      "model": "geoagent",
+      "answer": "United Arab Emirates; Dubai; Dubai",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Desert landscape",
+              "Yellow sand dunes",
+              "Sparse vegetation",
+              "Arid climate"
+            ],
+            "Reasoning": "The image depicts a desert landscape with yellow sand dunes and sparse vegetation, which are characteristic of arid regions. These features are commonly associated with North Africa, a region known for its deserts. The combination of these clues strongly suggests that the location is in a desert country, likely in North Africa. The most probable country is the United Arab Emirates, a desert nation in the Middle East.",
+            "Conclusion": "United Arab Emirates",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Yellow sand dunes",
+              "Arid desert environment",
+              "Sparse vegetation",
+              "Middle Eastern architectural style"
+            ],
+            "Reasoning": "The image shows a desert landscape with yellow sand dunes and sparse vegetation, which are characteristic of arid regions. The Middle Eastern architectural style visible in the background suggests a location in the Middle East. These clues strongly suggest the regional guess of the United Arab Emirates, a desert nation in the Middle East. Conclusion: United Arab Emirates. Uncertainty: Low",
+            "Conclusion": "United Arab Emirates",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Yellow sand dunes",
+              "Arid desert environment",
+              "Middle Eastern architectural style",
+              "Sparse vegetation"
+            ],
+            "Reasoning": "The image shows a desert landscape with yellow sand dunes and sparse vegetation, which are characteristic of arid regions. The Middle Eastern architectural style visible in the background suggests a location in the Middle East. These clues strongly suggest the precise localization of Dubai, a major city in the United Arab Emirates known for its desert environment and Middle Eastern architecture. Conclusion: Dubai. Uncertainty: Low",
+            "Conclusion": "Dubai",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "United Arab Emirates; Dubai; Dubai"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Desert landscape\",\n        \"Yellow sand dunes\",\n        \"Sparse vegetation\",\n        \"Arid climate\"\n      ],\n      \"Reasoning\": \"The image depicts a desert landscape with yellow sand dunes and sparse vegetation, which are characteristic of arid regions. These features are commonly associated with North Africa, a region known for its deserts. The combination of these clues strongly suggests that the location is in a desert country, likely in North Africa. The most probable country is the United Arab Emirates, a desert nation in the Middle East.\",\n      \"Conclusion\": \"United Arab Emirates\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Yellow sand dunes\",\n        \"Arid desert environment\",\n        \"Sparse vegetation\",\n        \"Middle Eastern architectural style\"\n      ],\n      \"Reasoning\": \"The image shows a desert landscape with yellow sand dunes and sparse vegetation, which are characteristic of arid regions. The Middle Eastern architectural style visible in the background suggests a location in the Middle East. These clues strongly suggest the regional guess of the United Arab Emirates, a desert nation in the Middle East. Conclusion: United Arab Emirates. Uncertainty: Low\",\n      \"Conclusion\": \"United Arab Emirates\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Yellow sand dunes\",\n        \"Arid desert environment\",\n        \"Middle Eastern architectural style\",\n        \"Sparse vegetation\"\n      ],\n      \"Reasoning\": \"The image shows a desert landscape with yellow sand dunes and sparse vegetation, which are characteristic of arid regions. The Middle Eastern architectural style visible in the background suggests a location in the Middle East. These clues strongly suggest the precise localization of Dubai, a major city in the United Arab Emirates known for its desert environment and Middle Eastern architecture. Conclusion: Dubai. Uncertainty: Low\",\n      \"Conclusion\": \"Dubai\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"United Arab Emirates; Dubai; Dubai\"\n}\n```",
+      "latency_s": 27.76
+    },
+    "denali_hwy": {
+      "model": "geoagent",
+      "answer": "United States; Alaska; Palmer",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Dirt road",
+              "Mountainous terrain",
+              "Temperate forest",
+              "Northern latitude",
+              "English language"
+            ],
+            "Reasoning": "The image shows a dirt road with a mountainous landscape and temperate forest vegetation, which are characteristic of a temperate northern region. The English language suggests the United States as the country of origin. These clues strongly suggest the United States as the country of origin.",
+            "Conclusion": "United States",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Dirt road",
+              "Mountainous terrain",
+              "Temperate forest",
+              "Northern latitude",
+              "English language"
+            ],
+            "Reasoning": "The image features a dirt road with mountainous terrain and temperate forest vegetation, which are characteristic of a temperate northern region. The English language suggests the United States as the country of origin. These clues strongly suggest the United States as the country of origin. The combination of mountainous terrain and temperate forest vegetation is most consistent with Alaska, a U.S. state known for its northern latitude and wilderness. Conclusion: United States. Uncertainty: Low",
+            "Conclusion": "United States",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Dirt road",
+              "Mountainous terrain",
+              "Temperate forest",
+              "Northern latitude",
+              "English language"
+            ],
+            "Reasoning": "The image shows a dirt road with mountainous terrain and temperate forest vegetation, which are characteristic of a temperate northern region. The English language suggests the United States as the country of origin. These clues strongly suggest the United States as the country of origin and Alaska as the regional guess. The combination of mountainous terrain and temperate forest vegetation is most consistent with Alaska, a U.S. state known for its northern latitude and wilderness. Conclusion: Palmer. Uncertainty: Low",
+            "Conclusion": "Palmer",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "United States; Alaska; Palmer"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Dirt road\",\n        \"Mountainous terrain\",\n        \"Temperate forest\",\n        \"Northern latitude\",\n        \"English language\"\n      ],\n      \"Reasoning\": \"The image shows a dirt road with a mountainous landscape and temperate forest vegetation, which are characteristic of a temperate northern region. The English language suggests the United States as the country of origin. These clues strongly suggest the United States as the country of origin.\",\n      \"Conclusion\": \"United States\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Dirt road\",\n        \"Mountainous terrain\",\n        \"Temperate forest\",\n        \"Northern latitude\",\n        \"English language\"\n      ],\n      \"Reasoning\": \"The image features a dirt road with mountainous terrain and temperate forest vegetation, which are characteristic of a temperate northern region. The English language suggests the United States as the country of origin. These clues strongly suggest the United States as the country of origin. The combination of mountainous terrain and temperate forest vegetation is most consistent with Alaska, a U.S. state known for its northern latitude and wilderness. Conclusion: United States. Uncertainty: Low\",\n      \"Conclusion\": \"United States\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Dirt road\",\n        \"Mountainous terrain\",\n        \"Temperate forest\",\n        \"Northern latitude\",\n        \"English language\"\n      ],\n      \"Reasoning\": \"The image shows a dirt road with mountainous terrain and temperate forest vegetation, which are characteristic of a temperate northern region. The English language suggests the United States as the country of origin. These clues strongly suggest the United States as the country of origin and Alaska as the regional guess. The combination of mountainous terrain and temperate forest vegetation is most consistent with Alaska, a U.S. state known for its northern latitude and wilderness. Conclusion: Palmer. Uncertainty: Low\",\n      \"Conclusion\": \"Palmer\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"United States; Alaska; Palmer\"\n}\n```",
+      "latency_s": 28.55
+    },
+    "tombstone": {
+      "model": "geoagent",
+      "answer": "Italy; South Tyrol; Corvara in Badia",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Mountainous terrain",
+              "Rocky peaks",
+              "Cloudy sky",
+              "European-style architecture",
+              "Alpine vegetation"
+            ],
+            "Reasoning": "The image depicts a mountainous landscape with rocky peaks and alpine vegetation, which are characteristic of European alpine regions. The cloudy sky and the style of the mountains suggest a temperate climate, which is common in Europe. These clues strongly suggest Italy as the country of origin, a European nation known for its alpine regions. Conclusion: Italy. Uncertainty: Low",
+            "Conclusion": "Italy",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Mountainous terrain",
+              "Rocky peaks",
+              "Alpine vegetation",
+              "European-style architecture",
+              "Cloudy sky"
+            ],
+            "Reasoning": "The image shows a mountainous landscape with rocky peaks and alpine vegetation, which are characteristic of European alpine regions. The European-style architecture and cloudy sky further support this. These features are most consistent with Italy, a European country known for its alpine regions. Conclusion: Italy. Uncertainty: Low",
+            "Conclusion": "Italy",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Mountainous terrain",
+              "Rocky peaks",
+              "Alpine vegetation",
+              "European-style architecture",
+              "Cloudy sky"
+            ],
+            "Reasoning": "The image shows a mountainous landscape with rocky peaks and alpine vegetation, which are characteristic of European alpine regions. The European-style architecture and cloudy sky further suggest a European location. These features are most consistent with Italy, a European country known for its alpine regions. Conclusion: Italy. Uncertainty: Low",
+            "Conclusion": "Italy",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Italy; South Tyrol; Corvara in Badia"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Rocky peaks\",\n        \"Cloudy sky\",\n        \"European-style architecture\",\n        \"Alpine vegetation\"\n      ],\n      \"Reasoning\": \"The image depicts a mountainous landscape with rocky peaks and alpine vegetation, which are characteristic of European alpine regions. The cloudy sky and the style of the mountains suggest a temperate climate, which is common in Europe. These clues strongly suggest Italy as the country of origin, a European nation known for its alpine regions. Conclusion: Italy. Uncertainty: Low\",\n      \"Conclusion\": \"Italy\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Rocky peaks\",\n        \"Alpine vegetation\",\n        \"European-style architecture\",\n        \"Cloudy sky\"\n      ],\n      \"Reasoning\": \"The image shows a mountainous landscape with rocky peaks and alpine vegetation, which are characteristic of European alpine regions. The European-style architecture and cloudy sky further support this. These features are most consistent with Italy, a European country known for its alpine regions. Conclusion: Italy. Uncertainty: Low\",\n      \"Conclusion\": \"Italy\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Rocky peaks\",\n        \"Alpine vegetation\",\n        \"European-style architecture\",\n        \"Cloudy sky\"\n      ],\n      \"Reasoning\": \"The image shows a mountainous landscape with rocky peaks and alpine vegetation, which are characteristic of European alpine regions. The European-style architecture and cloudy sky further suggest a European location. These features are most consistent with Italy, a European country known for its alpine regions. Conclusion: Italy. Uncertainty: Low\",\n      \"Conclusion\": \"Italy\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Italy; South Tyrol; Corvara in Badia\"\n}\n```",
+      "latency_s": 26.75
+    },
+    "kangerlussuaq": {
+      "model": "geoagent",
+      "answer": "Greenland; Greenland; Nuuk",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Rugged mountainous terrain",
+              "Arctic-like climate",
+              "Road infrastructure",
+              "English language",
+              "Red triangular warning sign"
+            ],
+            "Reasoning": "The image depicts a rugged mountainous landscape with a road infrastructure that includes a red triangular warning sign, which is commonly used in English-speaking countries. The Arctic-like climate and mountainous terrain suggest a northern location. These clues strongly suggest Greenland as the country of origin, a territory of Denmark, given its Arctic location and infrastructure style.",
+            "Conclusion": "Greenland",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Rugged mountainous terrain",
+              "Arctic-like climate",
+              "Red triangular warning sign",
+              "English language",
+              "Northern location"
+            ],
+            "Reasoning": "The rugged mountainous terrain and Arctic-like climate are characteristic of a northern Arctic region. The red triangular warning sign is commonly used in English-speaking countries, which narrows it down to a Scandinavian country. The combination of these clues strongly suggests Greenland as the regional guess, a territory of Denmark. Conclusion: Greenland. Uncertainty: Low",
+            "Conclusion": "Greenland",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Rugged mountainous terrain",
+              "Arctic-like climate",
+              "Red triangular warning sign",
+              "English language",
+              "Northern location"
+            ],
+            "Reasoning": "The rugged mountainous terrain and Arctic-like climate are characteristic of a northern Arctic region, which narrows the location to Greenland, a territory of Denmark. The red triangular warning sign is commonly used in English-speaking countries, which further supports Greenland as the location. The combination of these clues strongly suggests the precise localization of Nuuk, the capital city of Greenland. Conclusion: Nuuk. Uncertainty: Low",
+            "Conclusion": "Nuuk",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Greenland; Greenland; Nuuk"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Rugged mountainous terrain\",\n        \"Arctic-like climate\",\n        \"Road infrastructure\",\n        \"English language\",\n        \"Red triangular warning sign\"\n      ],\n      \"Reasoning\": \"The image depicts a rugged mountainous landscape with a road infrastructure that includes a red triangular warning sign, which is commonly used in English-speaking countries. The Arctic-like climate and mountainous terrain suggest a northern location. These clues strongly suggest Greenland as the country of origin, a territory of Denmark, given its Arctic location and infrastructure style.\",\n      \"Conclusion\": \"Greenland\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Rugged mountainous terrain\",\n        \"Arctic-like climate\",\n        \"Red triangular warning sign\",\n        \"English language\",\n        \"Northern location\"\n      ],\n      \"Reasoning\": \"The rugged mountainous terrain and Arctic-like climate are characteristic of a northern Arctic region. The red triangular warning sign is commonly used in English-speaking countries, which narrows it down to a Scandinavian country. The combination of these clues strongly suggests Greenland as the regional guess, a territory of Denmark. Conclusion: Greenland. Uncertainty: Low\",\n      \"Conclusion\": \"Greenland\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Rugged mountainous terrain\",\n        \"Arctic-like climate\",\n        \"Red triangular warning sign\",\n        \"English language\",\n        \"Northern location\"\n      ],\n      \"Reasoning\": \"The rugged mountainous terrain and Arctic-like climate are characteristic of a northern Arctic region, which narrows the location to Greenland, a territory of Denmark. The red triangular warning sign is commonly used in English-speaking countries, which further supports Greenland as the location. The combination of these clues strongly suggests the precise localization of Nuuk, the capital city of Greenland. Conclusion: Nuuk. Uncertainty: Low\",\n      \"Conclusion\": \"Nuuk\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Greenland; Greenland; Nuuk\"\n}\n```",
+      "latency_s": 28.09
+    },
+    "colca": {
+      "model": "geoagent",
+      "answer": "Peru; Cusco; Cusco",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Mountainous terrain",
+              "Arid vegetation",
+              "Spanish language",
+              "Cultural elements"
+            ],
+            "Reasoning": "The image shows a mountainous landscape with arid vegetation, which is characteristic of South American countries. The Spanish language and cultural elements further suggest a South American location. These clues strongly suggest Peru as the country of origin.",
+            "Conclusion": "Peru",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Mountainous terrain",
+              "Arid vegetation",
+              "Spanish language",
+              "Cultural elements",
+              "Railing design"
+            ],
+            "Reasoning": "The mountainous terrain and arid vegetation are characteristic of South American countries, and the Spanish language suggests a Spanish-speaking country. The cultural elements and the design of the railing are consistent with South American architecture. These clues strongly suggest Peru as the country and Cusco as the regional guess. Conclusion: Peru. Uncertainty: Low",
+            "Conclusion": "Peru",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Mountainous terrain",
+              "Arid vegetation",
+              "Spanish language",
+              "Cultural elements",
+              "Railing design"
+            ],
+            "Reasoning": "The mountainous terrain and arid vegetation are characteristic of South American countries, and the Spanish language suggests a Spanish-speaking country. The cultural elements and the design of the railing are consistent with South American architecture. These clues strongly suggest Cusco as the precise localization. Conclusion: Cusco. Uncertainty: Low",
+            "Conclusion": "Cusco",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Peru; Cusco; Cusco"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Arid vegetation\",\n        \"Spanish language\",\n        \"Cultural elements\"\n      ],\n      \"Reasoning\": \"The image shows a mountainous landscape with arid vegetation, which is characteristic of South American countries. The Spanish language and cultural elements further suggest a South American location. These clues strongly suggest Peru as the country of origin.\",\n      \"Conclusion\": \"Peru\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Arid vegetation\",\n        \"Spanish language\",\n        \"Cultural elements\",\n        \"Railing design\"\n      ],\n      \"Reasoning\": \"The mountainous terrain and arid vegetation are characteristic of South American countries, and the Spanish language suggests a Spanish-speaking country. The cultural elements and the design of the railing are consistent with South American architecture. These clues strongly suggest Peru as the country and Cusco as the regional guess. Conclusion: Peru. Uncertainty: Low\",\n      \"Conclusion\": \"Peru\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Arid vegetation\",\n        \"Spanish language\",\n        \"Cultural elements\",\n        \"Railing design\"\n      ],\n      \"Reasoning\": \"The mountainous terrain and arid vegetation are characteristic of South American countries, and the Spanish language suggests a Spanish-speaking country. The cultural elements and the design of the railing are consistent with South American architecture. These clues strongly suggest Cusco as the precise localization. Conclusion: Cusco. Uncertainty: Low\",\n      \"Conclusion\": \"Cusco\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Peru; Cusco; Cusco\"\n}\n```",
+      "latency_s": 24.78
+    },
+    "khibiny": {
+      "model": "geoagent",
+      "answer": "Norway; Oppland; Trysil",
+      "parsed": {
+        "ChainOfThought": {
+          "CountryIdentification": {
+            "Clues": [
+              "Mountainous terrain",
+              "Northern European vegetation",
+              "Cable car infrastructure",
+              "Northern European climate"
+            ],
+            "Reasoning": "The image shows a mountainous landscape with autumnal vegetation, which is characteristic of northern European countries. The presence of a cable car suggests a tourist destination, and the overall environment aligns with a temperate northern European climate. These clues strongly suggest Norway, a Scandinavian country known for its mountainous terrain and northern European climate. Conclusion: Norway. Uncertainty: Low",
+            "Conclusion": "Norway",
+            "Uncertainty": "Low"
+          },
+          "RegionalGuess": {
+            "Clues": [
+              "Mountainous terrain",
+              "Northern European vegetation",
+              "Cable car infrastructure",
+              "Northern European climate"
+            ],
+            "Reasoning": "The mountainous terrain and northern European vegetation suggest a location in a Scandinavian country. The cable car infrastructure and the temperate climate further support this, as they are common in mountainous regions in northern Europe. These clues strongly suggest Norway, a Scandinavian country known for its mountainous terrain and northern European climate. Conclusion: Norway. Uncertainty: Low",
+            "Conclusion": "Norway",
+            "Uncertainty": "Low"
+          },
+          "PreciseLocalization": {
+            "Clues": [
+              "Mountainous terrain",
+              "Northern European vegetation",
+              "Cable car infrastructure",
+              "Northern European climate"
+            ],
+            "Reasoning": "The mountainous terrain and northern European vegetation suggest a location in a Scandinavian country. The cable car infrastructure and the temperate climate further support this, as they are common in mountainous regions in northern Europe. These clues strongly suggest Norway as the country and Jotunheimen as the region, as it is a well-known mountainous area in Norway. Conclusion: Trysil. Uncertainty: Low",
+            "Conclusion": "Trysil",
+            "Uncertainty": "Low"
+          }
+        },
+        "FinalAnswer": "Norway; Oppland; Trysil"
+      },
+      "text": "```json\n{\n  \"ChainOfThought\": {\n    \"CountryIdentification\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Northern European vegetation\",\n        \"Cable car infrastructure\",\n        \"Northern European climate\"\n      ],\n      \"Reasoning\": \"The image shows a mountainous landscape with autumnal vegetation, which is characteristic of northern European countries. The presence of a cable car suggests a tourist destination, and the overall environment aligns with a temperate northern European climate. These clues strongly suggest Norway, a Scandinavian country known for its mountainous terrain and northern European climate. Conclusion: Norway. Uncertainty: Low\",\n      \"Conclusion\": \"Norway\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"RegionalGuess\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Northern European vegetation\",\n        \"Cable car infrastructure\",\n        \"Northern European climate\"\n      ],\n      \"Reasoning\": \"The mountainous terrain and northern European vegetation suggest a location in a Scandinavian country. The cable car infrastructure and the temperate climate further support this, as they are common in mountainous regions in northern Europe. These clues strongly suggest Norway, a Scandinavian country known for its mountainous terrain and northern European climate. Conclusion: Norway. Uncertainty: Low\",\n      \"Conclusion\": \"Norway\",\n      \"Uncertainty\": \"Low\"\n    },\n    \"PreciseLocalization\": {\n      \"Clues\": [\n        \"Mountainous terrain\",\n        \"Northern European vegetation\",\n        \"Cable car infrastructure\",\n        \"Northern European climate\"\n      ],\n      \"Reasoning\": \"The mountainous terrain and northern European vegetation suggest a location in a Scandinavian country. The cable car infrastructure and the temperate climate further support this, as they are common in mountainous regions in northern Europe. These clues strongly suggest Norway as the country and Jotunheimen as the region, as it is a well-known mountainous area in Norway. Conclusion: Trysil. Uncertainty: Low\",\n      \"Conclusion\": \"Trysil\",\n      \"Uncertainty\": \"Low\"\n    }\n  },\n  \"FinalAnswer\": \"Norway; Oppland; Trysil\"\n}\n```",
+      "latency_s": 27.36
+    }
+  }
+}

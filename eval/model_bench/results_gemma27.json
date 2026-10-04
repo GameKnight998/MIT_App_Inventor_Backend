@@ -1,0 +1,589 @@
+{
+  "gemma27": {
+    "atacama": {
+      "model": "gemma27",
+      "answer": "Licancabur Volcano, San Pedro de Atacama, Antofagasta, Chile",
+      "parsed": {
+        "country": "Chile",
+        "region": "Antofagasta",
+        "city": "San Pedro de Atacama",
+        "specific_location": "Licancabur Volcano",
+        "latitude": -24.1333,
+        "longitude": -67.875,
+        "confidence": 0.95,
+        "clues": [
+          "Volcanic cone shape",
+          "Arid, high-altitude desert landscape",
+          "Sparse vegetation",
+          "Color of the terrain",
+          "Mountain range in the background",
+          "Geological features consistent with the Atacama Desert"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Chile\",\n  \"region\": \"Antofagasta\",\n  \"city\": \"San Pedro de Atacama\",\n  \"specific_location\": \"Licancabur Volcano\",\n  \"latitude\": -24.1333,\n  \"longitude\": -67.875,\n  \"confidence\": 0.95,\n  \"clues\": [\n    \"Volcanic cone shape\",\n    \"Arid, high-altitude desert landscape\",\n    \"Sparse vegetation\",\n    \"Color of the terrain\",\n    \"Mountain range in the background\",\n    \"Geological features consistent with the Atacama Desert\"\n  ]\n}\n```",
+      "latency_s": 19.51
+    },
+    "altiplano": {
+      "model": "gemma27",
+      "answer": "Laguna Cejar, San Pedro de Atacama, Atacama Desert, Chile",
+      "parsed": {
+        "country": "Chile",
+        "region": "Atacama Desert",
+        "city": "San Pedro de Atacama",
+        "specific_location": "Laguna Cejar",
+        "latitude": -23.65,
+        "longitude": -67.93,
+        "confidence": 0.95,
+        "clues": [
+          "high altitude desert landscape",
+          "salt flat",
+          "arid terrain",
+          "sparse vegetation",
+          "reddish-brown rock formations",
+          "snow-capped mountains in the distance",
+          "clear blue sky",
+          "geological features consistent with the Atacama Desert"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Chile\",\n  \"region\": \"Atacama Desert\",\n  \"city\": \"San Pedro de Atacama\",\n  \"specific_location\": \"Laguna Cejar\",\n  \"latitude\": -23.65,\n  \"longitude\": -67.93,\n  \"confidence\": 0.95,\n  \"clues\": [\n    \"high altitude desert landscape\",\n    \"salt flat\",\n    \"arid terrain\",\n    \"sparse vegetation\",\n    \"reddish-brown rock formations\",\n    \"snow-capped mountains in the distance\",\n    \"clear blue sky\",\n    \"geological features consistent with the Atacama Desert\"\n  ]\n}\n```",
+      "latency_s": 8.55
+    },
+    "patagonia": {
+      "model": "gemma27",
+      "answer": "Laguna Nimez Reserve, El Calafate, Patagonia, Argentina",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Patagonia",
+        "city": "El Calafate",
+        "specific_location": "Laguna Nimez Reserve",
+        "latitude": -51.1333,
+        "longitude": -71.5333,
+        "confidence": 0.75,
+        "clues": [
+          "High-altitude grassland",
+          "Reflections in a shallow lake",
+          "Sheep grazing",
+          "Arid climate",
+          "Patagonian landscape",
+          "Vegetation type consistent with Patagonian steppe"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Argentina\",\n  \"region\": \"Patagonia\",\n  \"city\": \"El Calafate\",\n  \"specific_location\": \"Laguna Nimez Reserve\",\n  \"latitude\": -51.1333,\n  \"longitude\": -71.5333,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"High-altitude grassland\",\n    \"Reflections in a shallow lake\",\n    \"Sheep grazing\",\n    \"Arid climate\",\n    \"Patagonian landscape\",\n    \"Vegetation type consistent with Patagonian steppe\"\n  ]\n}\n```",
+      "latency_s": 7.8
+    },
+    "tierra_del_fuego": {
+      "model": "gemma27",
+      "answer": "Lago Argentino, near Cerro Fitz Roy, El Calafate, Santa Cruz Province, Argentina",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Santa Cruz Province",
+        "city": "El Calafate",
+        "specific_location": "Lago Argentino, near Cerro Fitz Roy",
+        "latitude": -51.12,
+        "longitude": -73.08,
+        "confidence": 0.85,
+        "clues": [
+          "Glaciated mountains",
+          "Large lake",
+          "Patagonian landscape",
+          "Ship/boat in the water",
+          "Sparse vegetation",
+          "Cloudy/overcast weather",
+          "Southern Hemisphere climate"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Argentina\",\n  \"region\": \"Santa Cruz Province\",\n  \"city\": \"El Calafate\",\n  \"specific_location\": \"Lago Argentino, near Cerro Fitz Roy\",\n  \"latitude\": -51.12,\n  \"longitude\": -73.08,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"Glaciated mountains\",\n    \"Large lake\",\n    \"Patagonian landscape\",\n    \"Ship/boat in the water\",\n    \"Sparse vegetation\",\n    \"Cloudy/overcast weather\",\n    \"Southern Hemisphere climate\"\n  ]\n}\n```",
+      "latency_s": 7.88
+    },
+    "damaraland": {
+      "model": "gemma27",
+      "answer": "Charnley River-Rudall National Park, Marble Bar, Western Australia, Australia",
+      "parsed": {
+        "country": "Australia",
+        "region": "Western Australia",
+        "city": "Marble Bar",
+        "specific_location": "Charnley River-Rudall National Park",
+        "latitude": -21.55,
+        "longitude": 119.83,
+        "confidence": 0.85,
+        "clues": [
+          "red rock formations",
+          "arid climate",
+          "sparse vegetation",
+          "geological features consistent with Pilbara region",
+          "rock weathering patterns",
+          "terrain"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Australia\",\n  \"region\": \"Western Australia\",\n  \"city\": \"Marble Bar\",\n  \"specific_location\": \"Charnley River-Rudall National Park\",\n  \"latitude\": -21.55,\n  \"longitude\": 119.83,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"red rock formations\",\n    \"arid climate\",\n    \"sparse vegetation\",\n    \"geological features consistent with Pilbara region\",\n    \"rock weathering patterns\",\n    \"terrain\"\n  ]\n}\n```",
+      "latency_s": 7.22
+    },
+    "namib": {
+      "model": "gemma27",
+      "answer": "Deadvlei, Sesriem, Khomas, Namibia",
+      "parsed": {
+        "country": "Namibia",
+        "region": "Khomas",
+        "city": "Sesriem",
+        "specific_location": "Deadvlei",
+        "latitude": -24.7667,
+        "longitude": 15.2833,
+        "confidence": 0.95,
+        "clues": [
+          "arid desert landscape",
+          "red sand dunes",
+          "dead acacia trees",
+          "clay pan",
+          "sparse vegetation",
+          "distinctive tree shape",
+          "desert climate"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Namibia\",\n  \"region\": \"Khomas\",\n  \"city\": \"Sesriem\",\n  \"specific_location\": \"Deadvlei\",\n  \"latitude\": -24.7667,\n  \"longitude\": 15.2833,\n  \"confidence\": 0.95,\n  \"clues\": [\n    \"arid desert landscape\",\n    \"red sand dunes\",\n    \"dead acacia trees\",\n    \"clay pan\",\n    \"sparse vegetation\",\n    \"distinctive tree shape\",\n    \"desert climate\"\n  ]\n}\n```",
+      "latency_s": 7.38
+    },
+    "tassili": {
+      "model": "gemma27",
+      "answer": "Road to El Gouna, Hurghada, Eastern Desert, Egypt",
+      "parsed": {
+        "country": "Egypt",
+        "region": "Eastern Desert",
+        "city": "Hurghada",
+        "specific_location": "Road to El Gouna",
+        "latitude": 26.86,
+        "longitude": 33.92,
+        "confidence": 0.85,
+        "clues": [
+          "desert landscape",
+          "sand dunes",
+          "arid climate",
+          "road markings",
+          "road sign (likely Arabic)",
+          "terrain consistent with the Eastern Desert of Egypt",
+          "proximity to the Red Sea (Hurghada is a coastal city)"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Egypt\",\n  \"region\": \"Eastern Desert\",\n  \"city\": \"Hurghada\",\n  \"specific_location\": \"Road to El Gouna\",\n  \"latitude\": 26.86,\n  \"longitude\": 33.92,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"desert landscape\",\n    \"sand dunes\",\n    \"arid climate\",\n    \"road markings\",\n    \"road sign (likely Arabic)\",\n    \"terrain consistent with the Eastern Desert of Egypt\",\n    \"proximity to the Red Sea (Hurghada is a coastal city)\"\n  ]\n}\n```",
+      "latency_s": 8.0
+    },
+    "simien": {
+      "model": "gemma27",
+      "answer": "Near Yemrehanna Kristos Church, Lalibela, Amhara, Ethiopia",
+      "parsed": {
+        "country": "Ethiopia",
+        "region": "Amhara",
+        "city": "Lalibela",
+        "specific_location": "Near Yemrehanna Kristos Church",
+        "latitude": 11.0333,
+        "longitude": 39.0333,
+        "confidence": 0.85,
+        "clues": [
+          "Terrain: rugged mountains, deep valleys, and plateaus",
+          "Vegetation: sparse, dry grassland and scrub",
+          "Livestock: presence of cattle grazing",
+          "Geological formations: distinctive rock spires and cliffs",
+          "Climate: appears arid or semi-arid",
+          "Landscape: strongly resembles the landscapes around Lalibela, Ethiopia"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Ethiopia\",\n  \"region\": \"Amhara\",\n  \"city\": \"Lalibela\",\n  \"specific_location\": \"Near Yemrehanna Kristos Church\",\n  \"latitude\": 11.0333,\n  \"longitude\": 39.0333,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"Terrain: rugged mountains, deep valleys, and plateaus\",\n    \"Vegetation: sparse, dry grassland and scrub\",\n    \"Livestock: presence of cattle grazing\",\n    \"Geological formations: distinctive rock spires and cliffs\",\n    \"Climate: appears arid or semi-arid\",\n    \"Landscape: strongly resembles the landscapes around Lalibela, Ethiopia\"\n  ]\n}\n```",
+      "latency_s": 9.37
+    },
+    "maasai_mara": {
+      "model": "gemma27",
+      "answer": "Serengeti National Park, central Serengeti, Seronera, Serengeti, Tanzania",
+      "parsed": {
+        "country": "Tanzania",
+        "region": "Serengeti",
+        "city": "Seronera",
+        "specific_location": "Serengeti National Park, central Serengeti",
+        "latitude": -2.3333,
+        "longitude": 34.8333,
+        "confidence": 0.95,
+        "clues": [
+          "African savanna grassland",
+          "presence of zebras (Plains Zebra)",
+          "typical East African vegetation",
+          "terrain consistent with Serengeti National Park"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Tanzania\",\n  \"region\": \"Serengeti\",\n  \"city\": \"Seronera\",\n  \"specific_location\": \"Serengeti National Park, central Serengeti\",\n  \"latitude\": -2.3333,\n  \"longitude\": 34.8333,\n  \"confidence\": 0.95,\n  \"clues\": [\"African savanna grassland\", \"presence of zebras (Plains Zebra)\", \"typical East African vegetation\", \"terrain consistent with Serengeti National Park\"]\n}\n```",
+      "latency_s": 6.55
+    },
+    "iceland_highlands": {
+      "model": "gemma27",
+      "answer": "Reykjadalur hot spring river, Hveragerði, Southern Region, Iceland",
+      "parsed": {
+        "country": "Iceland",
+        "region": "Southern Region",
+        "city": "Hveragerði",
+        "specific_location": "Reykjadalur hot spring river",
+        "latitude": 64.023,
+        "longitude": -64.248,
+        "confidence": 0.95,
+        "clues": [
+          "Geothermal activity (hot spring, steam)",
+          "Volcanic landscape (hills, rock formations)",
+          "Sparse vegetation typical of Iceland",
+          "River with colorful mineral deposits",
+          "Terrain and climate consistent with Iceland"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Iceland\",\n  \"region\": \"Southern Region\",\n  \"city\": \"Hveragerði\",\n  \"specific_location\": \"Reykjadalur hot spring river\",\n  \"latitude\": 64.023,\n  \"longitude\": -64.248,\n  \"confidence\": 0.95,\n  \"clues\": [\n    \"Geothermal activity (hot spring, steam)\",\n    \"Volcanic landscape (hills, rock formations)\",\n    \"Sparse vegetation typical of Iceland\",\n    \"River with colorful mineral deposits\",\n    \"Terrain and climate consistent with Iceland\"\n  ]\n}\n```",
+      "latency_s": 7.73
+    },
+    "glen_coe": {
+      "model": "gemma27",
+      "answer": "Glencoe Valley, Fort William, Scotland, United Kingdom",
+      "parsed": {
+        "country": "United Kingdom",
+        "region": "Scotland",
+        "city": "Fort William",
+        "specific_location": "Glencoe Valley",
+        "latitude": 56.6,
+        "longitude": -4.85,
+        "confidence": 0.95,
+        "clues": [
+          "mountainous terrain",
+          "green valleys",
+          "cloud cover",
+          "typical Scottish landscape",
+          "rocky peaks",
+          "sparse vegetation",
+          "road visible in foreground"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"United Kingdom\",\n  \"region\": \"Scotland\",\n  \"city\": \"Fort William\",\n  \"specific_location\": \"Glencoe Valley\",\n  \"latitude\": 56.60,\n  \"longitude\": -4.85,\n  \"confidence\": 0.95,\n  \"clues\": [\n    \"mountainous terrain\",\n    \"green valleys\",\n    \"cloud cover\",\n    \"typical Scottish landscape\",\n    \"rocky peaks\",\n    \"sparse vegetation\",\n    \"road visible in foreground\"\n  ]\n}\n```",
+      "latency_s": 7.08
+    },
+    "svalbard": {
+      "model": "gemma27",
+      "answer": "Reinebringen mountain, Reine, Lofoten, Nordland, Norway",
+      "parsed": {
+        "country": "Norway",
+        "region": "Nordland",
+        "city": "Lofoten",
+        "specific_location": "Reinebringen mountain, Reine",
+        "latitude": 67.97,
+        "longitude": 13.06,
+        "confidence": 0.85,
+        "clues": [
+          "snow-covered mountains with jagged peaks",
+          "arctic/subarctic climate",
+          "darkness suggesting high latitude or winter",
+          "terrain",
+          "dog breed (likely herding breed common in Nordic countries)",
+          "reflective safety vest"
+        ]
+      },
+      "text": "```json\n{\"country\": \"Norway\", \"region\": \"Nordland\", \"city\": \"Lofoten\", \"specific_location\": \"Reinebringen mountain, Reine\", \"latitude\": 67.97, \"longitude\": 13.06, \"confidence\": 0.85, \"clues\": [\"snow-covered mountains with jagged peaks\", \"arctic/subarctic climate\", \"darkness suggesting high latitude or winter\", \"terrain\", \"dog breed (likely herding breed common in Nordic countries)\", \"reflective safety vest\"]}\n```",
+      "latency_s": 6.1
+    },
+    "lapland": {
+      "model": "gemma27",
+      "answer": "Fagervikfjellet mountain, Narvik, Nordland, Norway",
+      "parsed": {
+        "country": "Norway",
+        "region": "Nordland",
+        "city": "Narvik",
+        "specific_location": "Fagervikfjellet mountain",
+        "latitude": 68.52,
+        "longitude": 17.42,
+        "confidence": 0.85,
+        "clues": [
+          "Scandinavian landscape",
+          "Alpine tundra vegetation",
+          "Rocky mountain with sparse vegetation",
+          "Small wooden structure (likely a shelter)",
+          "Terrain and climate suggest high latitude",
+          "Mountain shape matches Fagervikfjellet"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Norway\",\n  \"region\": \"Nordland\",\n  \"city\": \"Narvik\",\n  \"specific_location\": \"Fagervikfjellet mountain\",\n  \"latitude\": 68.52,\n  \"longitude\": 17.42,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"Scandinavian landscape\",\n    \"Alpine tundra vegetation\",\n    \"Rocky mountain with sparse vegetation\",\n    \"Small wooden structure (likely a shelter)\",\n    \"Terrain and climate suggest high latitude\",\n    \"Mountain shape matches Fagervikfjellet\"\n  ]\n}\n```",
+      "latency_s": 7.78
+    },
+    "altai": {
+      "model": "gemma27",
+      "answer": "Ala-Köl Lake trail, Terskey Alatau range, Chatkal, Talas Region, Kyrgyzstan",
+      "parsed": {
+        "country": "Kyrgyzstan",
+        "region": "Talas Region",
+        "city": "Chatkal",
+        "specific_location": "Ala-Köl Lake trail, Terskey Alatau range",
+        "latitude": 42.35,
+        "longitude": 71.35,
+        "confidence": 0.75,
+        "clues": [
+          "High-altitude alpine terrain",
+          "Sparse vegetation consistent with Central Asian mountains",
+          "Glacial river",
+          "Rocky, barren slopes",
+          "Coniferous trees",
+          "U-shaped valley",
+          "Terrain and vegetation suggest a mountainous region in Central Asia"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Kyrgyzstan\",\n  \"region\": \"Talas Region\",\n  \"city\": \"Chatkal\",\n  \"specific_location\": \"Ala-Köl Lake trail, Terskey Alatau range\",\n  \"latitude\": 42.35,\n  \"longitude\": 71.35,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"High-altitude alpine terrain\",\n    \"Sparse vegetation consistent with Central Asian mountains\",\n    \"Glacial river\",\n    \"Rocky, barren slopes\",\n    \"Coniferous trees\",\n    \"U-shaped valley\",\n    \"Terrain and vegetation suggest a mountainous region in Central Asia\"\n  ]\n}\n```",
+      "latency_s": 8.53
+    },
+    "charyn": {
+      "model": "gemma27",
+      "answer": "Trans-Ili Alatau mountains, near Almaty, Almaty, Almaty Province, Kazakhstan",
+      "parsed": {
+        "country": "Kazakhstan",
+        "region": "Almaty Province",
+        "city": "Almaty",
+        "specific_location": "Trans-Ili Alatau mountains, near Almaty",
+        "latitude": 43.25,
+        "longitude": 76.88,
+        "confidence": 0.75,
+        "clues": [
+          "arid mountainous terrain",
+          "sparse vegetation",
+          "reddish-brown soil and rock formations",
+          "geological features consistent with the Tian Shan mountain range",
+          "climate suggests a semi-arid or continental climate",
+          "terrain resembles the foothills of the Trans-Ili Alatau"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Kazakhstan\",\n  \"region\": \"Almaty Province\",\n  \"city\": \"Almaty\",\n  \"specific_location\": \"Trans-Ili Alatau mountains, near Almaty\",\n  \"latitude\": 43.25,\n  \"longitude\": 76.88,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"arid mountainous terrain\",\n    \"sparse vegetation\",\n    \"reddish-brown soil and rock formations\",\n    \"geological features consistent with the Tian Shan mountain range\",\n    \"climate suggests a semi-arid or continental climate\",\n    \"terrain resembles the foothills of the Trans-Ili Alatau\"\n  ]\n}\n```",
+      "latency_s": 8.88
+    },
+    "song_kol": {
+      "model": "gemma27",
+      "answer": "Lake Khuvsgul, Khuvsgul, Khövsgöl, Mongolia",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Khövsgöl",
+        "city": "Khuvsgul",
+        "specific_location": "Lake Khuvsgul",
+        "latitude": 49.22,
+        "longitude": 116.78,
+        "confidence": 0.85,
+        "clues": [
+          "large freshwater lake",
+          "rolling hills and grasslands",
+          "sparse vegetation",
+          "terrain suggests a high-altitude environment",
+          "cloud formations consistent with continental climate",
+          "geological features suggest volcanic or glacial activity",
+          "landscape resembles areas in Mongolia and Siberia"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Mongolia\",\n  \"region\": \"Khövsgöl\",\n  \"city\": \"Khuvsgul\",\n  \"specific_location\": \"Lake Khuvsgul\",\n  \"latitude\": 49.22,\n  \"longitude\": 116.78,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"large freshwater lake\",\n    \"rolling hills and grasslands\",\n    \"sparse vegetation\",\n    \"terrain suggests a high-altitude environment\",\n    \"cloud formations consistent with continental climate\",\n    \"geological features suggest volcanic or glacial activity\",\n    \"landscape resembles areas in Mongolia and Siberia\"\n  ]\n}\n```",
+      "latency_s": 8.41
+    },
+    "ladakh": {
+      "model": "gemma27",
+      "answer": "Road to Khardung La, Leh, Ladakh, India",
+      "parsed": {
+        "country": "India",
+        "region": "Ladakh",
+        "city": "Leh",
+        "specific_location": "Road to Khardung La",
+        "latitude": 34.22,
+        "longitude": 77.63,
+        "confidence": 0.85,
+        "clues": [
+          "High-altitude desert landscape",
+          "Winding mountain road",
+          "Sparse vegetation",
+          "Snow-capped Himalayan peaks in the distance",
+          "Terrain consistent with Ladakh region",
+          "Road construction style"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"India\",\n  \"region\": \"Ladakh\",\n  \"city\": \"Leh\",\n  \"specific_location\": \"Road to Khardung La\",\n  \"latitude\": 34.22,\n  \"longitude\": 77.63,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"High-altitude desert landscape\",\n    \"Winding mountain road\",\n    \"Sparse vegetation\",\n    \"Snow-capped Himalayan peaks in the distance\",\n    \"Terrain consistent with Ladakh region\",\n    \"Road construction style\"\n  ]\n}\n```",
+      "latency_s": 7.57
+    },
+    "mongolia_steppe": {
+      "model": "gemma27",
+      "answer": "Dornod Mongol Steppe, Choibalsan, Eastern Mongolia, Mongolia",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Eastern Mongolia",
+        "city": "Choibalsan",
+        "specific_location": "Dornod Mongol Steppe",
+        "latitude": 47.58,
+        "longitude": 115.55,
+        "confidence": 0.85,
+        "clues": [
+          "Przewalski's horse (Takhi)",
+          "Steppe grassland",
+          "Arid climate",
+          "Sparse vegetation",
+          "Rolling hills"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Mongolia\",\n  \"region\": \"Eastern Mongolia\",\n  \"city\": \"Choibalsan\",\n  \"specific_location\": \"Dornod Mongol Steppe\",\n  \"latitude\": 47.58,\n  \"longitude\": 115.55,\n  \"confidence\": 0.85,\n  \"clues\": [\"Przewalski's horse (Takhi)\", \"Steppe grassland\", \"Arid climate\", \"Sparse vegetation\", \"Rolling hills\"]\n}\n```",
+      "latency_s": 6.28
+    },
+    "gobi": {
+      "model": "gemma27",
+      "answer": "Col d'Izoard road, Briançon, Auvergne-Rhône-Alpes, France",
+      "parsed": {
+        "country": "France",
+        "region": "Auvergne-Rhône-Alpes",
+        "city": "Briançon",
+        "specific_location": "Col d'Izoard road",
+        "latitude": 44.63,
+        "longitude": 6.58,
+        "confidence": 0.85,
+        "clues": [
+          "No goats sign",
+          "Alpine terrain",
+          "Rocky mountains",
+          "Sparse vegetation",
+          "Road sign style (European)",
+          "Road markings",
+          "Mountain pass road"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"France\",\n  \"region\": \"Auvergne-Rhône-Alpes\",\n  \"city\": \"Briançon\",\n  \"specific_location\": \"Col d'Izoard road\",\n  \"latitude\": 44.63,\n  \"longitude\": 6.58,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"No goats sign\",\n    \"Alpine terrain\",\n    \"Rocky mountains\",\n    \"Sparse vegetation\",\n    \"Road sign style (European)\",\n    \"Road markings\",\n    \"Mountain pass road\"\n  ]\n}\n```",
+      "latency_s": 7.47
+    },
+    "wahiba": {
+      "model": "gemma27",
+      "answer": "Rub' al Khali desert, Liwa Oasis, Abu Dhabi, United Arab Emirates",
+      "parsed": {
+        "country": "United Arab Emirates",
+        "region": "Abu Dhabi",
+        "city": "Liwa Oasis",
+        "specific_location": "Rub' al Khali desert",
+        "latitude": 24.08,
+        "longitude": 54.67,
+        "confidence": 0.85,
+        "clues": [
+          "large sand dunes",
+          "arid climate",
+          "sparse vegetation",
+          "desert landscape",
+          "color of sand"
+        ]
+      },
+      "text": "```json\n{\"country\": \"United Arab Emirates\", \"region\": \"Abu Dhabi\", \"city\": \"Liwa Oasis\", \"specific_location\": \"Rub' al Khali desert\", \"latitude\": 24.08, \"longitude\": 54.67, \"confidence\": 0.85, \"clues\": [\"large sand dunes\", \"arid climate\", \"sparse vegetation\", \"desert landscape\", \"color of sand\"]}\n```",
+      "latency_s": 4.97
+    },
+    "denali_hwy": {
+      "model": "gemma27",
+      "answer": "Denali Highway, near Cantwell, Cantwell, Alaska, United States",
+      "parsed": {
+        "country": "United States",
+        "region": "Alaska",
+        "city": "Cantwell",
+        "specific_location": "Denali Highway, near Cantwell",
+        "latitude": 63.73,
+        "longitude": -149.05,
+        "confidence": 0.85,
+        "clues": [
+          "road surface (gravel/dirt)",
+          "sparse vegetation (taiga/boreal forest)",
+          "large river/lake",
+          "mountain range (Denali range)",
+          "climate (subarctic)",
+          "road signs (yellow diamond)",
+          "road markings (single solid line)",
+          "driving side (right)",
+          "terrain (flat river valley with mountains in the background)"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"United States\",\n  \"region\": \"Alaska\",\n  \"city\": \"Cantwell\",\n  \"specific_location\": \"Denali Highway, near Cantwell\",\n  \"latitude\": 63.73,\n  \"longitude\": -149.05,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"road surface (gravel/dirt)\",\n    \"sparse vegetation (taiga/boreal forest)\",\n    \"large river/lake\",\n    \"mountain range (Denali range)\",\n    \"climate (subarctic)\",\n    \"road signs (yellow diamond)\",\n    \"road markings (single solid line)\",\n    \"driving side (right)\",\n    \"terrain (flat river valley with mountains in the background)\"\n  ]\n}\n```",
+      "latency_s": 9.51
+    },
+    "tombstone": {
+      "model": "gemma27",
+      "answer": "Putorana Plateau, Norilsk, Krasnoyarsk Krai, Russia",
+      "parsed": {
+        "country": "Russia",
+        "region": "Krasnoyarsk Krai",
+        "city": "Norilsk",
+        "specific_location": "Putorana Plateau",
+        "latitude": 69.23,
+        "longitude": 92.83,
+        "confidence": 0.75,
+        "clues": [
+          "alpine tundra vegetation",
+          "distinctive rock formations",
+          "remote mountainous terrain",
+          "cloud cover consistent with Siberian climate",
+          "lack of human infrastructure"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Russia\",\n  \"region\": \"Krasnoyarsk Krai\",\n  \"city\": \"Norilsk\",\n  \"specific_location\": \"Putorana Plateau\",\n  \"latitude\": 69.23,\n  \"longitude\": 92.83,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"alpine tundra vegetation\",\n    \"distinctive rock formations\",\n    \"remote mountainous terrain\",\n    \"cloud cover consistent with Siberian climate\",\n    \"lack of human infrastructure\"\n  ]\n}\n```",
+      "latency_s": 7.01
+    },
+    "kangerlussuaq": {
+      "model": "gemma27",
+      "answer": "Near Mýrdalsjökull glacier, Route 1, Vik i Myrdal, Southern Region, Iceland",
+      "parsed": {
+        "country": "Iceland",
+        "region": "Southern Region",
+        "city": "Vik i Myrdal",
+        "specific_location": "Near Mýrdalsjökull glacier, Route 1",
+        "latitude": 63.68,
+        "longitude": -19.02,
+        "confidence": 0.75,
+        "clues": [
+          "Glacial outwash plain (sandy, gravelly terrain)",
+          "Volcanic landscape",
+          "Sparse vegetation",
+          "Power lines",
+          "Road markings and signage consistent with Iceland",
+          "Mountainous terrain",
+          "Climate suggests high latitude",
+          "Bridge over a glacial river"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Iceland\",\n  \"region\": \"Southern Region\",\n  \"city\": \"Vik i Myrdal\",\n  \"specific_location\": \"Near Mýrdalsjökull glacier, Route 1\",\n  \"latitude\": 63.68,\n  \"longitude\": -19.02,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Glacial outwash plain (sandy, gravelly terrain)\",\n    \"Volcanic landscape\",\n    \"Sparse vegetation\",\n    \"Power lines\",\n    \"Road markings and signage consistent with Iceland\",\n    \"Mountainous terrain\",\n    \"Climate suggests high latitude\",\n    \"Bridge over a glacial river\"\n  ]\n}\n```",
+      "latency_s": 8.84
+    },
+    "colca": {
+      "model": "gemma27",
+      "answer": "Mirador de Chinchero viewpoint overlooking the Sacred Valley, Chinchero, Cusco Region, Peru",
+      "parsed": {
+        "country": "Peru",
+        "region": "Cusco Region",
+        "city": "Chinchero",
+        "specific_location": "Mirador de Chinchero viewpoint overlooking the Sacred Valley",
+        "latitude": -13.7667,
+        "longitude": -71.8833,
+        "confidence": 0.85,
+        "clues": [
+          "High-altitude Andean mountains",
+          "Dry, arid terrain",
+          "Stone and wooden construction of the viewpoint",
+          "Terraced hillsides",
+          "Typical tourist viewpoint setup",
+          "Vegetation consistent with the Andes",
+          "Road winding through the valley"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Peru\",\n  \"region\": \"Cusco Region\",\n  \"city\": \"Chinchero\",\n  \"specific_location\": \"Mirador de Chinchero viewpoint overlooking the Sacred Valley\",\n  \"latitude\": -13.7667,\n  \"longitude\": -71.8833,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"High-altitude Andean mountains\",\n    \"Dry, arid terrain\",\n    \"Stone and wooden construction of the viewpoint\",\n    \"Terraced hillsides\",\n    \"Typical tourist viewpoint setup\",\n    \"Vegetation consistent with the Andes\",\n    \"Road winding through the valley\"\n  ]\n}\n```",
+      "latency_s": 8.64
+    },
+    "khibiny": {
+      "model": "gemma27",
+      "answer": "Aurlandsfjellet National Park, near Stegastein Viewpoint, Aurland, Vestland, Norway",
+      "parsed": {
+        "country": "Norway",
+        "region": "Vestland",
+        "city": "Aurland",
+        "specific_location": "Aurlandsfjellet National Park, near Stegastein Viewpoint",
+        "latitude": 61.08,
+        "longitude": 7.82,
+        "confidence": 0.75,
+        "clues": [
+          "Scandinavian landscape",
+          "Alpine terrain",
+          "Sparse vegetation typical of high altitudes in Scandinavia",
+          "Ski lift infrastructure",
+          "Gravel road",
+          "Mountainous terrain with exposed rock",
+          "Cloud cover consistent with Norwegian weather patterns"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Norway\",\n  \"region\": \"Vestland\",\n  \"city\": \"Aurland\",\n  \"specific_location\": \"Aurlandsfjellet National Park, near Stegastein Viewpoint\",\n  \"latitude\": 61.08,\n  \"longitude\": 7.82,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Scandinavian landscape\",\n    \"Alpine terrain\",\n    \"Sparse vegetation typical of high altitudes in Scandinavia\",\n    \"Ski lift infrastructure\",\n    \"Gravel road\",\n    \"Mountainous terrain with exposed rock\",\n    \"Cloud cover consistent with Norwegian weather patterns\"\n  ]\n}\n```",
+      "latency_s": 8.22
+    }
+  }
+}

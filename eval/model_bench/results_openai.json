@@ -1,0 +1,795 @@
+{
+  "gpt4o": {
+    "atacama": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Chile",
+        "region": "Antofagasta",
+        "city": "San Pedro de Atacama",
+        "specific_location": "Licancabur Volcano",
+        "latitude": -22.834,
+        "longitude": -67.884,
+        "confidence": 0.9,
+        "clues": [
+          "conical volcano shape",
+          "arid desert landscape",
+          "Licancabur Volcano"
+        ]
+      },
+      "error": null,
+      "latency_s": 6.23
+    },
+    "altiplano": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Bolivia",
+        "region": "Potosí",
+        "city": "Uyuni",
+        "specific_location": "Salar de Uyuni",
+        "latitude": -20.1338,
+        "longitude": -67.4891,
+        "confidence": 0.9,
+        "clues": [
+          "salt flat",
+          "arid landscape",
+          "mountainous background",
+          "high altitude desert vegetation"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.51
+    },
+    "patagonia": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Patagonia",
+        "city": "El Calafate",
+        "specific_location": "Patagonian steppe near El Calafate",
+        "latitude": -50.337,
+        "longitude": -72.264,
+        "confidence": 0.7,
+        "clues": [
+          "sheep grazing",
+          "steppe landscape",
+          "Patagonian vegetation"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.51
+    },
+    "tierra_del_fuego": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Tierra del Fuego",
+        "city": "Ushuaia",
+        "specific_location": "Beagle Channel",
+        "latitude": -54.8,
+        "longitude": -68.3,
+        "confidence": 0.9,
+        "clues": [
+          "snow-capped mountains",
+          "naval ship",
+          "island in channel",
+          "southern tip of South America"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.11
+    },
+    "damaraland": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "United States",
+        "region": "Nevada",
+        "city": "Overton",
+        "specific_location": "Valley of Fire State Park",
+        "latitude": 36.422,
+        "longitude": -114.514,
+        "confidence": 0.9,
+        "clues": [
+          "red sandstone formations",
+          "desert vegetation",
+          "arid climate"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.15
+    },
+    "namib": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Namibia",
+        "region": "Hardap",
+        "city": "Sesriem",
+        "specific_location": "Sossusvlei, Namib Desert",
+        "latitude": -24.7275,
+        "longitude": 15.2919,
+        "confidence": 0.9,
+        "clues": [
+          "red sand dunes",
+          "dead trees",
+          "desert landscape"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.45
+    },
+    "tassili": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Egypt",
+        "region": "Aswan Governorate",
+        "city": "Aswan",
+        "specific_location": "Road through the Nubian Desert",
+        "latitude": 23.9684,
+        "longitude": 32.8772,
+        "confidence": 0.8,
+        "clues": [
+          "desert landscape",
+          "sandy dunes",
+          "rocky hills",
+          "road markings typical of Egypt"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.38
+    },
+    "simien": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Ethiopia",
+        "region": "Amhara",
+        "city": "Debark",
+        "specific_location": "Simien Mountains National Park",
+        "latitude": 13.1833,
+        "longitude": 38.0667,
+        "confidence": 0.9,
+        "clues": [
+          "rugged mountainous terrain",
+          "distinctive rock formations",
+          "highland vegetation",
+          "presence of grazing animals typical of Ethiopian highlands"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.6
+    },
+    "maasai_mara": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Kenya",
+        "region": "Rift Valley",
+        "city": "Narok",
+        "specific_location": "Maasai Mara National Reserve",
+        "latitude": -1.4061,
+        "longitude": 35.0128,
+        "confidence": 0.8,
+        "clues": [
+          "zebras in open savannah",
+          "tall grass typical of East African plains",
+          "common wildlife in Maasai Mara"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.01
+    },
+    "iceland_highlands": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Iceland",
+        "region": "Southern Region",
+        "city": "Hveragerði",
+        "specific_location": "Reykjadalur Hot Springs",
+        "latitude": 64.028,
+        "longitude": -21.213,
+        "confidence": 0.8,
+        "clues": [
+          "geothermal activity",
+          "rocky terrain",
+          "grassy landscape",
+          "steam rising from water"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.47
+    },
+    "glen_coe": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "United Kingdom",
+        "region": "Scotland",
+        "city": "Glencoe",
+        "specific_location": "Glencoe Valley",
+        "latitude": 56.6829,
+        "longitude": -5.102,
+        "confidence": 0.9,
+        "clues": [
+          "lush green valley",
+          "steep mountains",
+          "clouds hugging peaks",
+          "typical Scottish Highlands landscape"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.3
+    },
+    "svalbard": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Norway",
+        "region": "Svalbard",
+        "city": "Longyearbyen",
+        "specific_location": "Longyearbyen, Svalbard",
+        "latitude": 78.2232,
+        "longitude": 15.6267,
+        "confidence": 0.9,
+        "clues": [
+          "snow-covered mountainous terrain",
+          "arctic environment",
+          "nighttime setting with artificial lighting"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.86
+    },
+    "lapland": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Norway",
+        "region": "Troms og Finnmark",
+        "city": "Kautokeino",
+        "specific_location": "Halti, near the Finland-Norway border",
+        "latitude": 69.3089,
+        "longitude": 21.2631,
+        "confidence": 0.8,
+        "clues": [
+          "tundra landscape",
+          "mountainous terrain",
+          "northern vegetation",
+          "Nordic architecture"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.21
+    },
+    "altai": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Russia",
+        "region": "Altai Republic",
+        "city": "Kosh-Agach",
+        "specific_location": "Altai Mountains",
+        "latitude": 49.8333,
+        "longitude": 87.3333,
+        "confidence": 0.7,
+        "clues": [
+          "mountainous terrain",
+          "sparse vegetation",
+          "coniferous trees",
+          "rocky landscape"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.49
+    },
+    "charyn": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Kazakhstan",
+        "region": "Almaty Region",
+        "city": "Almaty",
+        "specific_location": "Altyn-Emel National Park",
+        "latitude": 44.333,
+        "longitude": 78.667,
+        "confidence": 0.7,
+        "clues": [
+          "arid, mountainous terrain",
+          "sparse vegetation",
+          "reddish-brown hills"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.71
+    },
+    "song_kol": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Uvs Province",
+        "city": "Ulaangom",
+        "specific_location": "Uvs Lake",
+        "latitude": 50.25,
+        "longitude": 92.5,
+        "confidence": 0.7,
+        "clues": [
+          "large lake",
+          "arid landscape",
+          "mountainous terrain",
+          "steppe vegetation"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.2
+    },
+    "ladakh": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "India",
+        "region": "Ladakh",
+        "city": "Leh",
+        "specific_location": "Khardung La",
+        "latitude": 34.2778,
+        "longitude": 77.6044,
+        "confidence": 0.9,
+        "clues": [
+          "barren mountainous terrain",
+          "high-altitude pass",
+          "Himalayan range in background"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.94
+    },
+    "mongolia_steppe": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Ömnögovi",
+        "city": "Dalanzadgad",
+        "specific_location": "Hustai National Park",
+        "latitude": 47.7106,
+        "longitude": 105.8951,
+        "confidence": 0.8,
+        "clues": [
+          "Przewalski's horse",
+          "steppe landscape",
+          "native habitat"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.88
+    },
+    "gobi": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Iran",
+        "region": "Alborz",
+        "city": "Dizin",
+        "specific_location": "Dizin Ski Resort area",
+        "latitude": 36.0481,
+        "longitude": 51.4204,
+        "confidence": 0.7,
+        "clues": [
+          "mountainous terrain",
+          "no hunting sign with goat",
+          "typical landscape of Alborz mountains"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.03
+    },
+    "wahiba": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "United Arab Emirates",
+        "region": "Abu Dhabi",
+        "city": "Liwa Oasis",
+        "specific_location": "Rub' al Khali (Empty Quarter) Desert",
+        "latitude": 23.133,
+        "longitude": 53.783,
+        "confidence": 0.8,
+        "clues": [
+          "orange sand dunes",
+          "sparse vegetation",
+          "desert landscape"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.55
+    },
+    "denali_hwy": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "United States",
+        "region": "Alaska",
+        "city": "Coldfoot",
+        "specific_location": "Dalton Highway, Yukon River Bridge",
+        "latitude": 65.875,
+        "longitude": -149.722,
+        "confidence": 0.8,
+        "clues": [
+          "gravel road",
+          "mountainous terrain",
+          "river crossing",
+          "boreal forest",
+          "remote location"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.74
+    },
+    "tombstone": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Russia",
+        "region": "Siberia",
+        "city": "Kyzyl",
+        "specific_location": "Ergaki Mountains",
+        "latitude": 52.8333,
+        "longitude": 93.0833,
+        "confidence": 0.7,
+        "clues": [
+          "distinctive jagged mountain peak",
+          "alpine terrain",
+          "Siberian landscape"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.63
+    },
+    "kangerlussuaq": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Greenland",
+        "region": "Qeqqata",
+        "city": "Kangerlussuaq",
+        "specific_location": "Kangerlussuaq, near the Russell Glacier",
+        "latitude": 67.009,
+        "longitude": -50.721,
+        "confidence": 0.8,
+        "clues": [
+          "arctic tundra landscape",
+          "sparse vegetation",
+          "gravel road",
+          "wooden bridge",
+          "remote area"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.16
+    },
+    "colca": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Peru",
+        "region": "Arequipa",
+        "city": "Chivay",
+        "specific_location": "Colca Canyon",
+        "latitude": -15.5972,
+        "longitude": -71.9406,
+        "confidence": 0.9,
+        "clues": [
+          "deep canyon",
+          "Andean mountain landscape",
+          "wooden railings typical of Colca Canyon viewpoints"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.87
+    },
+    "khibiny": {
+      "model": "gpt4o",
+      "parsed": {
+        "country": "Russia",
+        "region": "Murmansk Oblast",
+        "city": "Kirovsk",
+        "specific_location": "Khibiny Mountains",
+        "latitude": 67.654,
+        "longitude": 33.667,
+        "confidence": 0.8,
+        "clues": [
+          "mountainous terrain",
+          "autumn foliage",
+          "ski lift structures",
+          "northern climate vegetation"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.56
+    }
+  },
+  "api_pipeline": {
+    "atacama": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": -22.828681,
+        "longitude": -67.854594,
+        "location_name": "Acceso al Volcan Licancabur",
+        "confidence": 0.996,
+        "country": "Chile"
+      },
+      "error": null,
+      "latency_s": 56.59
+    },
+    "altiplano": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": -20.1338,
+        "longitude": -67.4891,
+        "location_name": "Salar de Uyuni",
+        "confidence": 0.376,
+        "country": "Bolivia"
+      },
+      "error": null,
+      "latency_s": 9.77
+    },
+    "patagonia": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": -29.432695,
+        "longitude": 142.010258,
+        "location_name": "Outback",
+        "confidence": 0.064,
+        "country": "Australia"
+      },
+      "error": null,
+      "latency_s": 9.86
+    },
+    "tierra_del_fuego": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": -54.866667,
+        "longitude": -67.5,
+        "location_name": "Beagle Channel",
+        "confidence": 0.344,
+        "country": "Argentina"
+      },
+      "error": null,
+      "latency_s": 28.39
+    },
+    "damaraland": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 36.4721,
+        "longitude": -114.5144,
+        "location_name": "Valley of Fire State Park",
+        "confidence": 0.197,
+        "country": "USA"
+      },
+      "error": null,
+      "latency_s": 26.0
+    },
+    "namib": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": -24.7333,
+        "longitude": 15.2833,
+        "location_name": "Sossusvlei",
+        "confidence": 0.439,
+        "country": "Namibia"
+      },
+      "error": null,
+      "latency_s": 15.69
+    },
+    "tassili": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 22.5,
+        "longitude": 29.5,
+        "location_name": "Sahara Desert",
+        "confidence": 0.473,
+        "country": "Egypt"
+      },
+      "error": null,
+      "latency_s": 16.37
+    },
+    "simien": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 13.1833,
+        "longitude": 38.0667,
+        "location_name": "Simien Mountains",
+        "confidence": 0.181,
+        "country": "Ethiopia"
+      },
+      "error": null,
+      "latency_s": 72.96
+    },
+    "maasai_mara": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": -1.4061,
+        "longitude": 35.0128,
+        "location_name": "Maasai Mara National Reserve",
+        "confidence": 0.136,
+        "country": "Kenya"
+      },
+      "error": null,
+      "latency_s": 27.27
+    },
+    "iceland_highlands": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 64.0025,
+        "longitude": -21.1861,
+        "location_name": "Hveragerði",
+        "confidence": 0.176,
+        "country": "Iceland"
+      },
+      "error": null,
+      "latency_s": 28.16
+    },
+    "glen_coe": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 56.6829,
+        "longitude": -5.102,
+        "location_name": "Glencoe",
+        "confidence": 0.223,
+        "country": "Scotland"
+      },
+      "error": null,
+      "latency_s": 24.61
+    },
+    "svalbard": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 78.2232,
+        "longitude": 15.6469,
+        "location_name": "Longyearbyen",
+        "confidence": 0.538,
+        "country": "Norway"
+      },
+      "error": null,
+      "latency_s": 20.13
+    },
+    "lapland": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 61.8833,
+        "longitude": 9.75,
+        "location_name": "Rondane National Park",
+        "confidence": 0.597,
+        "country": "Norway"
+      },
+      "error": null,
+      "latency_s": 55.96
+    },
+    "altai": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 50.0,
+        "longitude": 87.0,
+        "location_name": "Altai Mountains",
+        "confidence": 0.049,
+        "country": "Russia"
+      },
+      "error": null,
+      "latency_s": 42.36
+    },
+    "charyn": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 44.0,
+        "longitude": 78.5,
+        "location_name": "Altyn-Emel National Park",
+        "confidence": 0.22,
+        "country": "Kazakhstan"
+      },
+      "error": null,
+      "latency_s": 25.12
+    },
+    "song_kol": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 53.5587,
+        "longitude": 108.165,
+        "location_name": "Lake Baikal",
+        "confidence": 0.056,
+        "country": "Russia"
+      },
+      "error": null,
+      "latency_s": 33.69
+    },
+    "ladakh": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 34.1526,
+        "longitude": 77.5771,
+        "location_name": "Ladakh",
+        "confidence": 0.414,
+        "country": "India"
+      },
+      "error": null,
+      "latency_s": 48.85
+    },
+    "mongolia_steppe": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 46.8625,
+        "longitude": 103.8467,
+        "location_name": "Mongolian Steppe",
+        "confidence": 0.353,
+        "country": "Mongolia"
+      },
+      "error": null,
+      "latency_s": 14.88
+    },
+    "gobi": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 36.0594,
+        "longitude": 51.4094,
+        "location_name": "Alborz Mountains",
+        "confidence": 0.133,
+        "country": "Iran"
+      },
+      "error": null,
+      "latency_s": 48.67
+    },
+    "wahiba": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 20.0,
+        "longitude": 50.0,
+        "location_name": "Rub' al Khali",
+        "confidence": 0.317,
+        "country": "Saudi Arabia"
+      },
+      "error": null,
+      "latency_s": 19.95
+    },
+    "denali_hwy": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 63.3333,
+        "longitude": -135.75,
+        "location_name": "Yukon River, Yukon",
+        "confidence": 0.078,
+        "country": "Canada"
+      },
+      "error": null,
+      "latency_s": 36.39
+    },
+    "tombstone": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 66.5361,
+        "longitude": -65.3183,
+        "location_name": "Mount Thor",
+        "confidence": 0.409,
+        "country": "Canada"
+      },
+      "error": null,
+      "latency_s": 59.47
+    },
+    "kangerlussuaq": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 67.0095,
+        "longitude": -50.7212,
+        "location_name": "Kangerlussuaq",
+        "confidence": 0.388,
+        "country": "Denmark"
+      },
+      "error": null,
+      "latency_s": 32.88
+    },
+    "colca": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": -15.625,
+        "longitude": -71.8,
+        "location_name": "Colca Canyon",
+        "confidence": 0.223,
+        "country": "Peru"
+      },
+      "error": null,
+      "latency_s": 28.36
+    },
+    "khibiny": {
+      "model": "api_pipeline",
+      "parsed": {
+        "latitude": 67.667,
+        "longitude": 33.667,
+        "location_name": "Khibiny Mountains",
+        "confidence": 0.103,
+        "country": "Russia"
+      },
+      "error": null,
+      "latency_s": 36.92
+    }
+  }
+}

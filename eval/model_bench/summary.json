@@ -1,0 +1,2419 @@
+{
+  "summary": {
+    "pipeline_gpt-4o": {
+      "answered": 25,
+      "median_km": 15,
+      "mean_km": 820,
+      "acc@25": 0.6,
+      "acc@200": 0.76,
+      "acc@750": 0.84,
+      "acc@2500": 0.84,
+      "rescues": 4,
+      "closer_than_gpt4o": 14,
+      "best_of_two_median_km": 9
+    },
+    "gemma": {
+      "answered": 25,
+      "median_km": 447,
+      "mean_km": 1860,
+      "acc@25": 0.16,
+      "acc@200": 0.32,
+      "acc@750": 0.52,
+      "acc@2500": 0.8,
+      "rescues": 0,
+      "closer_than_gpt4o": 6,
+      "best_of_two_median_km": 33
+    },
+    "gemma27": {
+      "answered": 25,
+      "median_km": 516,
+      "mean_km": 1588,
+      "acc@25": 0.08,
+      "acc@200": 0.36,
+      "acc@750": 0.6,
+      "acc@2500": 0.84,
+      "rescues": 2,
+      "closer_than_gpt4o": 6,
+      "best_of_two_median_km": 33
+    },
+    "geoagent": {
+      "answered": 25,
+      "median_km": 488,
+      "mean_km": 1083,
+      "acc@25": 0.12,
+      "acc@200": 0.28,
+      "acc@750": 0.64,
+      "acc@2500": 0.92,
+      "rescues": 2,
+      "closer_than_gpt4o": 8,
+      "best_of_two_median_km": 32
+    },
+    "globe": {
+      "answered": 25,
+      "median_km": 350,
+      "mean_km": 846,
+      "acc@25": 0.2,
+      "acc@200": 0.4,
+      "acc@750": 0.76,
+      "acc@2500": 0.92,
+      "rescues": 1,
+      "closer_than_gpt4o": 8,
+      "best_of_two_median_km": 30
+    },
+    "gpt-4.1": {
+      "answered": 25,
+      "median_km": 70,
+      "mean_km": 1074,
+      "acc@25": 0.44,
+      "acc@200": 0.68,
+      "acc@750": 0.8,
+      "acc@2500": 0.92,
+      "rescues": 2,
+      "closer_than_gpt4o": 15,
+      "best_of_two_median_km": 33
+    },
+    "gpt-5.4": {
+      "answered": 25,
+      "median_km": 121,
+      "mean_km": 1621,
+      "acc@25": 0.36,
+      "acc@200": 0.56,
+      "acc@750": 0.68,
+      "acc@2500": 0.84,
+      "rescues": 3,
+      "closer_than_gpt4o": 9,
+      "best_of_two_median_km": 30
+    },
+    "gpt-5.5": {
+      "answered": 25,
+      "median_km": 12,
+      "mean_km": 629,
+      "acc@25": 0.64,
+      "acc@200": 0.76,
+      "acc@750": 0.84,
+      "acc@2500": 0.88,
+      "rescues": 5,
+      "closer_than_gpt4o": 17,
+      "best_of_two_median_km": 3
+    },
+    "geoclip": {
+      "answered": 25,
+      "median_km": 199,
+      "mean_km": 1855,
+      "acc@25": 0.32,
+      "acc@200": 0.52,
+      "acc@750": 0.64,
+      "acc@2500": 0.84,
+      "rescues": 2,
+      "closer_than_gpt4o": 10,
+      "best_of_two_median_km": 16
+    },
+    "gaea": {
+      "answered": 25,
+      "median_km": 227,
+      "mean_km": 1436,
+      "acc@25": 0.16,
+      "acc@200": 0.44,
+      "acc@750": 0.68,
+      "acc@2500": 0.88,
+      "rescues": 2,
+      "closer_than_gpt4o": 8,
+      "best_of_two_median_km": 30
+    },
+    "qwen": {
+      "answered": 25,
+      "median_km": 242,
+      "mean_km": 1646,
+      "acc@25": 0.0,
+      "acc@200": 0.4,
+      "acc@750": 0.68,
+      "acc@2500": 0.84,
+      "rescues": 0,
+      "closer_than_gpt4o": 5,
+      "best_of_two_median_km": 33
+    },
+    "o3": {
+      "answered": 25,
+      "median_km": 11,
+      "mean_km": 1464,
+      "acc@25": 0.68,
+      "acc@200": 0.72,
+      "acc@750": 0.8,
+      "acc@2500": 0.84,
+      "rescues": 3,
+      "closer_than_gpt4o": 14,
+      "best_of_two_median_km": 7
+    },
+    "gpt4o": {
+      "answered": 25,
+      "median_km": 33,
+      "mean_km": 1258,
+      "acc@25": 0.44,
+      "acc@200": 0.64,
+      "acc@750": 0.8,
+      "acc@2500": 0.88
+    },
+    "api_pipeline": {
+      "answered": 25,
+      "median_km": 84,
+      "mean_km": 1661,
+      "acc@25": 0.36,
+      "acc@200": 0.6,
+      "acc@750": 0.68,
+      "acc@2500": 0.8,
+      "rescues": 0,
+      "closer_than_gpt4o": 6,
+      "best_of_two_median_km": 32
+    },
+    "pipeline_gpt-5.5": {
+      "answered": 25,
+      "median_km": 13,
+      "mean_km": 243,
+      "acc@25": 0.64,
+      "acc@200": 0.84,
+      "acc@750": 0.88,
+      "acc@2500": 1.0,
+      "rescues": 5,
+      "closer_than_gpt4o": 18,
+      "best_of_two_median_km": 9
+    },
+    "pipeline_o3": {
+      "answered": 25,
+      "median_km": 18,
+      "mean_km": 1438,
+      "acc@25": 0.56,
+      "acc@200": 0.76,
+      "acc@750": 0.8,
+      "acc@2500": 0.88,
+      "rescues": 4,
+      "closer_than_gpt4o": 17,
+      "best_of_two_median_km": 13
+    },
+    "pixtral": {
+      "answered": 25,
+      "median_km": 540,
+      "mean_km": 3259,
+      "acc@25": 0.08,
+      "acc@200": 0.36,
+      "acc@750": 0.56,
+      "acc@2500": 0.68,
+      "rescues": 1,
+      "closer_than_gpt4o": 5,
+      "best_of_two_median_km": 33
+    }
+  },
+  "trio": [
+    {
+      "model": "gpt-5.5",
+      "any_within_200km": 0.84,
+      "best_of_median_km": 3
+    },
+    {
+      "model": "o3",
+      "any_within_200km": 0.92,
+      "best_of_median_km": 2
+    },
+    {
+      "model": "pipeline_gpt-4o",
+      "any_within_200km": 0.96,
+      "best_of_median_km": 2
+    }
+  ],
+  "errors": {
+    "pipeline_gpt-4o": {
+      "atacama": 16.6,
+      "altiplano": 221.0,
+      "patagonia": 497.0,
+      "tierra_del_fuego": 12.9,
+      "damaraland": 161.2,
+      "namib": 4.5,
+      "tassili": 2623.0,
+      "simien": 17.4,
+      "maasai_mara": 94.0,
+      "iceland_highlands": 0.1,
+      "glen_coe": 0.3,
+      "svalbard": 2.6,
+      "lapland": 1.2,
+      "altai": 14.9,
+      "charyn": 7292.2,
+      "song_kol": 2.4,
+      "ladakh": 36.0,
+      "mongolia_steppe": 7.3,
+      "gobi": 1.1,
+      "wahiba": 6243.0,
+      "denali_hwy": 76.8,
+      "tombstone": 3174.5,
+      "kangerlussuaq": 1.0,
+      "colca": 0.0,
+      "khibiny": 0.8
+    },
+    "gemma": {
+      "atacama": 140.5,
+      "altiplano": 246.9,
+      "patagonia": 446.6,
+      "tierra_del_fuego": 13.6,
+      "damaraland": 14573.8,
+      "namib": 17.8,
+      "tassili": 2518.8,
+      "simien": 160.6,
+      "maasai_mara": 10.1,
+      "iceland_highlands": 188.6,
+      "glen_coe": 9.8,
+      "svalbard": 1782.8,
+      "lapland": 840.2,
+      "altai": 1465.3,
+      "charyn": 4114.5,
+      "song_kol": 2263.2,
+      "ladakh": 78.3,
+      "mongolia_steppe": 952.1,
+      "gobi": 8188.9,
+      "wahiba": 434.5,
+      "denali_hwy": 211.4,
+      "tombstone": 5017.4,
+      "kangerlussuaq": 1465.0,
+      "colca": 244.9,
+      "khibiny": 1105.2
+    },
+    "gemma27": {
+      "atacama": 135.3,
+      "altiplano": 192.9,
+      "patagonia": 578.1,
+      "tierra_del_fuego": 515.6,
+      "damaraland": 10664.3,
+      "namib": 5.7,
+      "tassili": 2457.0,
+      "simien": 261.4,
+      "maasai_mara": 94.0,
+      "iceland_highlands": 2155.6,
+      "glen_coe": 11.5,
+      "svalbard": 1140.5,
+      "lapland": 149.6,
+      "altai": 1512.1,
+      "charyn": 176.4,
+      "song_kol": 3299.5,
+      "ladakh": 33.1,
+      "mongolia_steppe": 720.1,
+      "gobi": 7272.4,
+      "wahiba": 473.2,
+      "denali_hwy": 102.8,
+      "tombstone": 4621.3,
+      "kangerlussuaq": 1496.8,
+      "colca": 205.1,
+      "khibiny": 1426.9
+    },
+    "geoagent": {
+      "atacama": 30.7,
+      "altiplano": 182.1,
+      "patagonia": 642.8,
+      "tierra_del_fuego": 13.7,
+      "damaraland": 490.3,
+      "namib": 3.2,
+      "tassili": 1667.2,
+      "simien": 469.7,
+      "maasai_mara": 336.6,
+      "iceland_highlands": 300.6,
+      "glen_coe": 6.9,
+      "svalbard": 1987.7,
+      "lapland": 788.9,
+      "altai": 5687.8,
+      "charyn": 874.4,
+      "song_kol": 2334.4,
+      "ladakh": 32.2,
+      "mongolia_steppe": 650.7,
+      "gobi": 773.8,
+      "wahiba": 488.5,
+      "denali_hwy": 186.2,
+      "tombstone": 7393.5,
+      "kangerlussuaq": 317.3,
+      "colca": 233.0,
+      "khibiny": 1174.0
+    },
+    "globe": {
+      "atacama": 48.7,
+      "altiplano": 182.1,
+      "patagonia": 495.1,
+      "tierra_del_fuego": 12.8,
+      "damaraland": 350.9,
+      "namib": 3.2,
+      "tassili": 2231.1,
+      "simien": 6.8,
+      "maasai_mara": 195.2,
+      "iceland_highlands": 141.1,
+      "glen_coe": 6.9,
+      "svalbard": 1820.3,
+      "lapland": 350.0,
+      "altai": 1273.0,
+      "charyn": 1044.8,
+      "song_kol": 2572.1,
+      "ladakh": 19.8,
+      "mongolia_steppe": 77.4,
+      "gobi": 540.0,
+      "wahiba": 488.5,
+      "denali_hwy": 703.3,
+      "tombstone": 7396.0,
+      "kangerlussuaq": 318.3,
+      "colca": 233.0,
+      "khibiny": 637.7
+    },
+    "gpt-4.1": {
+      "atacama": 9.2,
+      "altiplano": 102.8,
+      "patagonia": 336.4,
+      "tierra_del_fuego": 4.0,
+      "damaraland": 14787.4,
+      "namib": 4.4,
+      "tassili": 2265.5,
+      "simien": 1.1,
+      "maasai_mara": 7.3,
+      "iceland_highlands": 105.0,
+      "glen_coe": 3.3,
+      "svalbard": 2.6,
+      "lapland": 714.9,
+      "altai": 69.9,
+      "charyn": 142.6,
+      "song_kol": 2193.2,
+      "ladakh": 39.7,
+      "mongolia_steppe": 1.6,
+      "gobi": 2051.6,
+      "wahiba": 76.8,
+      "denali_hwy": 325.7,
+      "tombstone": 3587.4,
+      "kangerlussuaq": 0.3,
+      "colca": 3.7,
+      "khibiny": 1.6
+    },
+    "gpt-5.4": {
+      "atacama": 9.9,
+      "altiplano": 121.1,
+      "patagonia": 8313.4,
+      "tierra_del_fuego": 12.4,
+      "damaraland": 14787.0,
+      "namib": 5.4,
+      "tassili": 2546.1,
+      "simien": 1.2,
+      "maasai_mara": 7.3,
+      "iceland_highlands": 146.4,
+      "glen_coe": 2.4,
+      "svalbard": 1820.3,
+      "lapland": 1005.9,
+      "altai": 40.4,
+      "charyn": 8124.8,
+      "song_kol": 99.8,
+      "ladakh": 39.5,
+      "mongolia_steppe": 448.8,
+      "gobi": 530.6,
+      "wahiba": 999.0,
+      "denali_hwy": 781.3,
+      "tombstone": 6.5,
+      "kangerlussuaq": 656.3,
+      "colca": 8.0,
+      "khibiny": 1.9
+    },
+    "gpt-5.5": {
+      "atacama": 15.4,
+      "altiplano": 65.7,
+      "patagonia": 3348.8,
+      "tierra_del_fuego": 12.3,
+      "damaraland": 0.5,
+      "namib": 4.4,
+      "tassili": 17.6,
+      "simien": 5.3,
+      "maasai_mara": 94.0,
+      "iceland_highlands": 0.2,
+      "glen_coe": 0.3,
+      "svalbard": 1.9,
+      "lapland": 1.2,
+      "altai": 14.1,
+      "charyn": 4175.5,
+      "song_kol": 2491.4,
+      "ladakh": 37.7,
+      "mongolia_steppe": 2.7,
+      "gobi": 4456.1,
+      "wahiba": 525.0,
+      "denali_hwy": 1.3,
+      "tombstone": 1.6,
+      "kangerlussuaq": 459.6,
+      "colca": 0.2,
+      "khibiny": 0.8
+    },
+    "geoclip": {
+      "atacama": 336.5,
+      "altiplano": 199.2,
+      "patagonia": 602.8,
+      "tierra_del_fuego": 15.9,
+      "damaraland": 14781.4,
+      "namib": 23.4,
+      "tassili": 1517.0,
+      "simien": 10.1,
+      "maasai_mara": 60.8,
+      "iceland_highlands": 76.7,
+      "glen_coe": 1.3,
+      "svalbard": 2.7,
+      "lapland": 3.4,
+      "altai": 5848.3,
+      "charyn": 7417.3,
+      "song_kol": 1888.1,
+      "ladakh": 1.6,
+      "mongolia_steppe": 130.1,
+      "gobi": 2182.1,
+      "wahiba": 7010.5,
+      "denali_hwy": 102.2,
+      "tombstone": 584.6,
+      "kangerlussuaq": 2343.4,
+      "colca": 11.1,
+      "khibiny": 1226.4
+    },
+    "gaea": {
+      "atacama": 48.7,
+      "altiplano": 160.2,
+      "patagonia": 534.1,
+      "tierra_del_fuego": 12.8,
+      "damaraland": 380.2,
+      "namib": 5587.4,
+      "tassili": 2367.9,
+      "simien": 92.2,
+      "maasai_mara": 55.9,
+      "iceland_highlands": 208.4,
+      "glen_coe": 18.2,
+      "svalbard": 1990.6,
+      "lapland": 226.7,
+      "altai": 373.7,
+      "charyn": 11082.2,
+      "song_kol": 1274.0,
+      "ladakh": 19.8,
+      "mongolia_steppe": 77.4,
+      "gobi": 2369.4,
+      "wahiba": 820.6,
+      "denali_hwy": 119.8,
+      "tombstone": 7385.3,
+      "kangerlussuaq": 0.3,
+      "colca": 35.8,
+      "khibiny": 646.8
+    },
+    "qwen": {
+      "atacama": 61.3,
+      "altiplano": 336.5,
+      "patagonia": 10358.2,
+      "tierra_del_fuego": 33.7,
+      "damaraland": 242.3,
+      "namib": 218.2,
+      "tassili": 2068.1,
+      "simien": 46.5,
+      "maasai_mara": 36.2,
+      "iceland_highlands": 141.5,
+      "glen_coe": 60.4,
+      "svalbard": 1931.7,
+      "lapland": 62.7,
+      "altai": 2275.2,
+      "charyn": 11561.2,
+      "song_kol": 2633.8,
+      "ladakh": 227.3,
+      "mongolia_steppe": 30.4,
+      "gobi": 461.3,
+      "wahiba": 491.1,
+      "denali_hwy": 735.4,
+      "tombstone": 5769.6,
+      "kangerlussuaq": 31.8,
+      "colca": 173.7,
+      "khibiny": 1163.0
+    },
+    "o3": {
+      "atacama": 9.9,
+      "altiplano": 202.7,
+      "patagonia": 3085.9,
+      "tierra_del_fuego": 2.1,
+      "damaraland": 14788.0,
+      "namib": 2.2,
+      "tassili": 1944.9,
+      "simien": 1.6,
+      "maasai_mara": 7.3,
+      "iceland_highlands": 0.3,
+      "glen_coe": 2.3,
+      "svalbard": 5.5,
+      "lapland": 1.9,
+      "altai": 19.4,
+      "charyn": 11063.5,
+      "song_kol": 0.0,
+      "ladakh": 37.5,
+      "mongolia_steppe": 2.6,
+      "gobi": 4815.6,
+      "wahiba": 16.1,
+      "denali_hwy": 546.3,
+      "tombstone": 23.0,
+      "kangerlussuaq": 11.2,
+      "colca": 14.5,
+      "khibiny": 3.8
+    },
+    "gpt4o": {
+      "atacama": 9.3,
+      "altiplano": 201.9,
+      "patagonia": 494.8,
+      "tierra_del_fuego": 13.6,
+      "damaraland": 14786.1,
+      "namib": 3.1,
+      "tassili": 2367.3,
+      "simien": 1.2,
+      "maasai_mara": 15.8,
+      "iceland_highlands": 104.8,
+      "glen_coe": 7.0,
+      "svalbard": 2.4,
+      "lapland": 33.3,
+      "altai": 29.8,
+      "charyn": 113.1,
+      "song_kol": 1626.2,
+      "ladakh": 39.6,
+      "mongolia_steppe": 3.4,
+      "gobi": 4498.4,
+      "wahiba": 527.9,
+      "denali_hwy": 325.4,
+      "tombstone": 6243.6,
+      "kangerlussuaq": 1.5,
+      "colca": 4.0,
+      "khibiny": 5.5
+    },
+    "api_pipeline": {
+      "atacama": 10.8,
+      "altiplano": 201.9,
+      "patagonia": 10987.8,
+      "tierra_del_fuego": 63.8,
+      "damaraland": 14785.6,
+      "namib": 4.0,
+      "tassili": 2048.4,
+      "simien": 1.2,
+      "maasai_mara": 15.8,
+      "iceland_highlands": 103.5,
+      "glen_coe": 7.0,
+      "svalbard": 2.6,
+      "lapland": 944.1,
+      "altai": 50.5,
+      "charyn": 84.5,
+      "song_kol": 2758.1,
+      "ladakh": 32.1,
+      "mongolia_steppe": 182.8,
+      "gobi": 4498.7,
+      "wahiba": 948.5,
+      "denali_hwy": 589.8,
+      "tombstone": 3174.6,
+      "kangerlussuaq": 1.5,
+      "colca": 11.5,
+      "khibiny": 6.9
+    },
+    "pipeline_gpt-5.5": {
+      "atacama": 16.1,
+      "altiplano": 35.9,
+      "patagonia": 1117.9,
+      "tierra_del_fuego": 13.0,
+      "damaraland": 0.1,
+      "namib": 4.4,
+      "tassili": 1975.9,
+      "simien": 12.1,
+      "maasai_mara": 94.0,
+      "iceland_highlands": 0.2,
+      "glen_coe": 2.4,
+      "svalbard": 2.6,
+      "lapland": 1.5,
+      "altai": 15.0,
+      "charyn": 78.2,
+      "song_kol": 1.6,
+      "ladakh": 37.1,
+      "mongolia_steppe": 7.9,
+      "gobi": 2023.4,
+      "wahiba": 527.4,
+      "denali_hwy": 77.7,
+      "tombstone": 16.3,
+      "kangerlussuaq": 0.6,
+      "colca": 0.2,
+      "khibiny": 2.7
+    },
+    "pipeline_o3": {
+      "atacama": 7.1,
+      "altiplano": 186.6,
+      "patagonia": 508.4,
+      "tierra_del_fuego": 13.1,
+      "damaraland": 14786.2,
+      "namib": 2.2,
+      "tassili": 2354.2,
+      "simien": 7.7,
+      "maasai_mara": 107.1,
+      "iceland_highlands": 104.5,
+      "glen_coe": 2.3,
+      "svalbard": 2.1,
+      "lapland": 0.8,
+      "altai": 11.5,
+      "charyn": 11039.6,
+      "song_kol": 2199.7,
+      "ladakh": 37.0,
+      "mongolia_steppe": 2.3,
+      "gobi": 4457.6,
+      "wahiba": 71.2,
+      "denali_hwy": 0.3,
+      "tombstone": 18.3,
+      "kangerlussuaq": 15.8,
+      "colca": 21.8,
+      "khibiny": 2.4
+    },
+    "pixtral": {
+      "atacama": 482.5,
+      "altiplano": 539.6,
+      "patagonia": 8324.3,
+      "tierra_del_fuego": 243.8,
+      "damaraland": 10060.7,
+      "namib": 15.5,
+      "tassili": 1508.7,
+      "simien": 111.4,
+      "maasai_mara": 27.0,
+      "iceland_highlands": 165.2,
+      "glen_coe": 272.9,
+      "svalbard": 2022.5,
+      "lapland": 139.3,
+      "altai": 9929.0,
+      "charyn": 7423.7,
+      "song_kol": 15776.6,
+      "ladakh": 34.1,
+      "mongolia_steppe": 91.0,
+      "gobi": 9223.4,
+      "wahiba": 6272.7,
+      "denali_hwy": 121.8,
+      "tombstone": 5695.1,
+      "kangerlussuaq": 2356.0,
+      "colca": 8.2,
+      "khibiny": 637.5
+    }
+  },
+  "points": {
+    "pipeline_gpt-4o": {
+      "atacama": [
+        -22.834,
+        -68.035
+      ],
+      "altiplano": [
+        -23.9305,
+        -67.7105
+      ],
+      "patagonia": [
+        -50.356,
+        -72.278
+      ],
+      "tierra_del_fuego": [
+        -54.813,
+        -68.304
+      ],
+      "damaraland": [
+        -21.824,
+        15.187
+      ],
+      "namib": [
+        -24.7589,
+        15.2911
+      ],
+      "tassili": [
+        29.6005,
+        35.4215
+      ],
+      "simien": [
+        13.254,
+        38.222
+      ],
+      "maasai_mara": [
+        -2.3333,
+        34.8333
+      ],
+      "iceland_highlands": [
+        63.9918,
+        -19.0615
+      ],
+      "glen_coe": [
+        56.6694,
+        -4.9875
+      ],
+      "svalbard": [
+        78.2232,
+        15.6469
+      ],
+      "lapland": [
+        69.048,
+        20.807
+      ],
+      "altai": [
+        50.087,
+        87.753
+      ],
+      "charyn": [
+        31.226,
+        -5.637
+      ],
+      "song_kol": [
+        41.835,
+        75.129
+      ],
+      "ladakh": [
+        34.238,
+        77.607
+      ],
+      "mongolia_steppe": [
+        47.756,
+        105.895
+      ],
+      "gobi": [
+        43.489,
+        104.077
+      ],
+      "wahiba": [
+        31.139,
+        -4.019
+      ],
+      "denali_hwy": [
+        63.0418,
+        -146.0085
+      ],
+      "tombstone": [
+        66.5358,
+        -65.3208
+      ],
+      "kangerlussuaq": [
+        67.012,
+        -50.67
+      ],
+      "colca": [
+        -15.611149,
+        -71.906443
+      ],
+      "khibiny": [
+        67.615,
+        33.711
+      ]
+    },
+    "gemma": {
+      "atacama": [
+        -23.61,
+        -69.05
+      ],
+      "altiplano": [
+        -20.13,
+        -68.93
+      ],
+      "patagonia": [
+        -49.83,
+        -72.74
+      ],
+      "tierra_del_fuego": [
+        -54.8,
+        -68.3
+      ],
+      "damaraland": [
+        36.62,
+        -112.15
+      ],
+      "namib": [
+        -24.63,
+        15.46
+      ],
+      "tassili": [
+        28.65,
+        34.45
+      ],
+      "simien": [
+        12.73,
+        39.48
+      ],
+      "maasai_mara": [
+        -1.5,
+        35.0
+      ],
+      "iceland_highlands": [
+        65.33,
+        -16.63
+      ],
+      "glen_coe": [
+        56.75,
+        -4.93
+      ],
+      "svalbard": [
+        66.48,
+        -23.25
+      ],
+      "lapland": [
+        62.55,
+        11.35
+      ],
+      "altai": [
+        41.73,
+        72.85
+      ],
+      "charyn": [
+        30.05,
+        35.33
+      ],
+      "song_kol": [
+        40.52,
+        102.25
+      ],
+      "ladakh": [
+        33.55,
+        77.22
+      ],
+      "mongolia_steppe": [
+        48.83,
+        93.17
+      ],
+      "gobi": [
+        31.18,
+        7.15
+      ],
+      "wahiba": [
+        24.25,
+        55.2
+      ],
+      "denali_hwy": [
+        64.83,
+        -149.35
+      ],
+      "tombstone": [
+        63.33,
+        100.17
+      ],
+      "kangerlussuaq": [
+        65.87,
+        -17.45
+      ],
+      "colca": [
+        -13.43,
+        -72.22
+      ],
+      "khibiny": [
+        63.72,
+        11.33
+      ]
+    },
+    "gemma27": {
+      "atacama": [
+        -24.1333,
+        -67.875
+      ],
+      "altiplano": [
+        -23.65,
+        -67.93
+      ],
+      "patagonia": [
+        -51.1333,
+        -71.5333
+      ],
+      "tierra_del_fuego": [
+        -51.12,
+        -73.08
+      ],
+      "damaraland": [
+        -21.55,
+        119.83
+      ],
+      "namib": [
+        -24.7667,
+        15.2833
+      ],
+      "tassili": [
+        26.86,
+        33.92
+      ],
+      "simien": [
+        11.0333,
+        39.0333
+      ],
+      "maasai_mara": [
+        -2.3333,
+        34.8333
+      ],
+      "iceland_highlands": [
+        64.023,
+        -64.248
+      ],
+      "glen_coe": [
+        56.6,
+        -4.85
+      ],
+      "svalbard": [
+        67.97,
+        13.06
+      ],
+      "lapland": [
+        68.52,
+        17.42
+      ],
+      "altai": [
+        42.35,
+        71.35
+      ],
+      "charyn": [
+        43.25,
+        76.88
+      ],
+      "song_kol": [
+        49.22,
+        116.78
+      ],
+      "ladakh": [
+        34.22,
+        77.63
+      ],
+      "mongolia_steppe": [
+        47.58,
+        115.55
+      ],
+      "gobi": [
+        44.63,
+        6.58
+      ],
+      "wahiba": [
+        24.08,
+        54.67
+      ],
+      "denali_hwy": [
+        63.73,
+        -149.05
+      ],
+      "tombstone": [
+        69.23,
+        92.83
+      ],
+      "kangerlussuaq": [
+        63.68,
+        -19.02
+      ],
+      "colca": [
+        -13.7667,
+        -71.8833
+      ],
+      "khibiny": [
+        61.08,
+        7.82
+      ]
+    },
+    "geoagent": {
+      "atacama": [
+        -22.910832,
+        -68.200138
+      ],
+      "altiplano": [
+        -20.462841,
+        -66.823907
+      ],
+      "patagonia": [
+        -40.156879,
+        -71.352559
+      ],
+      "tierra_del_fuego": [
+        -54.803367,
+        -68.296324
+      ],
+      "damaraland": [
+        -24.909503,
+        15.332012
+      ],
+      "namib": [
+        -24.739534,
+        15.29236
+      ],
+      "tassili": [
+        29.215498,
+        25.468973
+      ],
+      "simien": [
+        9.017362,
+        38.750328
+      ],
+      "maasai_mara": [
+        0.279317,
+        37.516494
+      ],
+      "iceland_highlands": [
+        65.881669,
+        -23.628599
+      ],
+      "glen_coe": [
+        56.682765,
+        -5.101455
+      ],
+      "svalbard": [
+        64.156435,
+        -21.866679
+      ],
+      "lapland": [
+        63.386569,
+        10.15856
+      ],
+      "altai": [
+        45.831972,
+        7.739566
+      ],
+      "charyn": [
+        42.456161,
+        89.728316
+      ],
+      "song_kol": [
+        46.825039,
+        103.849974
+      ],
+      "ladakh": [
+        34.164203,
+        77.584813
+      ],
+      "mongolia_steppe": [
+        43.639276,
+        111.976598
+      ],
+      "gobi": [
+        36.824463,
+        101.440811
+      ],
+      "wahiba": [
+        25.074282,
+        55.188562
+      ],
+      "denali_hwy": [
+        61.59957,
+        -149.11109
+      ],
+      "tombstone": [
+        46.549574,
+        11.874034
+      ],
+      "kangerlussuaq": [
+        64.183001,
+        -51.694493
+      ],
+      "colca": [
+        -13.517089,
+        -71.978536
+      ],
+      "khibiny": [
+        63.386569,
+        10.15856
+      ]
+    },
+    "globe": {
+      "atacama": [
+        -23.354549,
+        -67.902657
+      ],
+      "altiplano": [
+        -20.462841,
+        -66.823907
+      ],
+      "patagonia": [
+        -50.338738,
+        -72.273722
+      ],
+      "tierra_del_fuego": [
+        -54.807306,
+        -68.308413
+      ],
+      "damaraland": [
+        -22.53356,
+        17.045478
+      ],
+      "namib": [
+        -24.739534,
+        15.29236
+      ],
+      "tassili": [
+        30.044388,
+        31.235726
+      ],
+      "simien": [
+        13.24588,
+        38.099946
+      ],
+      "maasai_mara": [
+        -1.302398,
+        36.828851
+      ],
+      "iceland_highlands": [
+        64.145981,
+        -21.942237
+      ],
+      "glen_coe": [
+        56.682765,
+        -5.101455
+      ],
+      "svalbard": [
+        66.072692,
+        -23.119354
+      ],
+      "lapland": [
+        66.502554,
+        25.730391
+      ],
+      "altai": [
+        42.876142,
+        74.603672
+      ],
+      "charyn": [
+        48.968159,
+        89.962103
+      ],
+      "song_kol": [
+        47.918468,
+        106.917702
+      ],
+      "ladakh": [
+        34.004111,
+        77.657348
+      ],
+      "mongolia_steppe": [
+        47.918468,
+        106.917702
+      ],
+      "gobi": [
+        47.918468,
+        106.917702
+      ],
+      "wahiba": [
+        25.074282,
+        55.188562
+      ],
+      "denali_hwy": [
+        60.721571,
+        -135.054932
+      ],
+      "tombstone": [
+        46.568512,
+        12.132319
+      ],
+      "kangerlussuaq": [
+        64.176705,
+        -51.736144
+      ],
+      "colca": [
+        -13.517089,
+        -71.978536
+      ],
+      "khibiny": [
+        69.651635,
+        18.955859
+      ]
+    },
+    "gpt-4.1": {
+      "atacama": [
+        -22.8366,
+        -67.877
+      ],
+      "altiplano": [
+        -22.85,
+        -67.7833
+      ],
+      "patagonia": [
+        -42.9117,
+        -71.3195
+      ],
+      "tierra_del_fuego": [
+        -54.875,
+        -68.538
+      ],
+      "damaraland": [
+        36.4856,
+        -114.5359
+      ],
+      "namib": [
+        -24.7333,
+        15.3667
+      ],
+      "tassili": [
+        22.345,
+        31.616
+      ],
+      "simien": [
+        13.1903,
+        38.0655
+      ],
+      "maasai_mara": [
+        -1.4931,
+        35.1436
+      ],
+      "iceland_highlands": [
+        64.047,
+        -21.214
+      ],
+      "glen_coe": [
+        56.6836,
+        -5.0375
+      ],
+      "svalbard": [
+        78.2232,
+        15.6469
+      ],
+      "lapland": [
+        63.419,
+        13.082
+      ],
+      "altai": [
+        49.997,
+        88.679
+      ],
+      "charyn": [
+        44.5411,
+        78.3776
+      ],
+      "song_kol": [
+        51.5465,
+        100.4355
+      ],
+      "ladakh": [
+        34.279,
+        77.604
+      ],
+      "mongolia_steppe": [
+        47.682,
+        105.9368
+      ],
+      "gobi": [
+        44.5356,
+        78.3444
+      ],
+      "wahiba": [
+        21.5726,
+        58.5637
+      ],
+      "denali_hwy": [
+        65.8781,
+        -149.7208
+      ],
+      "tombstone": [
+        67.4436,
+        135.8958
+      ],
+      "kangerlussuaq": [
+        67.0089,
+        -50.6894
+      ],
+      "colca": [
+        -15.6146,
+        -71.9406
+      ],
+      "khibiny": [
+        67.617,
+        33.683
+      ]
+    },
+    "gpt-5.4": {
+      "atacama": [
+        -22.83,
+        -67.88
+      ],
+      "altiplano": [
+        -23.03,
+        -67.43
+      ],
+      "patagonia": [
+        -44.257,
+        170.099
+      ],
+      "tierra_del_fuego": [
+        -54.839,
+        -68.303
+      ],
+      "damaraland": [
+        36.485,
+        -114.531
+      ],
+      "namib": [
+        -24.7706,
+        15.2921
+      ],
+      "tassili": [
+        24.678,
+        34.724
+      ],
+      "simien": [
+        13.18,
+        38.07
+      ],
+      "maasai_mara": [
+        -1.4931,
+        35.1439
+      ],
+      "iceland_highlands": [
+        63.895,
+        -22.053
+      ],
+      "glen_coe": [
+        56.669,
+        -5.031
+      ],
+      "svalbard": [
+        66.074,
+        -23.124
+      ],
+      "lapland": [
+        61.489,
+        8.817
+      ],
+      "altai": [
+        50.083,
+        88.233
+      ],
+      "charyn": [
+        28.394,
+        -14.101
+      ],
+      "song_kol": [
+        42.45,
+        76.05
+      ],
+      "ladakh": [
+        34.278,
+        77.605
+      ],
+      "mongolia_steppe": [
+        44.9,
+        110.15
+      ],
+      "gobi": [
+        47.815,
+        106.95
+      ],
+      "wahiba": [
+        22.55,
+        49.12
+      ],
+      "denali_hwy": [
+        61.985,
+        -132.445
+      ],
+      "tombstone": [
+        64.578,
+        -138.192
+      ],
+      "kangerlussuaq": [
+        61.206,
+        -48.173
+      ],
+      "colca": [
+        -15.609,
+        -71.981
+      ],
+      "khibiny": [
+        67.615,
+        33.672
+      ]
+    },
+    "gpt-5.5": {
+      "atacama": [
+        -22.92,
+        -68.05
+      ],
+      "altiplano": [
+        -21.568,
+        -68.052
+      ],
+      "patagonia": [
+        -15.84,
+        -69.98
+      ],
+      "tierra_del_fuego": [
+        -54.82,
+        -68.31
+      ],
+      "damaraland": [
+        -20.595,
+        14.372
+      ],
+      "namib": [
+        -24.7585,
+        15.2923
+      ],
+      "tassili": [
+        24.62,
+        9.47
+      ],
+      "simien": [
+        13.235,
+        38.06
+      ],
+      "maasai_mara": [
+        -2.3333,
+        34.8333
+      ],
+      "iceland_highlands": [
+        63.9926,
+        -19.0607
+      ],
+      "glen_coe": [
+        56.6665,
+        -4.9875
+      ],
+      "svalbard": [
+        78.214,
+        15.65
+      ],
+      "lapland": [
+        69.043,
+        20.856
+      ],
+      "altai": [
+        50.08,
+        87.75
+      ],
+      "charyn": [
+        29.66,
+        34.87
+      ],
+      "song_kol": [
+        40.484,
+        45.291
+      ],
+      "ladakh": [
+        34.245,
+        77.59
+      ],
+      "mongolia_steppe": [
+        47.72,
+        105.93
+      ],
+      "gobi": [
+        35.89,
+        52.05
+      ],
+      "wahiba": [
+        22.985,
+        53.785
+      ],
+      "denali_hwy": [
+        63.11,
+        -147.55
+      ],
+      "tombstone": [
+        64.51,
+        -138.25
+      ],
+      "kangerlussuaq": [
+        71.134,
+        -51.281
+      ],
+      "colca": [
+        -15.6096,
+        -71.9054
+      ],
+      "khibiny": [
+        67.6005,
+        33.718
+      ]
+    },
+    "geoclip": {
+      "atacama": [
+        -19.90106,
+        -67.62646
+      ],
+      "altiplano": [
+        -23.72187,
+        -67.83508
+      ],
+      "patagonia": [
+        -51.28425,
+        -72.61963
+      ],
+      "tierra_del_fuego": [
+        -54.83945,
+        -68.24844
+      ],
+      "damaraland": [
+        36.42708,
+        -114.4614
+      ],
+      "namib": [
+        -24.52713,
+        15.26276
+      ],
+      "tassili": [
+        31.06644,
+        -4.00261
+      ],
+      "simien": [
+        13.27203,
+        38.11518
+      ],
+      "maasai_mara": [
+        -1.24942,
+        34.61575
+      ],
+      "iceland_highlands": [
+        64.12755,
+        -20.60778
+      ],
+      "glen_coe": [
+        56.66399,
+        -4.97046
+      ],
+      "svalbard": [
+        78.22675,
+        15.61363
+      ],
+      "lapland": [
+        69.06817,
+        20.76583
+      ],
+      "altai": [
+        44.31783,
+        6.7759
+      ],
+      "charyn": [
+        31.31023,
+        -7.37251
+      ],
+      "song_kol": [
+        30.68126,
+        91.09737
+      ],
+      "ladakh": [
+        34.0134,
+        77.87092
+      ],
+      "mongolia_steppe": [
+        47.80116,
+        107.66808
+      ],
+      "gobi": [
+        29.01583,
+        87.49416
+      ],
+      "wahiba": [
+        -24.52713,
+        15.26276
+      ],
+      "denali_hwy": [
+        63.03286,
+        -145.50499
+      ],
+      "tombstone": [
+        63.52074,
+        -150.04483
+      ],
+      "kangerlussuaq": [
+        78.30124,
+        15.73242
+      ],
+      "colca": [
+        -15.57542,
+        -72.00302
+      ],
+      "khibiny": [
+        64.49468,
+        60.02518
+      ]
+    },
+    "gaea": {
+      "atacama": [
+        -23.354549,
+        -67.902657
+      ],
+      "altiplano": [
+        -23.354549,
+        -67.902657
+      ],
+      "patagonia": [
+        -41.133478,
+        -71.310147
+      ],
+      "tierra_del_fuego": [
+        -54.807306,
+        -68.308413
+      ],
+      "damaraland": [
+        -19.246724,
+        17.716215
+      ],
+      "namib": [
+        24.375344,
+        4.320844
+      ],
+      "tassili": [
+        24.091071,
+        32.897306
+      ],
+      "simien": [
+        12.610368,
+        37.466766
+      ],
+      "maasai_mara": [
+        -1.265292,
+        34.658065
+      ],
+      "iceland_highlands": [
+        65.72165,
+        -17.372752
+      ],
+      "glen_coe": [
+        56.817826,
+        -5.110952
+      ],
+      "svalbard": [
+        63.997594,
+        -21.18683
+      ],
+      "lapland": [
+        67.330335,
+        23.781474
+      ],
+      "altai": [
+        46.750483,
+        89.218837
+      ],
+      "charyn": [
+        35.978765,
+        -114.833757
+      ],
+      "song_kol": [
+        48.65562,
+        88.289419
+      ],
+      "ladakh": [
+        34.004111,
+        77.657348
+      ],
+      "mongolia_steppe": [
+        47.918468,
+        106.917702
+      ],
+      "gobi": [
+        39.466598,
+        75.990014
+      ],
+      "wahiba": [
+        25.310881,
+        51.508181
+      ],
+      "denali_hwy": [
+        63.950262,
+        -149.025871
+      ],
+      "tombstone": [
+        46.600592,
+        11.725784
+      ],
+      "kangerlussuaq": [
+        67.008677,
+        -50.691336
+      ],
+      "colca": [
+        -15.641679,
+        -71.573063
+      ],
+      "khibiny": [
+        68.860941,
+        18.348243
+      ]
+    },
+    "qwen": {
+      "atacama": [
+        -23.45,
+        -68.05
+      ],
+      "altiplano": [
+        -19.25,
+        -66.1
+      ],
+      "patagonia": [
+        -32.85,
+        149.15
+      ],
+      "tierra_del_fuego": [
+        -54.98,
+        -68.02
+      ],
+      "damaraland": [
+        -22.5,
+        15.5
+      ],
+      "namib": [
+        -22.86,
+        15.97
+      ],
+      "tassili": [
+        25.0,
+        30.0
+      ],
+      "simien": [
+        13.25,
+        38.5
+      ],
+      "maasai_mara": [
+        -1.85,
+        35.05
+      ],
+      "iceland_highlands": [
+        64.15,
+        -21.95
+      ],
+      "glen_coe": [
+        56.17,
+        -4.6
+      ],
+      "svalbard": [
+        64.55,
+        -21.05
+      ],
+      "lapland": [
+        68.5,
+        20.5
+      ],
+      "altai": [
+        29.6579,
+        91.1044
+      ],
+      "charyn": [
+        32.15,
+        -110.67
+      ],
+      "song_kol": [
+        60.0,
+        100.0
+      ],
+      "ladakh": [
+        33.03,
+        80.03
+      ],
+      "mongolia_steppe": [
+        47.68,
+        106.34
+      ],
+      "gobi": [
+        47.12,
+        106.92
+      ],
+      "wahiba": [
+        25.2001,
+        55.2744
+      ],
+      "denali_hwy": [
+        60.12,
+        -135.08
+      ],
+      "tombstone": [
+        60.75,
+        5.95
+      ],
+      "kangerlussuaq": [
+        67.02,
+        -51.42
+      ],
+      "colca": [
+        -14.05,
+        -71.95
+      ],
+      "khibiny": [
+        63.41,
+        10.39
+      ]
+    },
+    "o3": {
+      "atacama": [
+        -22.83,
+        -67.88
+      ],
+      "altiplano": [
+        -23.77,
+        -67.52
+      ],
+      "patagonia": [
+        -18.23,
+        -69.35
+      ],
+      "tierra_del_fuego": [
+        -54.866,
+        -68.483
+      ],
+      "damaraland": [
+        36.425,
+        -114.535
+      ],
+      "namib": [
+        -24.733,
+        15.301
+      ],
+      "tassili": [
+        27.46,
+        28.7
+      ],
+      "simien": [
+        13.19,
+        38.09
+      ],
+      "maasai_mara": [
+        -1.493,
+        35.143
+      ],
+      "iceland_highlands": [
+        63.993,
+        -19.06
+      ],
+      "glen_coe": [
+        56.667,
+        -5.028
+      ],
+      "svalbard": [
+        78.245,
+        15.46
+      ],
+      "lapland": [
+        69.045,
+        20.792
+      ],
+      "altai": [
+        50.13,
+        87.74
+      ],
+      "charyn": [
+        36.169,
+        -114.704
+      ],
+      "song_kol": [
+        41.85,
+        75.15
+      ],
+      "ladakh": [
+        34.25,
+        77.6
+      ],
+      "mongolia_steppe": [
+        47.68,
+        105.91
+      ],
+      "gobi": [
+        40.031,
+        44.932
+      ],
+      "wahiba": [
+        22.35,
+        58.77
+      ],
+      "denali_hwy": [
+        65.55,
+        -137.67
+      ],
+      "tombstone": [
+        64.73,
+        -138.21
+      ],
+      "kangerlussuaq": [
+        67.06,
+        -50.47
+      ],
+      "colca": [
+        -15.607,
+        -72.041
+      ],
+      "khibiny": [
+        67.614,
+        33.625
+      ]
+    },
+    "gpt4o": {
+      "atacama": [
+        -22.834,
+        -67.884
+      ],
+      "altiplano": [
+        -20.1338,
+        -67.4891
+      ],
+      "patagonia": [
+        -50.337,
+        -72.264
+      ],
+      "tierra_del_fuego": [
+        -54.8,
+        -68.3
+      ],
+      "damaraland": [
+        36.422,
+        -114.514
+      ],
+      "namib": [
+        -24.7275,
+        15.2919
+      ],
+      "tassili": [
+        23.9684,
+        32.8772
+      ],
+      "simien": [
+        13.1833,
+        38.0667
+      ],
+      "maasai_mara": [
+        -1.4061,
+        35.0128
+      ],
+      "iceland_highlands": [
+        64.028,
+        -21.213
+      ],
+      "glen_coe": [
+        56.6829,
+        -5.102
+      ],
+      "svalbard": [
+        78.2232,
+        15.6267
+      ],
+      "lapland": [
+        69.3089,
+        21.2631
+      ],
+      "altai": [
+        49.8333,
+        87.3333
+      ],
+      "charyn": [
+        44.333,
+        78.667
+      ],
+      "song_kol": [
+        50.25,
+        92.5
+      ],
+      "ladakh": [
+        34.2778,
+        77.6044
+      ],
+      "mongolia_steppe": [
+        47.7106,
+        105.8951
+      ],
+      "gobi": [
+        36.0481,
+        51.4204
+      ],
+      "wahiba": [
+        23.133,
+        53.783
+      ],
+      "denali_hwy": [
+        65.875,
+        -149.722
+      ],
+      "tombstone": [
+        52.8333,
+        93.0833
+      ],
+      "kangerlussuaq": [
+        67.009,
+        -50.721
+      ],
+      "colca": [
+        -15.5972,
+        -71.9406
+      ],
+      "khibiny": [
+        67.654,
+        33.667
+      ]
+    },
+    "api_pipeline": {
+      "atacama": [
+        -22.828681,
+        -67.854594
+      ],
+      "altiplano": [
+        -20.1338,
+        -67.4891
+      ],
+      "patagonia": [
+        -29.432695,
+        142.010258
+      ],
+      "tierra_del_fuego": [
+        -54.866667,
+        -67.5
+      ],
+      "damaraland": [
+        36.4721,
+        -114.5144
+      ],
+      "namib": [
+        -24.7333,
+        15.2833
+      ],
+      "tassili": [
+        22.5,
+        29.5
+      ],
+      "simien": [
+        13.1833,
+        38.0667
+      ],
+      "maasai_mara": [
+        -1.4061,
+        35.0128
+      ],
+      "iceland_highlands": [
+        64.0025,
+        -21.1861
+      ],
+      "glen_coe": [
+        56.6829,
+        -5.102
+      ],
+      "svalbard": [
+        78.2232,
+        15.6469
+      ],
+      "lapland": [
+        61.8833,
+        9.75
+      ],
+      "altai": [
+        50.0,
+        87.0
+      ],
+      "charyn": [
+        44.0,
+        78.5
+      ],
+      "song_kol": [
+        53.5587,
+        108.165
+      ],
+      "ladakh": [
+        34.1526,
+        77.5771
+      ],
+      "mongolia_steppe": [
+        46.8625,
+        103.8467
+      ],
+      "gobi": [
+        36.0594,
+        51.4094
+      ],
+      "wahiba": [
+        20.0,
+        50.0
+      ],
+      "denali_hwy": [
+        63.3333,
+        -135.75
+      ],
+      "tombstone": [
+        66.5361,
+        -65.3183
+      ],
+      "kangerlussuaq": [
+        67.0095,
+        -50.7212
+      ],
+      "colca": [
+        -15.625,
+        -71.8
+      ],
+      "khibiny": [
+        67.667,
+        33.667
+      ]
+    },
+    "pipeline_gpt-5.5": {
+      "atacama": [
+        -22.795,
+        -67.815
+      ],
+      "altiplano": [
+        -22.205,
+        -67.775
+      ],
+      "patagonia": [
+        -51.7605,
+        -58.773
+      ],
+      "tierra_del_fuego": [
+        -54.8125,
+        -68.303
+      ],
+      "damaraland": [
+        -20.5904,
+        14.3725
+      ],
+      "namib": [
+        -24.7586,
+        15.2922
+      ],
+      "tassili": [
+        28.353,
+        28.897
+      ],
+      "simien": [
+        13.235,
+        38.177
+      ],
+      "maasai_mara": [
+        -2.333,
+        34.833
+      ],
+      "iceland_highlands": [
+        63.992,
+        -19.061
+      ],
+      "glen_coe": [
+        56.669,
+        -5.031
+      ],
+      "svalbard": [
+        78.2232,
+        15.6469
+      ],
+      "lapland": [
+        69.0438,
+        20.8045
+      ],
+      "altai": [
+        50.083,
+        87.778
+      ],
+      "charyn": [
+        43.986,
+        78.628
+      ],
+      "song_kol": [
+        41.836,
+        75.154
+      ],
+      "ladakh": [
+        34.249,
+        77.604
+      ],
+      "mongolia_steppe": [
+        47.758,
+        105.884
+      ],
+      "gobi": [
+        44.033,
+        78.78
+      ],
+      "wahiba": [
+        23.074,
+        53.777
+      ],
+      "denali_hwy": [
+        63.039,
+        -145.992
+      ],
+      "tombstone": [
+        64.52,
+        -138.585
+      ],
+      "kangerlussuaq": [
+        67.0091,
+        -50.6763
+      ],
+      "colca": [
+        -15.6126,
+        -71.9049
+      ],
+      "khibiny": [
+        67.6305,
+        33.735
+      ]
+    },
+    "pipeline_o3": {
+      "atacama": [
+        -22.959,
+        -67.848
+      ],
+      "altiplano": [
+        -23.586,
+        -67.17
+      ],
+      "patagonia": [
+        -50.421,
+        -72.611
+      ],
+      "tierra_del_fuego": [
+        -54.807,
+        -68.304
+      ],
+      "damaraland": [
+        36.4237,
+        -114.5146
+      ],
+      "namib": [
+        -24.736,
+        15.302
+      ],
+      "tassili": [
+        22.702,
+        32.56
+      ],
+      "simien": [
+        13.25,
+        38.04
+      ],
+      "maasai_mara": [
+        -2.452,
+        34.82
+      ],
+      "iceland_highlands": [
+        64.0419,
+        -21.205
+      ],
+      "glen_coe": [
+        56.6681,
+        -5.0286
+      ],
+      "svalbard": [
+        78.217,
+        15.65
+      ],
+      "lapland": [
+        69.044,
+        20.835
+      ],
+      "altai": [
+        50.06,
+        87.685
+      ],
+      "charyn": [
+        36.417,
+        -114.495
+      ],
+      "song_kol": [
+        50.969,
+        100.843
+      ],
+      "ladakh": [
+        34.2436,
+        77.5985
+      ],
+      "mongolia_steppe": [
+        47.716,
+        105.925
+      ],
+      "gobi": [
+        35.86,
+        52.05
+      ],
+      "wahiba": [
+        21.612,
+        58.607
+      ],
+      "denali_hwy": [
+        63.104788,
+        -147.520912
+      ],
+      "tombstone": [
+        64.685,
+        -138.166
+      ],
+      "kangerlussuaq": [
+        67.146,
+        -50.621
+      ],
+      "colca": [
+        -15.604,
+        -72.109
+      ],
+      "khibiny": [
+        67.59,
+        33.68
+      ]
+    },
+    "pixtral": {
+      "atacama": [
+        -27.15,
+        -66.85
+      ],
+      "altiplano": [
+        -26.8,
+        -67.5
+      ],
+      "patagonia": [
+        -45.41,
+        167.85
+      ],
+      "tierra_del_fuego": [
+        -53.0,
+        -70.5
+      ],
+      "damaraland": [
+        -22.38,
+        113.83
+      ],
+      "namib": [
+        -24.68,
+        15.18
+      ],
+      "tassili": [
+        30.45,
+        -4.23
+      ],
+      "simien": [
+        13.85,
+        38.85
+      ],
+      "maasai_mara": [
+        -1.3,
+        35.0
+      ],
+      "iceland_highlands": [
+        63.86,
+        -22.43
+      ],
+      "glen_coe": [
+        54.42,
+        -3.25
+      ],
+      "svalbard": [
+        63.37,
+        -19.49
+      ],
+      "lapland": [
+        70.05,
+        23.0
+      ],
+      "altai": [
+        37.64,
+        -118.98
+      ],
+      "charyn": [
+        30.75,
+        -6.95
+      ],
+      "song_kol": [
+        -19.3,
+        -68.5
+      ],
+      "ladakh": [
+        34.15,
+        77.55
+      ],
+      "mongolia_steppe": [
+        47.68,
+        107.15
+      ],
+      "gobi": [
+        31.15,
+        -8.0
+      ],
+      "wahiba": [
+        29.98,
+        -4.15
+      ],
+      "denali_hwy": [
+        63.12,
+        -149.95
+      ],
+      "tombstone": [
+        61.65,
+        7.15
+      ],
+      "kangerlussuaq": [
+        78.22,
+        16.25
+      ],
+      "colca": [
+        -15.62,
+        -71.83
+      ],
+      "khibiny": [
+        69.69,
+        18.99
+      ]
+    }
+  }
+}

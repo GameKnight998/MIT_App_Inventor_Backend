@@ -1,0 +1,575 @@
+{
+  "gemma": {
+    "atacama": {
+      "model": "gemma",
+      "answer": "View of Licancabur Volcano from the Atacama Desert, San Pedro de Atacama, Antofagasta Region, Chile",
+      "parsed": {
+        "country": "Chile",
+        "region": "Antofagasta Region",
+        "city": "San Pedro de Atacama",
+        "specific_location": "View of Licancabur Volcano from the Atacama Desert",
+        "latitude": -23.61,
+        "longitude": -69.05,
+        "confidence": 0.85,
+        "clues": [
+          "Conical volcano (Licancabur)",
+          "Arid, desert landscape",
+          "High altitude terrain",
+          "Sparse vegetation",
+          "Brown and tan color palette characteristic of the Atacama Desert",
+          "Geological formations consistent with volcanic activity"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Chile\",\n  \"region\": \"Antofagasta Region\",\n  \"city\": \"San Pedro de Atacama\",\n  \"specific_location\": \"View of Licancabur Volcano from the Atacama Desert\",\n  \"latitude\": -23.61,\n  \"longitude\": -69.05,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"Conical volcano (Licancabur)\",\n    \"Arid, desert landscape\",\n    \"High altitude terrain\",\n    \"Sparse vegetation\",\n    \"Brown and tan color palette characteristic of the Atacama Desert\",\n    \"Geological formations consistent with volcanic activity\"\n  ]\n}\n```",
+      "latency_s": 19.85
+    },
+    "altiplano": {
+      "model": "gemma",
+      "answer": "Salas Grandes Salt Flat, Calama, Antofagasta Region, Chile",
+      "parsed": {
+        "country": "Chile",
+        "region": "Antofagasta Region",
+        "city": "Calama",
+        "specific_location": "Salas Grandes Salt Flat",
+        "latitude": -20.13,
+        "longitude": -68.93,
+        "confidence": 0.85,
+        "clues": [
+          "High-altitude desert landscape",
+          "Extensive salt flat (Salas Grandes)",
+          "Sparse, dry vegetation (xerophytes)",
+          "Reddish-brown soil and rocks",
+          "Snow-capped mountains in the background",
+          "Arid climate, clear blue sky",
+          "Terrain consistent with the Atacama Desert"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Chile\",\n  \"region\": \"Antofagasta Region\",\n  \"city\": \"Calama\",\n  \"specific_location\": \"Salas Grandes Salt Flat\",\n  \"latitude\": -20.13,\n  \"longitude\": -68.93,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"High-altitude desert landscape\",\n    \"Extensive salt flat (Salas Grandes)\",\n    \"Sparse, dry vegetation (xerophytes)\",\n    \"Reddish-brown soil and rocks\",\n    \"Snow-capped mountains in the background\",\n    \"Arid climate, clear blue sky\",\n    \"Terrain consistent with the Atacama Desert\"\n  ]\n}\n```",
+      "latency_s": 10.81
+    },
+    "patagonia": {
+      "model": "gemma",
+      "answer": "Estancia Cristina, near Lago Argentino, El Calafate, Patagonia, Argentina",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Patagonia",
+        "city": "El Calafate",
+        "specific_location": "Estancia Cristina, near Lago Argentino",
+        "latitude": -49.83,
+        "longitude": -72.74,
+        "confidence": 0.75,
+        "clues": [
+          "Patagonian steppe vegetation (golden grasses)",
+          "Presence of sheep (common in Patagonian ranches)",
+          "Small lake or pond with clear reflections",
+          "Flat, open terrain",
+          "Sparse vegetation suggesting a high-altitude or arid environment",
+          "Overall landscape characteristic of Patagonia"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Argentina\",\n  \"region\": \"Patagonia\",\n  \"city\": \"El Calafate\",\n  \"specific_location\": \"Estancia Cristina, near Lago Argentino\",\n  \"latitude\": -49.83,\n  \"longitude\": -72.74,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Patagonian steppe vegetation (golden grasses)\",\n    \"Presence of sheep (common in Patagonian ranches)\",\n    \"Small lake or pond with clear reflections\",\n    \"Flat, open terrain\",\n    \"Sparse vegetation suggesting a high-altitude or arid environment\",\n    \"Overall landscape characteristic of Patagonia\"\n  ]\n}\n```",
+      "latency_s": 10.41
+    },
+    "tierra_del_fuego": {
+      "model": "gemma",
+      "answer": "Beagle Channel, near Ushuaia, Ushuaia, Patagonia, Argentina",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Patagonia",
+        "city": "Ushuaia",
+        "specific_location": "Beagle Channel, near Ushuaia",
+        "latitude": -54.8,
+        "longitude": -68.3,
+        "confidence": 0.75,
+        "clues": [
+          "Dramatic, rugged mountain range characteristic of Patagonia",
+          "Presence of a ship in a wide, fjord-like waterway (Beagle Channel)",
+          "Subpolar climate indicated by snow-capped mountains and overcast sky",
+          "Vegetation appears consistent with subantarctic forests",
+          "The shape of the mountains and the coastline are consistent with the Beagle Channel area."
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Argentina\",\n  \"region\": \"Patagonia\",\n  \"city\": \"Ushuaia\",\n  \"specific_location\": \"Beagle Channel, near Ushuaia\",\n  \"latitude\": -54.80,\n  \"longitude\": -68.30,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Dramatic, rugged mountain range characteristic of Patagonia\",\n    \"Presence of a ship in a wide, fjord-like waterway (Beagle Channel)\",\n    \"Subpolar climate indicated by snow-capped mountains and overcast sky\",\n    \"Vegetation appears consistent with subantarctic forests\",\n    \"The shape of the mountains and the coastline are consistent with the Beagle Channel area.\"\n  ]\n}\n```",
+      "latency_s": 11.11
+    },
+    "damaraland": {
+      "model": "gemma",
+      "answer": "Paria Canyon-Vermilion Cliffs Wilderness, near White Pocket, Kanab, Utah, United States",
+      "parsed": {
+        "country": "United States",
+        "region": "Utah",
+        "city": "Kanab",
+        "specific_location": "Paria Canyon-Vermilion Cliffs Wilderness, near White Pocket",
+        "latitude": 36.62,
+        "longitude": -112.15,
+        "confidence": 0.85,
+        "clues": [
+          "Distinctive red sandstone formations",
+          "Erosion patterns characteristic of arid environments",
+          "Vegetation consistent with desert scrub",
+          "Terrain suggests a wilderness area",
+          "Geological features resemble those of the Paria Canyon-Vermilion Cliffs Wilderness"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"United States\",\n  \"region\": \"Utah\",\n  \"city\": \"Kanab\",\n  \"specific_location\": \"Paria Canyon-Vermilion Cliffs Wilderness, near White Pocket\",\n  \"latitude\": 36.62,\n  \"longitude\": -112.15,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"Distinctive red sandstone formations\",\n    \"Erosion patterns characteristic of arid environments\",\n    \"Vegetation consistent with desert scrub\",\n    \"Terrain suggests a wilderness area\",\n    \"Geological features resemble those of the Paria Canyon-Vermilion Cliffs Wilderness\"\n  ]\n}\n```",
+      "latency_s": 9.99
+    },
+    "namib": {
+      "model": "gemma",
+      "answer": "Sossusvlei, Sesriem, Kalahari Desert, Namibia",
+      "parsed": {
+        "country": "Namibia",
+        "region": "Kalahari Desert",
+        "city": "Sesriem",
+        "specific_location": "Sossusvlei",
+        "latitude": -24.63,
+        "longitude": 15.46,
+        "confidence": 0.95,
+        "clues": [
+          "arid desert landscape with red sand dunes",
+          "sparse, drought-resistant vegetation (Acacia trees)",
+          "distinctive appearance of the trees (leafless, gnarled)",
+          "terrain consistent with the Namib Desert",
+          "lack of any human infrastructure visible"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Namibia\",\n  \"region\": \"Kalahari Desert\",\n  \"city\": \"Sesriem\",\n  \"specific_location\": \"Sossusvlei\",\n  \"latitude\": -24.63,\n  \"longitude\": 15.46,\n  \"confidence\": 0.95,\n  \"clues\": [\n    \"arid desert landscape with red sand dunes\",\n    \"sparse, drought-resistant vegetation (Acacia trees)\",\n    \"distinctive appearance of the trees (leafless, gnarled)\",\n    \"terrain consistent with the Namib Desert\",\n    \"lack of any human infrastructure visible\"\n  ]\n}\n```",
+      "latency_s": 10.0
+    },
+    "tassili": {
+      "model": "gemma",
+      "answer": "Road to Nuweiba, near Ras Sudr, Ras Sudr, Sinai, Egypt",
+      "parsed": {
+        "country": "Egypt",
+        "region": "Sinai",
+        "city": "Ras Sudr",
+        "specific_location": "Road to Nuweiba, near Ras Sudr",
+        "latitude": 28.65,
+        "longitude": 34.45,
+        "confidence": 0.75,
+        "clues": [
+          "Desert landscape with sand dunes",
+          "Rocky hills in the background",
+          "Road markings and asphalt road",
+          "Driving on the right side of the road",
+          "Arid climate and vegetation",
+          "Signpost with Arabic script (unreadable but confirms Arabic language use)",
+          "Terrain consistent with the Sinai Peninsula"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Egypt\",\n  \"region\": \"Sinai\",\n  \"city\": \"Ras Sudr\",\n  \"specific_location\": \"Road to Nuweiba, near Ras Sudr\",\n  \"latitude\": 28.65,\n  \"longitude\": 34.45,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Desert landscape with sand dunes\",\n    \"Rocky hills in the background\",\n    \"Road markings and asphalt road\",\n    \"Driving on the right side of the road\",\n    \"Arid climate and vegetation\",\n    \"Signpost with Arabic script (unreadable but confirms Arabic language use)\",\n    \"Terrain consistent with the Sinai Peninsula\"\n  ]\n}\n```",
+      "latency_s": 10.92
+    },
+    "simien": {
+      "model": "gemma",
+      "answer": "Simien Mountains National Park, near Sankaber, Debark, Tigray, Ethiopia",
+      "parsed": {
+        "country": "Ethiopia",
+        "region": "Tigray",
+        "city": "Debark",
+        "specific_location": "Simien Mountains National Park, near Sankaber",
+        "latitude": 12.73,
+        "longitude": 39.48,
+        "confidence": 0.85,
+        "clues": [
+          "Distinctive plateau landscape with steep escarpments",
+          "Presence of grazing cattle (likely Borana or similar breed)",
+          "High altitude grassland vegetation",
+          "Unique rock formations characteristic of the Simien Mountains",
+          "Terrain suggests a mountainous region in East Africa",
+          "Sparse tree cover and dry climate"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Ethiopia\",\n  \"region\": \"Tigray\",\n  \"city\": \"Debark\",\n  \"specific_location\": \"Simien Mountains National Park, near Sankaber\",\n  \"latitude\": 12.73,\n  \"longitude\": 39.48,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"Distinctive plateau landscape with steep escarpments\",\n    \"Presence of grazing cattle (likely Borana or similar breed)\",\n    \"High altitude grassland vegetation\",\n    \"Unique rock formations characteristic of the Simien Mountains\",\n    \"Terrain suggests a mountainous region in East Africa\",\n    \"Sparse tree cover and dry climate\"\n  ]\n}\n```",
+      "latency_s": 10.72
+    },
+    "maasai_mara": {
+      "model": "gemma",
+      "answer": "Masai Mara National Reserve, Nairobi, Rift Valley Province, Kenya",
+      "parsed": {
+        "country": "Kenya",
+        "region": "Rift Valley Province",
+        "city": "Nairobi",
+        "specific_location": "Masai Mara National Reserve",
+        "latitude": -1.5,
+        "longitude": 35.0,
+        "confidence": 0.95,
+        "clues": [
+          "presence of zebras",
+          "savanna grassland vegetation",
+          "flat terrain",
+          "typical East African climate"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Kenya\",\n  \"region\": \"Rift Valley Province\",\n  \"city\": \"Nairobi\",\n  \"specific_location\": \"Masai Mara National Reserve\",\n  \"latitude\": -1.50,\n  \"longitude\": 35.00,\n  \"confidence\": 0.95,\n  \"clues\": [\n    \"presence of zebras\",\n    \"savanna grassland vegetation\",\n    \"flat terrain\",\n    \"typical East African climate\"\n  ]\n}\n```",
+      "latency_s": 7.88
+    },
+    "iceland_highlands": {
+      "model": "gemma",
+      "answer": "Hverir geothermal area, near Lake Mývatn, Mývatn, North Iceland, Iceland",
+      "parsed": {
+        "country": "Iceland",
+        "region": "North Iceland",
+        "city": "Mývatn",
+        "specific_location": "Hverir geothermal area, near Lake Mývatn",
+        "latitude": 65.33,
+        "longitude": -16.63,
+        "confidence": 0.85,
+        "clues": [
+          "Geothermal landscape with steaming vents and colorful mineral deposits",
+          "Sparse vegetation typical of Icelandic highlands",
+          "Dark volcanic rock formations",
+          "Terrain suggests a volcanic area",
+          "Overall landscape is consistent with the Mývatn region of Iceland"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Iceland\",\n  \"region\": \"North Iceland\",\n  \"city\": \"Mývatn\",\n  \"specific_location\": \"Hverir geothermal area, near Lake Mývatn\",\n  \"latitude\": 65.33,\n  \"longitude\": -16.63,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"Geothermal landscape with steaming vents and colorful mineral deposits\",\n    \"Sparse vegetation typical of Icelandic highlands\",\n    \"Dark volcanic rock formations\",\n    \"Terrain suggests a volcanic area\",\n    \"Overall landscape is consistent with the Mývatn region of Iceland\"\n  ]\n}\n```",
+      "latency_s": 10.12
+    },
+    "glen_coe": {
+      "model": "gemma",
+      "answer": "Glen Nevis, near Fort William, Fort William, Scotland, United Kingdom",
+      "parsed": {
+        "country": "United Kingdom",
+        "region": "Scotland",
+        "city": "Fort William",
+        "specific_location": "Glen Nevis, near Fort William",
+        "latitude": 56.75,
+        "longitude": -4.93,
+        "confidence": 0.85,
+        "clues": [
+          "Rugged, green mountains with cloud cover",
+          "U-shaped valley characteristic of glacial landscapes",
+          "Vegetation consistent with the Scottish Highlands",
+          "Road winding through the valley",
+          "Terrain suggests a mountainous region with significant rainfall",
+          "Overall landscape is typical of the Scottish Highlands"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"United Kingdom\",\n  \"region\": \"Scotland\",\n  \"city\": \"Fort William\",\n  \"specific_location\": \"Glen Nevis, near Fort William\",\n  \"latitude\": 56.75,\n  \"longitude\": -4.93,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"Rugged, green mountains with cloud cover\",\n    \"U-shaped valley characteristic of glacial landscapes\",\n    \"Vegetation consistent with the Scottish Highlands\",\n    \"Road winding through the valley\",\n    \"Terrain suggests a mountainous region with significant rainfall\",\n    \"Overall landscape is typical of the Scottish Highlands\"\n  ]\n}\n```",
+      "latency_s": 10.19
+    },
+    "svalbard": {
+      "model": "gemma",
+      "answer": "Near Seldefoss waterfall, Ísafjarðardalur valley, Ísafjörður, Westfjords, Iceland",
+      "parsed": {
+        "country": "Iceland",
+        "region": "Westfjords",
+        "city": "Ísafjörður",
+        "specific_location": "Near Seldefoss waterfall, Ísafjarðardalur valley",
+        "latitude": 66.48,
+        "longitude": -23.25,
+        "confidence": 0.75,
+        "clues": [
+          "Dramatic, layered rock formations characteristic of Icelandic landscapes",
+          "Snow-covered terrain and vegetation suggesting a cold, arctic climate",
+          "The presence of a waterfall (likely Seldefoss) based on the rock structure and potential water flow",
+          "The overall landscape resembles the Ísafjarðardalur valley and surrounding areas in the Westfjords",
+          "The man's clothing suggests cold weather conditions"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Iceland\",\n  \"region\": \"Westfjords\",\n  \"city\": \"Ísafjörður\",\n  \"specific_location\": \"Near Seldefoss waterfall, Ísafjarðardalur valley\",\n  \"latitude\": 66.48,\n  \"longitude\": -23.25,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Dramatic, layered rock formations characteristic of Icelandic landscapes\",\n    \"Snow-covered terrain and vegetation suggesting a cold, arctic climate\",\n    \"The presence of a waterfall (likely Seldefoss) based on the rock structure and potential water flow\",\n    \"The overall landscape resembles the Ísafjarðardalur valley and surrounding areas in the Westfjords\",\n    \"The man's clothing suggests cold weather conditions\"\n  ]\n}\n```",
+      "latency_s": 12.27
+    },
+    "lapland": {
+      "model": "gemma",
+      "answer": "Snøholmen, Dovrefjell-Sunndalsfjella National Park, Folkets Hus, Innlandet, Norway",
+      "parsed": {
+        "country": "Norway",
+        "region": "Innlandet",
+        "city": "Folkets Hus",
+        "specific_location": "Snøholmen, Dovrefjell-Sunndalsfjella National Park",
+        "latitude": 62.55,
+        "longitude": 11.35,
+        "confidence": 0.75,
+        "clues": [
+          "Alpine terrain with exposed rock and sparse vegetation",
+          "Distinctive conical mountain shape",
+          "Presence of a 'Turisthytte' (mountain hut) with a dark roof",
+          "Low-lying vegetation typical of arctic/subarctic regions",
+          "Presence of rocks and small pools of water",
+          "Weather conditions suggest a cool, cloudy climate",
+          "The mountain resembles Snøholmen, a prominent peak in Dovrefjell"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Norway\",\n  \"region\": \"Innlandet\",\n  \"city\": \"Folkets Hus\",\n  \"specific_location\": \"Snøholmen, Dovrefjell-Sunndalsfjella National Park\",\n  \"latitude\": 62.55,\n  \"longitude\": 11.35,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Alpine terrain with exposed rock and sparse vegetation\",\n    \"Distinctive conical mountain shape\",\n    \"Presence of a 'Turisthytte' (mountain hut) with a dark roof\",\n    \"Low-lying vegetation typical of arctic/subarctic regions\",\n    \"Presence of rocks and small pools of water\",\n    \"Weather conditions suggest a cool, cloudy climate\",\n    \"The mountain resembles Snøholmen, a prominent peak in Dovrefjell\"\n  ]\n}\n```",
+      "latency_s": 12.96
+    },
+    "altai": {
+      "model": "gemma",
+      "answer": "Arslanbob Valley, Arslanbob, Jalal-Abad Region, Kyrgyzstan",
+      "parsed": {
+        "country": "Kyrgyzstan",
+        "region": "Jalal-Abad Region",
+        "city": "Arslanbob",
+        "specific_location": "Arslanbob Valley",
+        "latitude": 41.73,
+        "longitude": 72.85,
+        "confidence": 0.75,
+        "clues": [
+          "Alpine terrain with steep, rocky slopes",
+          "Sparse vegetation consisting of grasses and coniferous trees",
+          "River flowing through a valley",
+          "Terrain suggests a high-altitude environment",
+          "The overall landscape is consistent with the Tian Shan mountain range, specifically the Arslanbob region in Kyrgyzstan, known for its walnut forests and valleys."
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Kyrgyzstan\",\n  \"region\": \"Jalal-Abad Region\",\n  \"city\": \"Arslanbob\",\n  \"specific_location\": \"Arslanbob Valley\",\n  \"latitude\": 41.73,\n  \"longitude\": 72.85,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Alpine terrain with steep, rocky slopes\",\n    \"Sparse vegetation consisting of grasses and coniferous trees\",\n    \"River flowing through a valley\",\n    \"Terrain suggests a high-altitude environment\",\n    \"The overall landscape is consistent with the Tian Shan mountain range, specifically the Arslanbob region in Kyrgyzstan, known for its walnut forests and valleys.\"\n  ]\n}\n```",
+      "latency_s": 10.97
+    },
+    "charyn": {
+      "model": "gemma",
+      "answer": "Ramon Crater (Makhtesh Ramon), Mitzpe Ramon, Southern District, Israel",
+      "parsed": {
+        "country": "Israel",
+        "region": "Southern District",
+        "city": "Mitzpe Ramon",
+        "specific_location": "Ramon Crater (Makhtesh Ramon)",
+        "latitude": 30.05,
+        "longitude": 35.33,
+        "confidence": 0.75,
+        "clues": [
+          "arid, desert-like terrain",
+          "characteristic eroded hills and valleys",
+          "sparse vegetation",
+          "geological formation resembling a crater (Makhtesh)",
+          "rocky, reddish-brown soil",
+          "typical landscape of the Negev Desert"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Israel\",\n  \"region\": \"Southern District\",\n  \"city\": \"Mitzpe Ramon\",\n  \"specific_location\": \"Ramon Crater (Makhtesh Ramon)\",\n  \"latitude\": 30.05,\n  \"longitude\": 35.33,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"arid, desert-like terrain\",\n    \"characteristic eroded hills and valleys\",\n    \"sparse vegetation\",\n    \"geological formation resembling a crater (Makhtesh)\",\n    \"rocky, reddish-brown soil\",\n    \"typical landscape of the Negev Desert\"\n  ]\n}\n```",
+      "latency_s": 10.0
+    },
+    "song_kol": {
+      "model": "gemma",
+      "answer": "Koko Nor (Kubuqi Desert near the lake), Wulanbaigai, Mongolia and Qinghai, China",
+      "parsed": {
+        "country": "China",
+        "region": "Mongolia and Qinghai",
+        "city": "Wulanbaigai",
+        "specific_location": "Koko Nor (Kubuqi Desert near the lake)",
+        "latitude": 40.52,
+        "longitude": 102.25,
+        "confidence": 0.75,
+        "clues": [
+          "Large lake with a blue hue",
+          "Dry, grassy steppe landscape",
+          "Rolling hills and mountains in the background",
+          "Sparse vegetation",
+          "Terrain suggests a high-altitude environment",
+          "The lake is Koko Nor (Kubuqi Desert) which is located in Inner Mongolia, China"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"China\",\n  \"region\": \"Mongolia and Qinghai\",\n  \"city\": \"Wulanbaigai\",\n  \"specific_location\": \"Koko Nor (Kubuqi Desert near the lake)\",\n  \"latitude\": 40.52,\n  \"longitude\": 102.25,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Large lake with a blue hue\",\n    \"Dry, grassy steppe landscape\",\n    \"Rolling hills and mountains in the background\",\n    \"Sparse vegetation\",\n    \"Terrain suggests a high-altitude environment\",\n    \"The lake is Koko Nor (Kubuqi Desert) which is located in Inner Mongolia, China\"\n  ]\n}\n```",
+      "latency_s": 11.19
+    },
+    "ladakh": {
+      "model": "gemma",
+      "answer": "Near Khardung La Pass, Leh, Ladakh, India",
+      "parsed": {
+        "country": "India",
+        "region": "Ladakh",
+        "city": "Leh",
+        "specific_location": "Near Khardung La Pass",
+        "latitude": 33.55,
+        "longitude": 77.22,
+        "confidence": 0.85,
+        "clues": [
+          "arid, mountainous terrain",
+          "winding road",
+          "sparse vegetation",
+          "high altitude (snow-capped peaks in the distance)",
+          "brown/tan soil color",
+          "driving on the left side of the road (implied by road markings)"
+        ]
+      },
+      "text": "```json\n{\"country\": \"India\", \"region\": \"Ladakh\", \"city\": \"Leh\", \"specific_location\": \"Near Khardung La Pass\", \"latitude\": 33.55, \"longitude\": 77.22, \"confidence\": 0.85, \"clues\": [\"arid, mountainous terrain\", \"winding road\", \"sparse vegetation\", \"high altitude (snow-capped peaks in the distance)\", \"brown/tan soil color\", \"driving on the left side of the road (implied by road markings)\"]}\n```",
+      "latency_s": 7.74
+    },
+    "mongolia_steppe": {
+      "model": "gemma",
+      "answer": "Khomiin Tal (Khomiin Lake) National Park, Khovd, Khovd Province, Mongolia",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Khovd Province",
+        "city": "Khovd",
+        "specific_location": "Khomiin Tal (Khomiin Lake) National Park",
+        "latitude": 48.83,
+        "longitude": 93.17,
+        "confidence": 0.75,
+        "clues": [
+          "Presence of Przewalski's horses (Takhi), a species reintroduced to Mongolia",
+          "Steppe grassland vegetation",
+          "Flat, open terrain characteristic of the Mongolian steppe",
+          "Absence of trees or significant forest cover",
+          "Dry climate indicated by the vegetation type"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Mongolia\",\n  \"region\": \"Khovd Province\",\n  \"city\": \"Khovd\",\n  \"specific_location\": \"Khomiin Tal (Khomiin Lake) National Park\",\n  \"latitude\": 48.83,\n  \"longitude\": 93.17,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Presence of Przewalski's horses (Takhi), a species reintroduced to Mongolia\",\n    \"Steppe grassland vegetation\",\n    \"Flat, open terrain characteristic of the Mongolian steppe\",\n    \"Absence of trees or significant forest cover\",\n    \"Dry climate indicated by the vegetation type\"\n  ]\n}\n```",
+      "latency_s": 10.68
+    },
+    "gobi": {
+      "model": "gemma",
+      "answer": "Road near Imlil, Imlil, High Atlas Mountains, Morocco",
+      "parsed": {
+        "country": "Morocco",
+        "region": "High Atlas Mountains",
+        "city": "Imlil",
+        "specific_location": "Road near Imlil",
+        "latitude": 31.18,
+        "longitude": 7.15,
+        "confidence": 0.85,
+        "clues": [
+          "Sign depicting a goat with a prohibition symbol",
+          "Arid, mountainous terrain",
+          "Sparse vegetation",
+          "Road surface suggests a rural or mountain road",
+          "The presence of a goat warning sign strongly suggests an area with wild goat populations, common in the High Atlas Mountains of Morocco"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Morocco\",\n  \"region\": \"High Atlas Mountains\",\n  \"city\": \"Imlil\",\n  \"specific_location\": \"Road near Imlil\",\n  \"latitude\": 31.18,\n  \"longitude\": 7.15,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"Sign depicting a goat with a prohibition symbol\",\n    \"Arid, mountainous terrain\",\n    \"Sparse vegetation\",\n    \"Road surface suggests a rural or mountain road\",\n    \"The presence of a goat warning sign strongly suggests an area with wild goat populations, common in the High Atlas Mountains of Morocco\"\n  ]\n}\n```",
+      "latency_s": 10.19
+    },
+    "wahiba": {
+      "model": "gemma",
+      "answer": "Moreeb Dune, Liwa Oasis, Abu Dhabi Emirate, United Arab Emirates",
+      "parsed": {
+        "country": "United Arab Emirates",
+        "region": "Abu Dhabi Emirate",
+        "city": "Liwa Oasis",
+        "specific_location": "Moreeb Dune",
+        "latitude": 24.25,
+        "longitude": 55.2,
+        "confidence": 0.85,
+        "clues": [
+          "vast sand dune landscape",
+          "orange-red sand color characteristic of the Liwa desert",
+          "sparse vegetation (single bush)",
+          "tracks in the sand suggesting off-road vehicle activity",
+          "arid climate"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"United Arab Emirates\",\n  \"region\": \"Abu Dhabi Emirate\",\n  \"city\": \"Liwa Oasis\",\n  \"specific_location\": \"Moreeb Dune\",\n  \"latitude\": 24.25,\n  \"longitude\": 55.2,\n  \"confidence\": 0.85,\n  \"clues\": [\n    \"vast sand dune landscape\",\n    \"orange-red sand color characteristic of the Liwa desert\",\n    \"sparse vegetation (single bush)\",\n    \"tracks in the sand suggesting off-road vehicle activity\",\n    \"arid climate\"\n  ]\n}\n```",
+      "latency_s": 9.34
+    },
+    "denali_hwy": {
+      "model": "gemma",
+      "answer": "Denali Highway near Healy, Healy, Alaska, United States",
+      "parsed": {
+        "country": "United States",
+        "region": "Alaska",
+        "city": "Healy",
+        "specific_location": "Denali Highway near Healy",
+        "latitude": 64.83,
+        "longitude": -149.35,
+        "confidence": 0.75,
+        "clues": [
+          "Subarctic vegetation (spruce and birch)",
+          "Rugged, mountainous terrain",
+          "Gravel road",
+          "Large river or lake",
+          "Typical Alaskan landscape",
+          "Roadside signage (yellow and black)",
+          "Sparse tree cover",
+          "Cloudy sky typical of the region"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"United States\",\n  \"region\": \"Alaska\",\n  \"city\": \"Healy\",\n  \"specific_location\": \"Denali Highway near Healy\",\n  \"latitude\": 64.83,\n  \"longitude\": -149.35,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Subarctic vegetation (spruce and birch)\",\n    \"Rugged, mountainous terrain\",\n    \"Gravel road\",\n    \"Large river or lake\",\n    \"Typical Alaskan landscape\",\n    \"Roadside signage (yellow and black)\",\n    \"Sparse tree cover\",\n    \"Cloudy sky typical of the region\"\n  ]\n}\n```",
+      "latency_s": 10.5
+    },
+    "tombstone": {
+      "model": "gemma",
+      "answer": "Near the Chara Massif, Chara, Siberia, Russia",
+      "parsed": {
+        "country": "Russia",
+        "region": "Siberia",
+        "city": "Chara",
+        "specific_location": "Near the Chara Massif",
+        "latitude": 63.33,
+        "longitude": 100.17,
+        "confidence": 0.75,
+        "clues": [
+          "Distinctive rock formations of the Chara Massif",
+          "Tundra vegetation",
+          "Sparse, low-lying vegetation consistent with a high-latitude, cold climate",
+          "Rugged, mountainous terrain",
+          "Cloudy, overcast sky typical of Siberian weather",
+          "Absence of trees suggests a high altitude or arctic/subarctic environment"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Russia\",\n  \"region\": \"Siberia\",\n  \"city\": \"Chara\",\n  \"specific_location\": \"Near the Chara Massif\",\n  \"latitude\": 63.33,\n  \"longitude\": 100.17,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Distinctive rock formations of the Chara Massif\",\n    \"Tundra vegetation\",\n    \"Sparse, low-lying vegetation consistent with a high-latitude, cold climate\",\n    \"Rugged, mountainous terrain\",\n    \"Cloudy, overcast sky typical of Siberian weather\",\n    \"Absence of trees suggests a high altitude or arctic/subarctic environment\"\n  ]\n}\n```",
+      "latency_s": 11.1
+    },
+    "kangerlussuaq": {
+      "model": "gemma",
+      "answer": "Near the Húsavík Airport, Húsavík, North Iceland, Iceland",
+      "parsed": {
+        "country": "Iceland",
+        "region": "North Iceland",
+        "city": "Húsavík",
+        "specific_location": "Near the Húsavík Airport",
+        "latitude": 65.87,
+        "longitude": -17.45,
+        "confidence": 0.75,
+        "clues": [
+          "barren, rocky terrain",
+          "sparse vegetation",
+          "power lines",
+          "road markings",
+          "bridge",
+          "low-lying buildings",
+          "geological landscape",
+          "climate suggesting high latitude"
+        ]
+      },
+      "text": "```json\n{\"country\": \"Iceland\", \"region\": \"North Iceland\", \"city\": \"Húsavík\", \"specific_location\": \"Near the Húsavík Airport\", \"latitude\": 65.87, \"longitude\": -17.45, \"confidence\": 0.75, \"clues\": [\"barren, rocky terrain\", \"sparse vegetation\", \"power lines\", \"road markings\", \"bridge\", \"low-lying buildings\", \"geological landscape\", \"climate suggesting high latitude\"]}\n```",
+      "latency_s": 7.2
+    },
+    "colca": {
+      "model": "gemma",
+      "answer": "Viewpoint along the road to Machu Picchu, near Urubamba, Urubamba, Cusco, Peru",
+      "parsed": {
+        "country": "Peru",
+        "region": "Cusco",
+        "city": "Urubamba",
+        "specific_location": "Viewpoint along the road to Machu Picchu, near Urubamba",
+        "latitude": -13.43,
+        "longitude": -72.22,
+        "confidence": 0.85,
+        "clues": [
+          "high altitude arid landscape",
+          "steep mountain valleys",
+          "winding road visible in the valley",
+          "sparse vegetation",
+          "wooden railing typical of tourist viewpoints in the Andes",
+          "terrain consistent with the Sacred Valley of Peru"
+        ]
+      },
+      "text": "```json\n{\"country\": \"Peru\", \"region\": \"Cusco\", \"city\": \"Urubamba\", \"specific_location\": \"Viewpoint along the road to Machu Picchu, near Urubamba\", \"latitude\": -13.43, \"longitude\": -72.22, \"confidence\": 0.85, \"clues\": [\"high altitude arid landscape\", \"steep mountain valleys\", \"winding road visible in the valley\", \"sparse vegetation\", \"wooden railing typical of tourist viewpoints in the Andes\", \"terrain consistent with the Sacred Valley of Peru\"]}\n```",
+      "latency_s": 7.94
+    },
+    "khibiny": {
+      "model": "gemma",
+      "answer": "Mount Fageråsen, near Oppdal ski resort, Oppdal, Trøndelag, Norway",
+      "parsed": {
+        "country": "Norway",
+        "region": "Trøndelag",
+        "city": "Oppdal",
+        "specific_location": "Mount Fageråsen, near Oppdal ski resort",
+        "latitude": 63.72,
+        "longitude": 11.33,
+        "confidence": 0.75,
+        "clues": [
+          "Presence of a ski lift",
+          "Alpine terrain with sparse vegetation (typical of Scandinavian mountains)",
+          "Autumnal colors in the vegetation",
+          "Rocky, exposed landscape",
+          "Clear blue sky with scattered clouds",
+          "Terrain suggests a high altitude environment"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Norway\",\n  \"region\": \"Trøndelag\",\n  \"city\": \"Oppdal\",\n  \"specific_location\": \"Mount Fageråsen, near Oppdal ski resort\",\n  \"latitude\": 63.72,\n  \"longitude\": 11.33,\n  \"confidence\": 0.75,\n  \"clues\": [\n    \"Presence of a ski lift\",\n    \"Alpine terrain with sparse vegetation (typical of Scandinavian mountains)\",\n    \"Autumnal colors in the vegetation\",\n    \"Rocky, exposed landscape\",\n    \"Clear blue sky with scattered clouds\",\n    \"Terrain suggests a high altitude environment\"\n  ]\n}\n```",
+      "latency_s": 10.27
+    }
+  }
+}

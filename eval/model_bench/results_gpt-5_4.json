@@ -1,0 +1,629 @@
+{
+  "gpt-5.4": {
+    "atacama": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Chile",
+        "region": "Antofagasta Region",
+        "city": "San Pedro de Atacama",
+        "specific_location": "Licancabur Volcano area, near San Pedro de Atacama / Eduardo Avaroa-Siloli Altiplano border region",
+        "latitude": -22.83,
+        "longitude": -67.88,
+        "confidence": 0.62,
+        "clues": [
+          "prominent near-perfect conical stratovolcano",
+          "extremely arid high-altitude desert landscape",
+          "sparse puna scrub vegetation",
+          "rocky ravine in foreground",
+          "Andean Altiplano terrain typical of the Atacama border area",
+          "mountain strongly resembles Licancabur, the iconic volcano near San Pedro de Atacama"
+        ]
+      },
+      "error": null,
+      "latency_s": 5.45,
+      "usage": {
+        "input": 1525,
+        "output": 151
+      }
+    },
+    "altiplano": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Chile",
+        "region": "Antofagasta",
+        "city": "San Pedro de Atacama",
+        "specific_location": "Salar de Tara, Los Flamencos National Reserve",
+        "latitude": -23.03,
+        "longitude": -67.43,
+        "confidence": 0.78,
+        "clues": [
+          "high-altitude Andean altiplano landscape",
+          "large white salt flat/lake basin",
+          "very arid terrain with sparse yellow tussock grass",
+          "reddish-brown volcanic mountains with a few snow patches",
+          "open desert scenery characteristic of the Atacama region"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.02,
+      "usage": {
+        "input": 1525,
+        "output": 118
+      }
+    },
+    "patagonia": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "New Zealand",
+        "region": "Otago",
+        "city": "Twizel",
+        "specific_location": "Mackenzie Basin high-country pasture near a pond, around Twizel/Aoraki Mackenzie Country",
+        "latitude": -44.257,
+        "longitude": 170.099,
+        "confidence": 0.34,
+        "clues": [
+          "flock of sheep in open treeless grassland",
+          "dry golden tussock landscape typical of South Island high country",
+          "shallow pond/wetland in a broad basin",
+          "low scrub and volcanic-looking rocks",
+          "temperate, semi-arid pastoral scenery strongly resembling the Mackenzie Basin"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.27,
+      "usage": {
+        "input": 1237,
+        "output": 127
+      }
+    },
+    "tierra_del_fuego": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Tierra del Fuego",
+        "city": "Ushuaia",
+        "specific_location": "Beagle Channel near Ushuaia, looking toward the Fuegian Andes",
+        "latitude": -54.839,
+        "longitude": -68.303,
+        "confidence": 0.62,
+        "clues": [
+          "cold southern maritime channel with kelp visible in foreground",
+          "snow-dusted jagged mountains rising directly from the coast",
+          "subantarctic forested lower slopes consistent with Tierra del Fuego",
+          "small rocky islet in channel typical of the Beagle Channel scenery",
+          "naval/military vessel silhouette, plausible near Ushuaia and the Beagle Channel"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.76,
+      "usage": {
+        "input": 1525,
+        "output": 138
+      }
+    },
+    "damaraland": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "United States",
+        "region": "Nevada",
+        "city": "Overton",
+        "specific_location": "Valley of Fire State Park, near the Fire Wave/White Domes area",
+        "latitude": 36.485,
+        "longitude": -114.531,
+        "confidence": 0.41,
+        "clues": [
+          "bright red sandstone with heavy tafoni/honeycomb weathering",
+          "arid desert landscape with sparse scrub",
+          "rocky badlands and rounded sandstone formations typical of Mojave desert parks",
+          "strong resemblance to Valley of Fire's eroded Aztec sandstone outcrops",
+          "no visible signage or manmade features, so identification relies on geology and desert setting"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.57,
+      "usage": {
+        "input": 1525,
+        "output": 134
+      }
+    },
+    "namib": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Namibia",
+        "region": "Hardap Region",
+        "city": "Sesriem",
+        "specific_location": "Namib-Naukluft National Park, Dead Vlei near Sossusvlei",
+        "latitude": -24.7706,
+        "longitude": 15.2921,
+        "confidence": 0.94,
+        "clues": [
+          "towering red-orange sand dunes characteristic of the Namib Desert",
+          "bleached dead camel thorn trees on a clay pan",
+          "extremely arid desert landscape with sparse scrub",
+          "iconic scenery strongly matching Dead Vlei/Sossusvlei in Namibia"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.94,
+      "usage": {
+        "input": 1525,
+        "output": 121
+      }
+    },
+    "tassili": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Egypt",
+        "region": "Red Sea Governorate",
+        "city": "Marsa Alam",
+        "specific_location": "Desert highway through Wadi el-Gemal area, west of Marsa Alam",
+        "latitude": 24.678,
+        "longitude": 34.724,
+        "confidence": 0.38,
+        "clues": [
+          "arid Sahara-style desert with large sand dunes and dark rocky outcrops",
+          "well-paved two-lane road with right-hand driving road markings",
+          "European-style warning sign shape and roadside delineator posts common in North Africa/Middle East",
+          "no vegetation or buildings except a small roadside structure/fence, suggesting remote desert highway",
+          "landscape resembles Eastern Desert/Red Sea mountain fringes in Egypt rather than flat erg-only desert"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.4,
+      "usage": {
+        "input": 1333,
+        "output": 152
+      }
+    },
+    "simien": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Ethiopia",
+        "region": "Amhara",
+        "city": "Debark",
+        "specific_location": "Simien Mountains National Park, near the escarpment viewpoints around Buyit Ras/Chenek area",
+        "latitude": 13.18,
+        "longitude": 38.07,
+        "confidence": 0.76,
+        "clues": [
+          "dramatic high escarpment with layered basalt cliffs characteristic of the Simien Mountains",
+          "high-altitude grassy afro-alpine terrain with sparse shrubs",
+          "deep dry valley far below, matching the Ethiopian Highlands topography",
+          "grazing goats/sheep on open mountain ridge, common in rural Ethiopian highlands",
+          "distinctive sharp rock pinnacle and broad cliff faces resembling viewpoints in Simien Mountains National Park"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.46,
+      "usage": {
+        "input": 1669,
+        "output": 147
+      }
+    },
+    "maasai_mara": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Kenya",
+        "region": "Narok County",
+        "city": "Narok",
+        "specific_location": "Maasai Mara National Reserve",
+        "latitude": -1.4931,
+        "longitude": 35.1439,
+        "confidence": 0.32,
+        "clues": [
+          "plains zebras in open African savanna grassland",
+          "flat grassy landscape typical of East African safari reserves",
+          "termite mounds visible in the background",
+          "no man-made signs or structures, suggesting a wildlife reserve setting"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.53,
+      "usage": {
+        "input": 1525,
+        "output": 102
+      }
+    },
+    "iceland_highlands": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Iceland",
+        "region": "Southern Peninsula",
+        "city": "Grindavík",
+        "specific_location": "Seltún geothermal area, Krýsuvík",
+        "latitude": 63.895,
+        "longitude": -22.053,
+        "confidence": 0.72,
+        "clues": [
+          "treeless volcanic landscape with moss-covered lava rock",
+          "geothermal steam rising from hot spring water",
+          "mineral-stained ground in orange/red colors",
+          "barren rhyolite-looking slopes typical of Icelandic geothermal zones",
+          "open grassy plain with hot water outflow consistent with Iceland hot spring areas"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.47,
+      "usage": {
+        "input": 1525,
+        "output": 118
+      }
+    },
+    "glen_coe": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "United Kingdom",
+        "region": "Scotland",
+        "city": "Glencoe",
+        "specific_location": "Glen Coe, near the Three Sisters / Lost Valley viewpoint",
+        "latitude": 56.669,
+        "longitude": -5.031,
+        "confidence": 0.82,
+        "clues": [
+          "dramatic steep green Highland mountains with rocky faces",
+          "treeless glen landscape typical of the Scottish Highlands",
+          "stone footpath at left resembling maintained walking paths in Glen Coe",
+          "mountain forms closely match the Three Sisters / Bidean nam Bian area",
+          "wet cloudy weather and lush grass consistent with western Scotland"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.48,
+      "usage": {
+        "input": 1045,
+        "output": 125
+      }
+    },
+    "svalbard": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Iceland",
+        "region": "Westfjords",
+        "city": "Ísafjörður",
+        "specific_location": "Roadside below the mountains near Ísafjörður, likely along Skutulsfjörður in the Westfjords",
+        "latitude": 66.074,
+        "longitude": -23.124,
+        "confidence": 0.53,
+        "clues": [
+          "treeless, snow-covered steep mountain with strongly eroded gullies typical of Icelandic fjord landscapes",
+          "winter polar-night conditions with road illuminated at base of mountain",
+          "reflective roadside snow poles common on Icelandic roads",
+          "barren volcanic-looking terrain with no forest",
+          "overall Arctic coastal mountain scenery consistent with the Icelandic Westfjords"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.25,
+      "usage": {
+        "input": 1525,
+        "output": 144
+      }
+    },
+    "lapland": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Norway",
+        "region": "Innlandet",
+        "city": "Lom",
+        "specific_location": "Jotunheimen area, likely near the Besseggen/Gjendesheim mountain zone",
+        "latitude": 61.489,
+        "longitude": 8.817,
+        "confidence": 0.23,
+        "clues": [
+          "treeless to sparse-birch alpine tundra typical of Scandinavian highlands",
+          "broad rocky mountain with lingering snow patches",
+          "small black wooden hut with turf/Scandinavian-style mountain architecture",
+          "red snow pole/route marker used in Nordic mountain areas",
+          "overall landscape strongly resembles Norwegian fjell terrain, especially Jotunheimen"
+        ]
+      },
+      "error": null,
+      "latency_s": 5.02,
+      "usage": {
+        "input": 1429,
+        "output": 135
+      }
+    },
+    "altai": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Russia",
+        "region": "Altai Republic",
+        "city": "Kosh-Agach",
+        "specific_location": "Kuray Range area, Chagan-Uzun/Kyzyl-Chin high valley",
+        "latitude": 50.083,
+        "longitude": 88.233,
+        "confidence": 0.24,
+        "clues": [
+          "high-altitude treeless-to-sparse-taiga mountain valley",
+          "rocky grey-brown peaks with broad U-shaped valley",
+          "scattered larch-like conifer trees suggesting cold continental climate",
+          "fast shallow mountain stream",
+          "open alpine/meadow vegetation with sparse shrubs",
+          "overall landscape resembles Central Asian/Altai interior rather than humid alpine regions"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.2,
+      "usage": {
+        "input": 805,
+        "output": 135
+      }
+    },
+    "charyn": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Spain",
+        "region": "Canary Islands",
+        "city": "Pájara",
+        "specific_location": "Betancuria Massif area, inland Fuerteventura near Pájara/Betancuria",
+        "latitude": 28.394,
+        "longitude": -14.101,
+        "confidence": 0.28,
+        "clues": [
+          "dry barren volcanic-looking mountains",
+          "reddish and brown rocky terrain",
+          "sparse scrub vegetation typical of arid subtropical climate",
+          "deep eroded ravines/barrancos",
+          "treeless landscape resembling inland Canary Islands, especially Fuerteventura"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.89,
+      "usage": {
+        "input": 1669,
+        "output": 116
+      }
+    },
+    "song_kol": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Kyrgyzstan",
+        "region": "Issyk-Kul Region",
+        "city": "Balykchy",
+        "specific_location": "Southern shore of Lake Issyk-Kul, west of Balykchy",
+        "latitude": 42.45,
+        "longitude": 76.05,
+        "confidence": 0.26,
+        "clues": [
+          "large inland lake with no visible surf, suggesting a high-altitude lake",
+          "treeless rolling brown-green steppe hills meeting the water",
+          "semi-arid mountainous terrain typical of Central Asia",
+          "distant mountain ranges visible across the lake",
+          "broad open landscape resembling the shores of Issyk-Kul"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.55,
+      "usage": {
+        "input": 1525,
+        "output": 127
+      }
+    },
+    "ladakh": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "India",
+        "region": "Ladakh",
+        "city": "Leh",
+        "specific_location": "Khardung La approach road, north of Leh",
+        "latitude": 34.278,
+        "longitude": 77.605,
+        "confidence": 0.52,
+        "clues": [
+          "high-altitude barren cold-desert landscape",
+          "multiple tight gravel road switchbacks on a steep mountainside",
+          "snow-capped Himalayan peaks in the distance",
+          "green irrigated valley visible far below, typical of Ladakh oases",
+          "terrain and road style strongly resemble mountain passes near Leh"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.95,
+      "usage": {
+        "input": 1333,
+        "output": 114
+      }
+    },
+    "mongolia_steppe": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Dornogovi Province",
+        "city": "Sainshand",
+        "specific_location": "Steppe habitat in Mongolia, likely within or near the Great Gobi protected area",
+        "latitude": 44.9,
+        "longitude": 110.15,
+        "confidence": 0.63,
+        "clues": [
+          "animal appears to be a Przewalski's horse (stocky build, dun coat, erect dark mane, dark lower legs)",
+          "Przewalski's horses are strongly associated with Mongolia in the wild",
+          "open treeless steppe landscape",
+          "dry grassland/semi-arid terrain consistent with Mongolian steppe/Gobi margins"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.79,
+      "usage": {
+        "input": 1525,
+        "output": 138
+      }
+    },
+    "gobi": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Töv",
+        "city": "Ulaanbaatar",
+        "specific_location": "Bogd Khan Mountain Strictly Protected Area, south of Ulaanbaatar",
+        "latitude": 47.815,
+        "longitude": 106.95,
+        "confidence": 0.42,
+        "clues": [
+          "round prohibition sign with a wild mountain goat/ibex under crosshairs indicating no hunting",
+          "signpost painted with red-white-red bands common in Mongolia/Central Asia protected areas",
+          "treeless grassy and rocky hills characteristic of Mongolian steppe/mountain terrain",
+          "remote dirt track in a sparsely developed landscape",
+          "ibex/argali habitat consistent with Mongolian protected mountain areas"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.14,
+      "usage": {
+        "input": 1525,
+        "output": 142
+      }
+    },
+    "wahiba": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Saudi Arabia",
+        "region": "Eastern Province",
+        "city": "Udhailiyah",
+        "specific_location": "Rub' al Khali (Empty Quarter) sand dunes near Udhailiyah",
+        "latitude": 22.55,
+        "longitude": 49.12,
+        "confidence": 0.28,
+        "clues": [
+          "vast orange-red sand desert with very large dunes",
+          "almost no vegetation except a single hardy shrub",
+          "vehicle tracks on dune faces suggest accessible Arabian desert terrain",
+          "flat sandy interdune area and towering smooth dune ridge typical of the Empty Quarter",
+          "no visible landmarks or text, so identification relies on landscape type alone"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.9,
+      "usage": {
+        "input": 1333,
+        "output": 128
+      }
+    },
+    "denali_hwy": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Canada",
+        "region": "Yukon",
+        "city": "Ross River",
+        "specific_location": "Campbell Highway crossing of the Pelly River near Ross River",
+        "latitude": 61.985,
+        "longitude": -132.445,
+        "confidence": 0.43,
+        "clues": [
+          "remote wide gravel road typical of northern Canada",
+          "boreal forest with spruce and low shrubs",
+          "broad river on both sides of a raised road/bridge approach",
+          "rugged treeless-to-sparsely vegetated mountains close to the road",
+          "yellow diamond warning sign style consistent with Canada",
+          "landscape strongly matches Yukon interior wilderness highways"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.78,
+      "usage": {
+        "input": 1141,
+        "output": 128
+      }
+    },
+    "tombstone": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Canada",
+        "region": "Yukon",
+        "city": "Mayo",
+        "specific_location": "Tombstone Territorial Park, near Mount Monolith / Tombstone Range viewpoint on the Dempster Highway",
+        "latitude": 64.578,
+        "longitude": -138.192,
+        "confidence": 0.58,
+        "clues": [
+          "jagged dark granite spire resembling the Tombstone Range peaks",
+          "broad treeless tundra valley with sparse low shrubs",
+          "subarctic/alpine landscape with no trees at higher elevation",
+          "dramatic isolated rock tower characteristic of Tombstone Territorial Park in Yukon"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.89,
+      "usage": {
+        "input": 3109,
+        "output": 123
+      }
+    },
+    "kangerlussuaq": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Greenland",
+        "region": "Qeqqata",
+        "city": "Kangerlussuaq",
+        "specific_location": "near the former cryolite mine at Ivittuut / mining road bridge area",
+        "latitude": 61.206,
+        "longitude": -48.173,
+        "confidence": 0.29,
+        "clues": [
+          "treeless arctic landscape with bare rock and sparse tundra",
+          "gravel roads and small metal bridge in a remote industrial/mining setting",
+          "wooden utility poles in a very sparse settlement/infrastructure area",
+          "light-colored mine tailings or quarry dust covering the ground",
+          "European-style triangular roadworks warning sign",
+          "overall look strongly consistent with a remote Greenland mining site"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.21,
+      "usage": {
+        "input": 1525,
+        "output": 140
+      }
+    },
+    "colca": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Peru",
+        "region": "Arequipa",
+        "city": "Cabanaconde",
+        "specific_location": "Cruz del Cóndor viewpoint, Colca Canyon",
+        "latitude": -15.609,
+        "longitude": -71.981,
+        "confidence": 0.78,
+        "clues": [
+          "very deep arid canyon with steep volcanic Andes terrain",
+          "high-altitude sparse scrub vegetation",
+          "tourist viewpoint with distinctive wooden railings and stepped path",
+          "broad scenic overlook typical of Colca Canyon viewpoints",
+          "mountain landscape matches southern Peru/Arequipa highlands"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.22,
+      "usage": {
+        "input": 2821,
+        "output": 118
+      }
+    },
+    "khibiny": {
+      "model": "gpt-5.4",
+      "parsed": {
+        "country": "Russia",
+        "region": "Murmansk Oblast",
+        "city": "Kirovsk",
+        "specific_location": "Khibiny Mountains ski area above Kirovsk, likely near Bolshoy Vudyavr/Ajkuajvenchorr slopes",
+        "latitude": 67.615,
+        "longitude": 33.672,
+        "confidence": 0.41,
+        "clues": [
+          "treeless/subalpine rocky mountain landscape consistent with far north",
+          "autumn tundra colors and sparse vegetation",
+          "ski lift/chairlift infrastructure visible on the slope",
+          "barren rounded mountains resemble Khibiny massif",
+          "overall look suggests a northern Russian ski resort rather than alpine Europe"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.04,
+      "usage": {
+        "input": 1669,
+        "output": 136
+      }
+    }
+  }
+}

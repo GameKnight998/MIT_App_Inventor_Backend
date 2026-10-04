@@ -1,0 +1,621 @@
+{
+  "gpt-4.1": {
+    "atacama": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Chile",
+        "region": "Antofagasta",
+        "city": "San Pedro de Atacama",
+        "specific_location": "Licancabur Volcano, on the Chile-Bolivia border",
+        "latitude": -22.8366,
+        "longitude": -67.877,
+        "confidence": 0.9,
+        "clues": [
+          "distinctive conical volcano",
+          "arid terrain with sparse vegetation",
+          "high-altitude desert and badlands",
+          "Andes mountains",
+          "Licancabur is iconic near San Pedro de Atacama at the Chile-Bolivia border"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.68,
+      "usage": {
+        "input": 1335,
+        "output": 127
+      }
+    },
+    "altiplano": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Bolivia",
+        "region": "Potosí",
+        "city": "Uyuni",
+        "specific_location": "Eduardo Avaroa Andean Fauna National Reserve, Laguna Blanca",
+        "latitude": -22.85,
+        "longitude": -67.7833,
+        "confidence": 0.85,
+        "clues": [
+          "high-altitude salt flat lake",
+          "arid, mountainous plateau",
+          "Andean landscape with sparse vegetation",
+          "unique coloration of water typical of Bolivian salt lakes"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.8,
+      "usage": {
+        "input": 1335,
+        "output": 109
+      }
+    },
+    "patagonia": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Patagonia",
+        "city": "Esquel",
+        "specific_location": "Patagonian steppe near Esquel",
+        "latitude": -42.9117,
+        "longitude": -71.3195,
+        "confidence": 0.6,
+        "clues": [
+          "dry, grassy steppe landscape",
+          "large flock of Merino sheep",
+          "clear, calm water body",
+          "open, treeless terrain typical of Patagonian steppe",
+          "Patagonia is well known for sheep farming and similar scenery"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.9,
+      "usage": {
+        "input": 1335,
+        "output": 115
+      }
+    },
+    "tierra_del_fuego": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Tierra del Fuego",
+        "city": "Ushuaia",
+        "specific_location": "Beagle Channel",
+        "latitude": -54.875,
+        "longitude": -68.538,
+        "confidence": 0.85,
+        "clues": [
+          "snow-capped rugged mountains",
+          "narrow channel with mountainous backdrop",
+          "southern hemisphere landscape typical of Tierra del Fuego",
+          "military vessel suggesting strategic waterway",
+          "vegetation and climate consistent with subantarctic region near Ushuaia"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.45,
+      "usage": {
+        "input": 1335,
+        "output": 115
+      }
+    },
+    "damaraland": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "United States",
+        "region": "Nevada",
+        "city": "Overton",
+        "specific_location": "Valley of Fire State Park",
+        "latitude": 36.4856,
+        "longitude": -114.5359,
+        "confidence": 0.85,
+        "clues": [
+          "Red Aztec sandstone formations",
+          "Arid desert vegetation",
+          "Distinctive wind-eroded rock shapes",
+          "Characteristic desert landscape of the southwestern United States"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.7,
+      "usage": {
+        "input": 1335,
+        "output": 112
+      }
+    },
+    "namib": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Namibia",
+        "region": "Namib Desert",
+        "city": "Sesriem",
+        "specific_location": "Sossusvlei, Namib-Naukluft National Park",
+        "latitude": -24.7333,
+        "longitude": 15.3667,
+        "confidence": 0.95,
+        "clues": [
+          "red sand dunes",
+          "arid climate",
+          "dead camel thorn trees",
+          "unique desert landscape typical of Sossusvlei/Deadvlei area in Namibia"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.36,
+      "usage": {
+        "input": 1335,
+        "output": 109
+      }
+    },
+    "tassili": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Egypt",
+        "region": "Aswan Governorate",
+        "city": "Abu Simbel",
+        "specific_location": "Desert road near Abu Simbel, Nubian Desert",
+        "latitude": 22.345,
+        "longitude": 31.616,
+        "confidence": 0.8,
+        "clues": [
+          "desert landscape with rocky outcrops and sand dunes",
+          "asphalt road with right-hand traffic",
+          "arid climate typical of the Nubian Desert",
+          "remote area with minimal vegetation, similar to southern Egypt near Abu Simbel"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.09,
+      "usage": {
+        "input": 1335,
+        "output": 119
+      }
+    },
+    "simien": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Ethiopia",
+        "region": "Amhara",
+        "city": "Debark",
+        "specific_location": "Simien Mountains National Park",
+        "latitude": 13.1903,
+        "longitude": 38.0655,
+        "confidence": 0.85,
+        "clues": [
+          "distinct rugged mountain landscape",
+          "high plateau with steep escarpments",
+          "grassy slopes with cattle grazing",
+          "afroalpine vegetation",
+          "unique geology characteristic of Simien Mountains"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.78,
+      "usage": {
+        "input": 995,
+        "output": 103
+      }
+    },
+    "maasai_mara": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Kenya",
+        "region": "Rift Valley",
+        "city": "Narok",
+        "specific_location": "Masai Mara National Reserve",
+        "latitude": -1.4931,
+        "longitude": 35.1436,
+        "confidence": 0.8,
+        "clues": [
+          "zebras in open savanna",
+          "tall yellow grasses typical of East African plains",
+          "ant mounds in background",
+          "flat savanna landscape",
+          "Masai Mara is a famous habitat for such scenes"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.68,
+      "usage": {
+        "input": 1335,
+        "output": 118
+      }
+    },
+    "iceland_highlands": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Iceland",
+        "region": "Capital Region",
+        "city": "Hveragerði",
+        "specific_location": "Reykjadalur Valley, hot springs area",
+        "latitude": 64.047,
+        "longitude": -21.214,
+        "confidence": 0.8,
+        "clues": [
+          "geothermal stream with colorful mineral deposits",
+          "volcanic landscape and mossy rocks",
+          "Icelandic countryside vegetation",
+          "distinctive barren hills and hot spring environment common in Reykjadalur Valley"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.79,
+      "usage": {
+        "input": 1335,
+        "output": 110
+      }
+    },
+    "glen_coe": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "United Kingdom",
+        "region": "Scotland",
+        "city": "Glencoe",
+        "specific_location": "Three Sisters, Glen Coe",
+        "latitude": 56.6836,
+        "longitude": -5.0375,
+        "confidence": 0.9,
+        "clues": [
+          "verdant mountainous valley",
+          "dramatic steep-sided hills",
+          "lush green grass and rock outcrops",
+          "cloudy and misty typical Scottish Highlands landscape",
+          "distinctive shape of the Three Sisters in Glen Coe"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.49,
+      "usage": {
+        "input": 1335,
+        "output": 112
+      }
+    },
+    "svalbard": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Norway",
+        "region": "Svalbard",
+        "city": "Longyearbyen",
+        "specific_location": "Longyearbyen valley, mountain plateau",
+        "latitude": 78.2232,
+        "longitude": 15.6469,
+        "confidence": 0.85,
+        "clues": [
+          "arctic tundra landscape",
+          "dramatic flat-topped mountains",
+          "permafrost and snow cover",
+          "remote settlement lighting",
+          "Svalbard/Spitsbergen's distinctive geology"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.83,
+      "usage": {
+        "input": 1335,
+        "output": 107
+      }
+    },
+    "lapland": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Sweden",
+        "region": "Jämtland",
+        "city": "Åre",
+        "specific_location": "Åreskutan mountain",
+        "latitude": 63.419,
+        "longitude": 13.082,
+        "confidence": 0.8,
+        "clues": [
+          "distinctive flat-topped mountain",
+          "subalpine Scandinavian landscape",
+          "sparse birch and tundra vegetation",
+          "typical Nordic Sami hut (goahti)",
+          "Nordic region trail marker"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.24,
+      "usage": {
+        "input": 1335,
+        "output": 124
+      }
+    },
+    "altai": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Russia",
+        "region": "Altai Republic",
+        "city": "Kosh-Agach",
+        "specific_location": "Altai Mountains, near Kosh-Agach",
+        "latitude": 49.997,
+        "longitude": 88.679,
+        "confidence": 0.65,
+        "clues": [
+          "mountainous terrain",
+          "sparse coniferous trees",
+          "river in alpine valley",
+          "rocky slopes",
+          "steppe and taiga transition typical of Altai Mountains"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.44,
+      "usage": {
+        "input": 825,
+        "output": 116
+      }
+    },
+    "charyn": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Kazakhstan",
+        "region": "Almaty Region",
+        "city": "Almaty (nearest major city)",
+        "specific_location": "Altyn-Emel National Park",
+        "latitude": 44.5411,
+        "longitude": 78.3776,
+        "confidence": 0.7,
+        "clues": [
+          "Arid, hilly terrain with sparse vegetation",
+          "Red and brown rocky outcrops typical of steppe and semi-desert regions in Central Asia",
+          "Lack of significant tree cover, typical of the Altyn-Emel area",
+          "Distinctive geology and landscape characteristic of Altyn-Emel National Park"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.45,
+      "usage": {
+        "input": 995,
+        "output": 157
+      }
+    },
+    "song_kol": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Khovsgol",
+        "city": "Khatgal",
+        "specific_location": "Lake Khövsgöl",
+        "latitude": 51.5465,
+        "longitude": 100.4355,
+        "confidence": 0.75,
+        "clues": [
+          "clear blue lake",
+          "rugged hills with little vegetation",
+          "steppe environment",
+          "mountainous horizon",
+          "region is famous for large lakes in a vast open landscape typical of northern Mongolia"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.36,
+      "usage": {
+        "input": 1335,
+        "output": 107
+      }
+    },
+    "ladakh": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "India",
+        "region": "Ladakh",
+        "city": "Leh",
+        "specific_location": "Khardung La mountain pass",
+        "latitude": 34.279,
+        "longitude": 77.604,
+        "confidence": 0.8,
+        "clues": [
+          "high altitude barren mountains with dry, rocky terrain",
+          "winding mountain road with tight switchbacks",
+          "snow-capped peaks in the distance typical of the Himalayas",
+          "arid landscape similar to Ladakh region of India"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.35,
+      "usage": {
+        "input": 1335,
+        "output": 120
+      }
+    },
+    "mongolia_steppe": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Khovd",
+        "city": "Khar Us",
+        "specific_location": "Khustain Nuruu National Park",
+        "latitude": 47.682,
+        "longitude": 105.9368,
+        "confidence": 0.85,
+        "clues": [
+          "Przewalski's horse (Equus ferus przewalskii)",
+          "steppe grassland environment",
+          "association with Mongolian reintroduction reserves"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.45,
+      "usage": {
+        "input": 1335,
+        "output": 100
+      }
+    },
+    "gobi": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Kazakhstan",
+        "region": "Almaty Region",
+        "city": "Almaty",
+        "specific_location": "Altyn-Emel National Park",
+        "latitude": 44.5356,
+        "longitude": 78.3444,
+        "confidence": 0.7,
+        "clues": [
+          "mountainous grassland terrain",
+          "unique anti-hunting sign featuring a wild goat/ibex",
+          "Central Asian landscape",
+          "the presence of such signs is common in protected areas of Kazakhstan, especially in Altyn-Emel National Park, home to wild goats and ibex"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.81,
+      "usage": {
+        "input": 1335,
+        "output": 129
+      }
+    },
+    "wahiba": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Oman",
+        "region": "Ash Sharqiyah",
+        "city": "Bidiyah",
+        "specific_location": "Wahiba Sands",
+        "latitude": 21.5726,
+        "longitude": 58.5637,
+        "confidence": 0.7,
+        "clues": [
+          "bright orange sand dunes",
+          "barren desert landscape",
+          "solitary shrub",
+          "no signs of habitation",
+          "type of sand and vegetation consistent with Wahiba Sands in Oman"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.27,
+      "usage": {
+        "input": 1335,
+        "output": 103
+      }
+    },
+    "denali_hwy": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "United States",
+        "region": "Alaska",
+        "city": "Coldfoot",
+        "specific_location": "Yukon River Bridge, Dalton Highway",
+        "latitude": 65.8781,
+        "longitude": -149.7208,
+        "confidence": 0.85,
+        "clues": [
+          "gravel highway",
+          "large river with mountainous background",
+          "boreal forest/taiga vegetation",
+          "remote northern landscape",
+          "distinctive appearance of the Yukon River Bridge on the Dalton Highway"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.21,
+      "usage": {
+        "input": 1335,
+        "output": 107
+      }
+    },
+    "tombstone": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Russia",
+        "region": "Sakha Republic (Yakutia)",
+        "city": "near Tomtor",
+        "specific_location": "Mount Kisilyakh, Verkhoyansk Range",
+        "latitude": 67.4436,
+        "longitude": 135.8958,
+        "confidence": 0.75,
+        "clues": [
+          "rugged isolated peak",
+          "arctic/subarctic tundra vegetation",
+          "distinctive sharp mountain typical for Verkhoyansk Range",
+          "lack of trees suggesting high latitude",
+          "remote, uninhabited feel"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.64,
+      "usage": {
+        "input": 1335,
+        "output": 119
+      }
+    },
+    "kangerlussuaq": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Greenland",
+        "region": "Qeqqata",
+        "city": "Kangerlussuaq",
+        "specific_location": "Kangerlussuaq road to Russell Glacier",
+        "latitude": 67.0089,
+        "longitude": -50.6894,
+        "confidence": 0.85,
+        "clues": [
+          "arctic tundra landscape",
+          "unique glacially-eroded terrain",
+          "sparse vegetation",
+          "dirt/gravel road with a simple bridge",
+          "telephone poles",
+          "remote, rugged setting resembling interior Greenland",
+          "Russell Glacier area near Kangerlussuaq"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.0,
+      "usage": {
+        "input": 1335,
+        "output": 126
+      }
+    },
+    "colca": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Peru",
+        "region": "Arequipa",
+        "city": "Chivay",
+        "specific_location": "Colca Canyon, Cruz del Condor viewpoint",
+        "latitude": -15.6146,
+        "longitude": -71.9406,
+        "confidence": 0.9,
+        "clues": [
+          "deep canyon with arid Andean scenery",
+          "distinctive lookout platforms",
+          "tourists observing",
+          "mountainous terrain typical of southern Peru",
+          "matches well-known views of Colca Canyon"
+        ]
+      },
+      "error": null,
+      "latency_s": 3.25,
+      "usage": {
+        "input": 995,
+        "output": 110
+      }
+    },
+    "khibiny": {
+      "model": "gpt-4.1",
+      "parsed": {
+        "country": "Russia",
+        "region": "Murmansk Oblast",
+        "city": "Kirovsk",
+        "specific_location": "Khibiny Mountains, near Kukisvumchorr ski area",
+        "latitude": 67.617,
+        "longitude": 33.683,
+        "confidence": 0.7,
+        "clues": [
+          "treeless tundra-like mountains",
+          "autumnal colors typical of subarctic/tundra regions",
+          "remnants of a ski lift",
+          "rocky slopes with minimal vegetation",
+          "landscape characteristic of the Khibiny Mountains in Murmansk Oblast, Russia"
+        ]
+      },
+      "error": null,
+      "latency_s": 2.23,
+      "usage": {
+        "input": 995,
+        "output": 131
+      }
+    }
+  }
+}

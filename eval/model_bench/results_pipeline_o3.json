@@ -1,0 +1,304 @@
+{
+  "pipeline_o3": {
+    "atacama": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": -22.959,
+        "longitude": -67.848,
+        "location_name": "Licancabur Volcano, San Pedro de Atacama",
+        "confidence": 0.57,
+        "country": "Chile"
+      },
+      "error": null,
+      "latency_s": 90.73
+    },
+    "altiplano": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": -23.586,
+        "longitude": -67.17,
+        "location_name": "Laguna Tuyajto",
+        "confidence": 0.04,
+        "country": "Chile"
+      },
+      "error": null,
+      "latency_s": 70.88
+    },
+    "patagonia": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": -50.421,
+        "longitude": -72.611,
+        "location_name": "Estancia Nibepo Aike area, Lago Roca, Santa Cruz",
+        "confidence": 0.04,
+        "country": "Argentina"
+      },
+      "error": null,
+      "latency_s": 79.93
+    },
+    "tierra_del_fuego": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": -54.807,
+        "longitude": -68.304,
+        "location_name": "Ushuaia waterfront, Beagle Channel",
+        "confidence": 0.104,
+        "country": "Argentina"
+      },
+      "error": null,
+      "latency_s": 59.33
+    },
+    "damaraland": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 36.4237,
+        "longitude": -114.5146,
+        "location_name": "Valley of Fire State Park",
+        "confidence": 0.205,
+        "country": "United States"
+      },
+      "error": null,
+      "latency_s": 32.92
+    },
+    "namib": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": -24.736,
+        "longitude": 15.302,
+        "location_name": "Sossusvlei, Namib-Naukluft National Park",
+        "confidence": 0.604,
+        "country": "Namibia"
+      },
+      "error": null,
+      "latency_s": 35.31
+    },
+    "tassili": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 22.702,
+        "longitude": 32.56,
+        "location_name": "Aswan-Abu Simbel Desert Highway",
+        "confidence": 0.324,
+        "country": "Egypt"
+      },
+      "error": null,
+      "latency_s": 37.14
+    },
+    "simien": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 13.25,
+        "longitude": 38.04,
+        "location_name": "Simien Mountains National Park",
+        "confidence": 0.104,
+        "country": "Ethiopia"
+      },
+      "error": null,
+      "latency_s": 69.1
+    },
+    "maasai_mara": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": -2.452,
+        "longitude": 34.82,
+        "location_name": "Seronera, Serengeti National Park",
+        "confidence": 0.14,
+        "country": "Tanzania"
+      },
+      "error": null,
+      "latency_s": 24.28
+    },
+    "iceland_highlands": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 64.0419,
+        "longitude": -21.205,
+        "location_name": "Reykjadalur Hot River",
+        "confidence": 0.049,
+        "country": "Iceland"
+      },
+      "error": null,
+      "latency_s": 45.27
+    },
+    "glen_coe": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 56.6681,
+        "longitude": -5.0286,
+        "location_name": "Three Sisters Viewpoint, Glen Coe",
+        "confidence": 0.238,
+        "country": "United Kingdom"
+      },
+      "error": null,
+      "latency_s": 56.5
+    },
+    "svalbard": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 78.217,
+        "longitude": 15.65,
+        "location_name": "Longyearbyen, Adventdalen",
+        "confidence": 0.203,
+        "country": "Norway"
+      },
+      "error": null,
+      "latency_s": 76.58
+    },
+    "lapland": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 69.044,
+        "longitude": 20.835,
+        "location_name": "Saana Fell, Kilpisjärvi",
+        "confidence": 0.079,
+        "country": "Finland"
+      },
+      "error": null,
+      "latency_s": 47.71
+    },
+    "altai": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 50.06,
+        "longitude": 87.685,
+        "location_name": "Kucherla Valley, Altai Republic",
+        "confidence": 0.062,
+        "country": "Russia"
+      },
+      "error": null,
+      "latency_s": 44.38
+    },
+    "charyn": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 36.417,
+        "longitude": -114.495,
+        "location_name": "Northshore Road, Lake Mead NRA",
+        "confidence": 0.071,
+        "country": "United States"
+      },
+      "error": null,
+      "latency_s": 68.16
+    },
+    "song_kol": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 50.969,
+        "longitude": 100.843,
+        "location_name": "Khovsgol Nuur west shore near Jankhai, Mongolia",
+        "confidence": 0.02,
+        "country": "Mongolia"
+      },
+      "error": null,
+      "latency_s": 47.99
+    },
+    "ladakh": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 34.2436,
+        "longitude": 77.5985,
+        "location_name": "Khardung La road, Ladakh",
+        "confidence": 0.16,
+        "country": "India"
+      },
+      "error": null,
+      "latency_s": 28.88
+    },
+    "mongolia_steppe": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 47.716,
+        "longitude": 105.925,
+        "location_name": "Hustai National Park",
+        "confidence": 0.135,
+        "country": "Mongolia"
+      },
+      "error": null,
+      "latency_s": 31.11
+    },
+    "gobi": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 35.86,
+        "longitude": 52.05,
+        "location_name": "Lar National Park, Alborz Mountains",
+        "confidence": 0.094,
+        "country": "Iran"
+      },
+      "error": null,
+      "latency_s": 80.31
+    },
+    "wahiba": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 21.612,
+        "longitude": 58.607,
+        "location_name": "Wahiba Sands",
+        "confidence": 0.215,
+        "country": "Oman"
+      },
+      "error": null,
+      "latency_s": 23.19
+    },
+    "denali_hwy": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 63.104788,
+        "longitude": -147.520912,
+        "location_name": "Denali Highway",
+        "confidence": 0.088,
+        "country": "United States"
+      },
+      "error": null,
+      "latency_s": 82.01
+    },
+    "tombstone": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 64.685,
+        "longitude": -138.166,
+        "location_name": "Tombstone Mountain, Tombstone Territorial Park",
+        "confidence": 0.11,
+        "country": "Canada"
+      },
+      "error": null,
+      "latency_s": 94.52
+    },
+    "kangerlussuaq": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 67.146,
+        "longitude": -50.621,
+        "location_name": "Russell Glacier Road, Kangerlussuaq",
+        "confidence": 0.027,
+        "country": "Greenland"
+      },
+      "error": null,
+      "latency_s": 65.1
+    },
+    "colca": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": -15.604,
+        "longitude": -72.109,
+        "location_name": "Cruz del Cóndor, Colca Canyon",
+        "confidence": 0.091,
+        "country": "Peru"
+      },
+      "error": null,
+      "latency_s": 94.62
+    },
+    "khibiny": {
+      "model": "pipeline_o3",
+      "parsed": {
+        "latitude": 67.59,
+        "longitude": 33.68,
+        "location_name": "Aikuaivenchorr, Khibiny Mountains",
+        "confidence": 0.082,
+        "country": "Russia"
+      },
+      "error": null,
+      "latency_s": 36.12
+    }
+  }
+}

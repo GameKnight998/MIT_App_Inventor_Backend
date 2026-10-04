@@ -1,0 +1,603 @@
+{
+  "o3": {
+    "atacama": {
+      "model": "o3",
+      "parsed": {
+        "country": "Chile",
+        "region": "Antofagasta Region",
+        "city": "San Pedro de Atacama",
+        "specific_location": "Licancabur volcano on the Chile–Bolivia border, viewed from the Atacama Desert plateau south-west of San Pedro de Atacama",
+        "latitude": -22.83,
+        "longitude": -67.88,
+        "confidence": 0.44,
+        "clues": [
+          "almost perfectly conical stratovolcano rising from flat, arid Altiplano terrain",
+          "dry high-desert vegetation typical of the Atacama region",
+          "lack of permanent snow despite high elevation – common for Licancabur",
+          "absence of urban development or agriculture, indicating remote Andean border area"
+        ]
+      },
+      "error": null,
+      "latency_s": 6.99,
+      "usage": {
+        "input": 1204,
+        "output": 624
+      }
+    },
+    "altiplano": {
+      "model": "o3",
+      "parsed": {
+        "country": "Chile",
+        "region": "Antofagasta Region",
+        "city": "Socaire",
+        "specific_location": "Laguna Tuyajto viewpoint along Ruta CH-23",
+        "latitude": -23.77,
+        "longitude": -67.52,
+        "confidence": 0.4,
+        "clues": [
+          "high-altitude salt flat with white crust and turquoise water, typical of Chilean Altiplano lagoons",
+          "sparse yellow puna grasses and pink volcanic rocks seen around Laguna Tuyajto area",
+          "arid, clear-sky climate and brown volcanic hills characteristic of the Atacama plateau",
+          "road line faintly visible on far shore matching CH-23 that skirts Laguna Tuyajto"
+        ]
+      },
+      "error": null,
+      "latency_s": 14.48,
+      "usage": {
+        "input": 1204,
+        "output": 1769
+      }
+    },
+    "patagonia": {
+      "model": "o3",
+      "parsed": {
+        "country": "Chile",
+        "region": "Arica y Parinacota",
+        "city": "Putre",
+        "specific_location": "bofedales (high-altitude wetland) near Lauca National Park, outside Putre",
+        "latitude": -18.23,
+        "longitude": -69.35,
+        "confidence": 0.15,
+        "clues": [
+          "treeless high-altitude landscape with golden puna tussock grass",
+          "bright green strip of wetland vegetation along a small lagoon typical of Andean bofedales",
+          "scattered dark volcanic rocks on gently sloping plateau",
+          "merino-type sheep grazing – common livestock on the Chilean/Peruvian altiplano",
+          "overall semi-arid, high-Andes appearance rather than temperate pasture"
+        ]
+      },
+      "error": null,
+      "latency_s": 11.73,
+      "usage": {
+        "input": 1204,
+        "output": 1471
+      }
+    },
+    "tierra_del_fuego": {
+      "model": "o3",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Tierra del Fuego",
+        "city": "Ushuaia",
+        "specific_location": "Beagle Channel, near Ensenada Zaratiegui (Tierra del Fuego National Park)",
+        "latitude": -54.866,
+        "longitude": -68.483,
+        "confidence": 0.24,
+        "clues": [
+          "rugged, partly snow-covered Andes rising straight from the sea – typical of Tierra del Fuego",
+          "sub-antarctic forest on lower slopes, kelp visible on water surface – Beagle Channel environment",
+          "naval patrol vessel – common in the Argentine/Chilean Beagle Channel",
+          "small rocky, wooded islet in foreground, similar to those near Ushuaia and Ensenada Zaratiegui"
+        ]
+      },
+      "error": null,
+      "latency_s": 17.47,
+      "usage": {
+        "input": 1204,
+        "output": 2424
+      }
+    },
+    "damaraland": {
+      "model": "o3",
+      "parsed": {
+        "country": "United States",
+        "region": "Nevada",
+        "city": "Overton",
+        "specific_location": "Valley of Fire State Park (red sandstone outcrops near Mouse’s Tank Road)",
+        "latitude": 36.425,
+        "longitude": -114.535,
+        "confidence": 0.22,
+        "clues": [
+          "intensely red Aztec sandstone with honeycomb/alcove weathering characteristic of Valley of Fire",
+          "arid Mojave-desert vegetation: creosote and sparse grasses",
+          "rocky, boulder-strewn terrain matching Valley of Fire landscapes",
+          "clear desert sky and coloration unlike Colorado Plateau’s lighter sandstones"
+        ]
+      },
+      "error": null,
+      "latency_s": 7.28,
+      "usage": {
+        "input": 1204,
+        "output": 672
+      }
+    },
+    "namib": {
+      "model": "o3",
+      "parsed": {
+        "country": "Namibia",
+        "region": "Hardap Region",
+        "city": "Sesriem",
+        "specific_location": "Sossusvlei area, Namib-Naukluft National Park",
+        "latitude": -24.733,
+        "longitude": 15.301,
+        "confidence": 0.55,
+        "clues": [
+          "towering red-orange sand dunes characteristic of Sossusvlei",
+          "skeletal camel-thorn trees typical of the Namib Desert pans",
+          "hyper-arid desert environment with sparse vegetation"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.36,
+      "usage": {
+        "input": 1204,
+        "output": 388
+      }
+    },
+    "tassili": {
+      "model": "o3",
+      "parsed": {
+        "country": "Egypt",
+        "region": "New Valley Governorate",
+        "city": "Farafra",
+        "specific_location": "Bahariya–Farafra Desert Road, Black Desert area",
+        "latitude": 27.46,
+        "longitude": 28.7,
+        "confidence": 0.28,
+        "clues": [
+          "Huge yellow sand dunes with scattered dark volcanic hills – typical of Egypt’s Black Desert",
+          "Paved two-lane highway with right-hand traffic, matching Egyptian road rules",
+          "No vegetation, very arid Sahara environment characteristic of the Western Desert"
+        ]
+      },
+      "error": null,
+      "latency_s": 15.83,
+      "usage": {
+        "input": 1204,
+        "output": 2316
+      }
+    },
+    "simien": {
+      "model": "o3",
+      "parsed": {
+        "country": "Ethiopia",
+        "region": "Amhara Region",
+        "city": "Debark",
+        "specific_location": "Simien Mountains National Park, near Imet Gogo viewpoint",
+        "latitude": 13.19,
+        "longitude": 38.09,
+        "confidence": 0.46,
+        "clues": [
+          "high‐elevation afro-alpine vegetation with grazing cattle",
+          "sheer sandstone/clastic cliffs and broad escarpments characteristic of Simien Mountains",
+          "deeply incised valleys and plateau landscape typical of Ethiopian Highlands",
+          "overall topography and rock coloration match well-known views from Imet Gogo area in Simien Mountains National Park"
+        ]
+      },
+      "error": null,
+      "latency_s": 5.31,
+      "usage": {
+        "input": 904,
+        "output": 415
+      }
+    },
+    "maasai_mara": {
+      "model": "o3",
+      "parsed": {
+        "country": "Kenya",
+        "region": "Narok County",
+        "city": "Narok",
+        "specific_location": "Maasai Mara National Reserve (open savanna)",
+        "latitude": -1.493,
+        "longitude": 35.143,
+        "confidence": 0.19,
+        "clues": [
+          "Plains zebras (common in East African savanna)",
+          "Open grassland with termite mounds typical of Mara/Serengeti ecosystem",
+          "No trees or bushes visible – characteristic of central Maasai Mara plains"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.57,
+      "usage": {
+        "input": 1204,
+        "output": 451
+      }
+    },
+    "iceland_highlands": {
+      "model": "o3",
+      "parsed": {
+        "country": "Iceland",
+        "region": "Southern Region",
+        "city": "Landmannalaugar",
+        "specific_location": "Landmannalaugar hot spring bathing area, Fjallabak Nature Reserve",
+        "latitude": 63.993,
+        "longitude": -19.06,
+        "confidence": 0.47,
+        "clues": [
+          "Steaming geothermal stream with colourful mineral deposits",
+          "Treeless tundra vegetation and moss-covered basalt typical of Icelandic highlands",
+          "Contrasting black basalt and tan rhyolite slopes characteristic of Landmannalaugar",
+          "Small plastic pipe feeding water into the stream – a feature seen at the Landmannalaugar bathing spot"
+        ]
+      },
+      "error": null,
+      "latency_s": 13.59,
+      "usage": {
+        "input": 1204,
+        "output": 1949
+      }
+    },
+    "glen_coe": {
+      "model": "o3",
+      "parsed": {
+        "country": "United Kingdom",
+        "region": "Scotland (Highland)",
+        "city": "Glencoe",
+        "specific_location": "Three Sisters of Glen Coe viewpoint on the A82",
+        "latitude": 56.667,
+        "longitude": -5.028,
+        "confidence": 0.62,
+        "clues": [
+          "lush, treeless, vividly green U-shaped glacial valley typical of the West Highlands",
+          "distinctive triple buttress peaks matching the 'Three Sisters' (Beinn Fhada, Gearr Aonach, Aonach Dubh)",
+          "low slate path/steps at lower left that are present at the official A82 viewpoint car park",
+          "cloud-clad crags and lighting characteristic of Glen Coe scenery"
+        ]
+      },
+      "error": null,
+      "latency_s": 7.44,
+      "usage": {
+        "input": 1204,
+        "output": 946
+      }
+    },
+    "svalbard": {
+      "model": "o3",
+      "parsed": {
+        "country": "Norway",
+        "region": "Svalbard",
+        "city": "Longyearbyen",
+        "specific_location": "Snowfield beside the runway of Svalbard Airport (below Platåberget)",
+        "latitude": 78.245,
+        "longitude": 15.46,
+        "confidence": 0.32,
+        "clues": [
+          "High-latitude polar night (dark sky, snow everywhere)",
+          "Distinctive flat-topped, gullied plateau typical of Platåberget near Longyearbyen",
+          "Continuous straight row of identical low lights – looks like runway edge lights",
+          "Person wearing high-visibility strap, common safety practice in Longyearbyen during dark season",
+          "Sparse, treeless arctic landscape characteristic of Svalbard"
+        ]
+      },
+      "error": null,
+      "latency_s": 10.48,
+      "usage": {
+        "input": 1204,
+        "output": 1263
+      }
+    },
+    "lapland": {
+      "model": "o3",
+      "parsed": {
+        "country": "Finland",
+        "region": "Lapland",
+        "city": "Kilpisjärvi",
+        "specific_location": "Saana Fell (Saana-tunturi) near Kilpisjärvi",
+        "latitude": 69.045,
+        "longitude": 20.792,
+        "confidence": 0.46,
+        "clues": [
+          "Distinctive flat-topped fell with a telecommunications mast (characteristic of Saana Fell)",
+          "Low Arctic birch scrub and tundra bog typical of Finnish Lapland",
+          "Small hexagonal hut resembling a Finnish kota visible in foreground",
+          "Scattered late-spring snow patches on a moderate-altitude fell",
+          "Overall landscape matches well-known views of Saana near Kilpisjärvi"
+        ]
+      },
+      "error": null,
+      "latency_s": 5.29,
+      "usage": {
+        "input": 1204,
+        "output": 491
+      }
+    },
+    "altai": {
+      "model": "o3",
+      "parsed": {
+        "country": "Russia",
+        "region": "Altai Republic",
+        "city": "Chibit",
+        "specific_location": "Upper Shavla River valley (approach to Shavlinsky Lakes), Altai Mountains",
+        "latitude": 50.13,
+        "longitude": 87.74,
+        "confidence": 0.18,
+        "clues": [
+          "Sub-alpine open larch (Larix sibirica) forest typical of Altai, few other conifers",
+          "Wide U-shaped, glaciated mountain valley with rocky 3000-m peaks – common in Central Altai ranges",
+          "Dry, continental summer climate appearance (sparse grass/shrub, little snow even high up)",
+          "No human structures, suggesting remote Siberian/Altai back-country rather than European Alps",
+          "Rock colours and texture match Chuya / Katun ranges near Shavlinsky Lakes"
+        ]
+      },
+      "error": null,
+      "latency_s": 16.62,
+      "usage": {
+        "input": 754,
+        "output": 2446
+      }
+    },
+    "charyn": {
+      "model": "o3",
+      "parsed": {
+        "country": "United States",
+        "region": "Nevada",
+        "city": "Boulder City",
+        "specific_location": "Lake Mead National Recreation Area, along Northshore Road in the Eldorado/Black Mountains",
+        "latitude": 36.169,
+        "longitude": -114.704,
+        "confidence": 0.16,
+        "clues": [
+          "arid, shrub-covered desert hills typical of Mojave/Great Basin transition",
+          "reddish volcanic and sedimentary outcrops common in Lake Mead area",
+          "lack of tall cacti (rules out Sonoran Desert), fits southern Nevada terrain",
+          "rolling Basin-and-Range ridges in background"
+        ]
+      },
+      "error": null,
+      "latency_s": 9.72,
+      "usage": {
+        "input": 904,
+        "output": 1250
+      }
+    },
+    "song_kol": {
+      "model": "o3",
+      "parsed": {
+        "country": "Kyrgyzstan",
+        "region": "Naryn Region",
+        "city": "Kochkor",
+        "specific_location": "Song-Köl Lake, southern shore area",
+        "latitude": 41.85,
+        "longitude": 75.15,
+        "confidence": 0.18,
+        "clues": [
+          "treeless alpine steppe with rolling brown hills typical of Kyrgyz highlands",
+          "large turquoise lake with clear water suggesting high-altitude basin",
+          "absence of nearby forests or tall snow-covered peaks (fits Song-Köl plateau rather than Issyk-Kul or Mongolian taiga lakes)"
+        ]
+      },
+      "error": null,
+      "latency_s": 5.83,
+      "usage": {
+        "input": 1204,
+        "output": 598
+      }
+    },
+    "ladakh": {
+      "model": "o3",
+      "parsed": {
+        "country": "India",
+        "region": "Ladakh",
+        "city": "Leh",
+        "specific_location": "Khardung La road (southern ascent from Leh)",
+        "latitude": 34.25,
+        "longitude": 77.6,
+        "confidence": 0.3,
+        "clues": [
+          "High-altitude barren mountains typical of Ladakh rain-shadow",
+          "Snow-capped Himalayan peaks in background",
+          "Tight switchback road carved into scree slope – characteristic view of Khardung La approach from Leh",
+          "Patch of green river-valley cultivation visible far right, matching the Leh/Indus valley"
+        ]
+      },
+      "error": null,
+      "latency_s": 6.81,
+      "usage": {
+        "input": 1204,
+        "output": 730
+      }
+    },
+    "mongolia_steppe": {
+      "model": "o3",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Töv Province",
+        "city": "Argalant (nearest town to park)",
+        "specific_location": "Hustai (Khustain Nuruu) National Park, central steppe zone",
+        "latitude": 47.68,
+        "longitude": 105.91,
+        "confidence": 0.3,
+        "clues": [
+          "Przewalski's horse in the wild, species native to and reintroduced mainly in Mongolian reserves",
+          "Rolling green steppe landscape with sparse shrubs typical of central Mongolia",
+          "Absence of fences, roads, or other human structures suggesting a protected steppe area"
+        ]
+      },
+      "error": null,
+      "latency_s": 4.88,
+      "usage": {
+        "input": 1204,
+        "output": 538
+      }
+    },
+    "gobi": {
+      "model": "o3",
+      "parsed": {
+        "country": "Armenia",
+        "region": "Ararat Province",
+        "city": "Vedi",
+        "specific_location": "Khosrov Forest State Reserve access track near Vedi",
+        "latitude": 40.031,
+        "longitude": 44.932,
+        "confidence": 0.15,
+        "clues": [
+          "Custom round prohibition sign with yellow background and red slash – style often seen on Armenian private/park signs",
+          "Image depicts an ibex, a protected species in Khosrov reserve",
+          "High-altitude semi-arid, rocky green-brown mountains typical of the reserve’s volcanic landscape",
+          "Unpaved track in remote mountainous terrain, matching access roads to Khosrov Forest State Reserve"
+        ]
+      },
+      "error": null,
+      "latency_s": 13.65,
+      "usage": {
+        "input": 1204,
+        "output": 1769
+      }
+    },
+    "wahiba": {
+      "model": "o3",
+      "parsed": {
+        "country": "Oman",
+        "region": "Ash Sharqiyah North",
+        "city": "Bidiyah",
+        "specific_location": "Sharqiyah (Wahiba) Sands dunes south-east of Bidiyah",
+        "latitude": 22.35,
+        "longitude": 58.77,
+        "confidence": 0.25,
+        "clues": [
+          "intensely orange, fine sand characteristic of Wahiba Sands",
+          "isolated desert shrub typical of Omani interior deserts",
+          "visible tyre tracks suggesting popular off-road area accessible from Bidiyah",
+          "flat foreground with high slipface dune ridge in background, matching Sharqiyah Sands topography"
+        ]
+      },
+      "error": null,
+      "latency_s": 5.08,
+      "usage": {
+        "input": 1204,
+        "output": 544
+      }
+    },
+    "denali_hwy": {
+      "model": "o3",
+      "parsed": {
+        "country": "Canada",
+        "region": "Yukon",
+        "city": "nearest: Engineer Creek (along the Dempster Highway)",
+        "specific_location": "Ogilvie River Bridge on the Dempster Highway",
+        "latitude": 65.55,
+        "longitude": -137.67,
+        "confidence": 0.22,
+        "clues": [
+          "gravel highway with North-American style yellow diamond signs",
+          "sub-arctic boreal forest and tundra vegetation",
+          "broad calm river/lake with steep green mountains typical of the Ogilvie range in central Yukon",
+          "remote setting with no pavement – characteristic of the Dempster Highway section north of Dawson City"
+        ]
+      },
+      "error": null,
+      "latency_s": 34.99,
+      "usage": {
+        "input": 1204,
+        "output": 4962
+      }
+    },
+    "tombstone": {
+      "model": "o3",
+      "parsed": {
+        "country": "Canada",
+        "region": "Yukon",
+        "city": "Dawson City",
+        "specific_location": "Mount Monolith, Tombstone Territorial Park",
+        "latitude": 64.73,
+        "longitude": -138.21,
+        "confidence": 0.34,
+        "clues": [
+          "Dark, jagged granite spire characteristic of Mount Monolith in Tombstone Range",
+          "Rolling treeless tundra foreground typical of sub-arctic Yukon",
+          "No visible trees, indicating high latitude/above treeline",
+          "Overall landscape matches widely photographed views from Dempster Highway/Talus Lake area"
+        ]
+      },
+      "error": null,
+      "latency_s": 13.27,
+      "usage": {
+        "input": 1204,
+        "output": 1747
+      }
+    },
+    "kangerlussuaq": {
+      "model": "o3",
+      "parsed": {
+        "country": "Greenland",
+        "region": "Qeqqata",
+        "city": "Kangerlussuaq",
+        "specific_location": "Wooden bridge over Akuliarusiarsuup Kuua on the gravel road from Kangerlussuaq to Russell Glacier",
+        "latitude": 67.06,
+        "longitude": -50.47,
+        "confidence": 0.28,
+        "clues": [
+          "Arctic, treeless landscape with glacial sand and sparse grass",
+          "European-style triangular road sign (Danish standards used in Greenland)",
+          "Single gravel road with wooden telephone poles – typical of the Kangerlussuaq–Russell Glacier road, one of very few roads in Greenland",
+          "Steep dark rock and light sand slope resembling the Sandflugtsdal valley near Kangerlussuaq"
+        ]
+      },
+      "error": null,
+      "latency_s": 20.93,
+      "usage": {
+        "input": 1204,
+        "output": 3001
+      }
+    },
+    "colca": {
+      "model": "o3",
+      "parsed": {
+        "country": "Peru",
+        "region": "Arequipa",
+        "city": "Cabanaconde",
+        "specific_location": "Mirador Cruz del Condor, Colca Canyon",
+        "latitude": -15.607,
+        "longitude": -72.041,
+        "confidence": 0.4,
+        "clues": [
+          "extremely deep arid canyon with very steep walls typical of Colca Canyon",
+          "high-altitude Andean terrain with sparse vegetation",
+          "tourist lookout with rustic wooden railings matching Mirador Cruz del Condor"
+        ]
+      },
+      "error": null,
+      "latency_s": 7.4,
+      "usage": {
+        "input": 904,
+        "output": 709
+      }
+    },
+    "khibiny": {
+      "model": "o3",
+      "parsed": {
+        "country": "Russia",
+        "region": "Murmansk Oblast",
+        "city": "Kirovsk",
+        "specific_location": "Bolshoy Vudyavr (Khibiny Mountains) ski area on the slope of Aikuayvenchorr",
+        "latitude": 67.614,
+        "longitude": 33.625,
+        "confidence": 0.25,
+        "clues": [
+          "Sub-arctic tundra vegetation with autumn colours typical of Kola Peninsula",
+          "Low, rounded, rocky mountains characteristic of the Khibiny range",
+          "Old, rust-coloured single chair-lift towers similar to Soviet-era ski lifts used in Kirovsk resorts",
+          "Absence of tall conifers, matching tree line in Khibiny",
+          "No major alpine peaks or glaciers, fits modest elevations of Murmansk Oblast ski areas"
+        ]
+      },
+      "error": null,
+      "latency_s": 11.06,
+      "usage": {
+        "input": 904,
+        "output": 1287
+      }
+    }
+  }
+}

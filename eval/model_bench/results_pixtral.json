@@ -1,0 +1,535 @@
+{
+  "pixtral": {
+    "atacama": {
+      "model": "pixtral",
+      "answer": "Cerro de los Siete Colores, Fiambalá, Catamarca, Argentina",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Catamarca",
+        "city": "Fiambalá",
+        "specific_location": "Cerro de los Siete Colores",
+        "latitude": -27.15,
+        "longitude": -66.85,
+        "confidence": 0.8,
+        "clues": [
+          "desert landscape",
+          "volcanic mountain",
+          "arid terrain",
+          "clear blue sky with scattered clouds"
+        ]
+      },
+      "text": "{\"country\": \"Argentina\", \"region\": \"Catamarca\", \"city\": \"Fiambalá\", \"specific_location\": \"Cerro de los Siete Colores\", \"latitude\": -27.15, \"longitude\": -66.85, \"confidence\": 0.8, \"clues\": [\"desert landscape\", \"volcanic mountain\", \"arid terrain\", \"clear blue sky with scattered clouds\"]}",
+      "latency_s": 11.71
+    },
+    "altiplano": {
+      "model": "pixtral",
+      "answer": "Laguna de Guayatayoc, Fiambalá, Catamarca, Argentina",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Catamarca",
+        "city": "Fiambalá",
+        "specific_location": "Laguna de Guayatayoc",
+        "latitude": -26.8,
+        "longitude": -67.5,
+        "confidence": 0.8,
+        "clues": [
+          "arid desert landscape",
+          "salt flat",
+          "mountain range in the background",
+          "clear blue sky"
+        ]
+      },
+      "text": "{\"country\": \"Argentina\", \"region\": \"Catamarca\", \"city\": \"Fiambalá\", \"specific_location\": \"Laguna de Guayatayoc\", \"latitude\": -26.8, \"longitude\": -67.5, \"confidence\": 0.8, \"clues\": [\"arid desert landscape\", \"salt flat\", \"mountain range in the background\", \"clear blue sky\"]}",
+      "latency_s": 6.41
+    },
+    "patagonia": {
+      "model": "pixtral",
+      "answer": "Te Anau Lake, Te Anau, South Island, New Zealand",
+      "parsed": {
+        "country": "New Zealand",
+        "region": "South Island",
+        "city": "Te Anau",
+        "specific_location": "Te Anau Lake",
+        "latitude": -45.41,
+        "longitude": 167.85,
+        "confidence": 0.8,
+        "clues": [
+          "mountainous terrain",
+          "reflective water body",
+          "sheep grazing",
+          "yellowish grassy hills"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"New Zealand\",\n  \"region\": \"South Island\",\n  \"city\": \"Te Anau\",\n  \"specific_location\": \"Te Anau Lake\",\n  \"latitude\": -45.41,\n  \"longitude\": 167.85,\n  \"confidence\": 0.8,\n  \"clues\": [\"mountainous terrain\", \"reflective water body\", \"sheep grazing\", \"yellowish grassy hills\"]\n}\n```",
+      "latency_s": 6.76
+    },
+    "tierra_del_fuego": {
+      "model": "pixtral",
+      "answer": "Beagle Channel, Puerto Williams, Magallanes, Chile",
+      "parsed": {
+        "country": "Chile",
+        "region": "Magallanes",
+        "city": "Puerto Williams",
+        "specific_location": "Beagle Channel",
+        "latitude": -53.0,
+        "longitude": -70.5,
+        "confidence": 0.8,
+        "clues": [
+          "snow-capped mountains",
+          "large body of water",
+          "small boat in the distance",
+          "remote and rugged landscape"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Chile\",\n  \"region\": \"Magallanes\",\n  \"city\": \"Puerto Williams\",\n  \"specific_location\": \"Beagle Channel\",\n  \"latitude\": -53.0,\n  \"longitude\": -70.5,\n  \"confidence\": 0.8,\n  \"clues\": [\n    \"snow-capped mountains\",\n    \"large body of water\",\n    \"small boat in the distance\",\n    \"remote and rugged landscape\"\n  ]\n}\n```",
+      "latency_s": 7.42
+    },
+    "damaraland": {
+      "model": "pixtral",
+      "answer": "Cape Range National Park, Exmouth, Western Australia, Australia",
+      "parsed": {
+        "country": "Australia",
+        "region": "Western Australia",
+        "city": "Exmouth",
+        "specific_location": "Cape Range National Park",
+        "latitude": -22.38,
+        "longitude": 113.83,
+        "confidence": 0.8,
+        "clues": [
+          "arid landscape",
+          "red rock formations",
+          "desert vegetation"
+        ]
+      },
+      "text": "{\"country\": \"Australia\", \"region\": \"Western Australia\", \"city\": \"Exmouth\", \"specific_location\": \"Cape Range National Park\", \"latitude\": -22.38, \"longitude\": 113.83, \"confidence\": 0.8, \"clues\": [\"arid landscape\", \"red rock formations\", \"desert vegetation\"]}",
+      "latency_s": 5.78
+    },
+    "namib": {
+      "model": "pixtral",
+      "answer": "Deadvlei, Sossusvlei, Namib Desert, Namibia",
+      "parsed": {
+        "country": "Namibia",
+        "region": "Namib Desert",
+        "city": "Sossusvlei",
+        "specific_location": "Deadvlei",
+        "latitude": -24.68,
+        "longitude": 15.18,
+        "confidence": 0.9,
+        "clues": [
+          "sand dunes",
+          "leadeless trees",
+          "arid landscape"
+        ]
+      },
+      "text": "{\"country\": \"Namibia\", \"region\": \"Namib Desert\", \"city\": \"Sossusvlei\", \"specific_location\": \"Deadvlei\", \"latitude\": -24.68, \"longitude\": 15.18, \"confidence\": 0.9, \"clues\": [\"sand dunes\", \"leadeless trees\", \"arid landscape\"]}",
+      "latency_s": 6.01
+    },
+    "tassili": {
+      "model": "pixtral",
+      "answer": "Road through the Sahara Desert near Erfoud, Erfoud, Sahara Desert, Morocco",
+      "parsed": {
+        "country": "Morocco",
+        "region": "Sahara Desert",
+        "city": "Erfoud",
+        "specific_location": "Road through the Sahara Desert near Erfoud",
+        "latitude": 30.45,
+        "longitude": -4.23,
+        "confidence": 0.8,
+        "clues": [
+          "sand dunes",
+          "arid landscape",
+          "desert road",
+          "clear sky",
+          "absence of vegetation"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Morocco\",\n  \"region\": \"Sahara Desert\",\n  \"city\": \"Erfoud\",\n  \"specific_location\": \"Road through the Sahara Desert near Erfoud\",\n  \"latitude\": 30.45,\n  \"longitude\": -4.23,\n  \"confidence\": 0.8,\n  \"clues\": [\"sand dunes\", \"arid landscape\", \"desert road\", \"clear sky\", \"absence of vegetation\"]\n}\n```",
+      "latency_s": 7.26
+    },
+    "simien": {
+      "model": "pixtral",
+      "answer": "Simien Mountains National Park, Gondar, Amhara, Ethiopia",
+      "parsed": {
+        "country": "Ethiopia",
+        "region": "Amhara",
+        "city": "Gondar",
+        "specific_location": "Simien Mountains National Park",
+        "latitude": 13.85,
+        "longitude": 38.85,
+        "confidence": 0.8,
+        "clues": [
+          "rugged mountainous terrain",
+          "presence of cattle grazing",
+          "steep cliffs and valleys",
+          "green vegetation"
+        ]
+      },
+      "text": "{\"country\": \"Ethiopia\", \"region\": \"Amhara\", \"city\": \"Gondar\", \"specific_location\": \"Simien Mountains National Park\", \"latitude\": 13.85, \"longitude\": 38.85, \"confidence\": 0.8, \"clues\": [\"rugged mountainous terrain\", \"presence of cattle grazing\", \"steep cliffs and valleys\", \"green vegetation\"]}",
+      "latency_s": 6.48
+    },
+    "maasai_mara": {
+      "model": "pixtral",
+      "answer": "Maasai Mara National Reserve, Narok, Maasai Mara, Kenya",
+      "parsed": {
+        "country": "Kenya",
+        "region": "Maasai Mara",
+        "city": "Narok",
+        "specific_location": "Maasai Mara National Reserve",
+        "latitude": -1.3,
+        "longitude": 35.0,
+        "confidence": 0.8,
+        "clues": [
+          "grassy savannah",
+          "wild zebras",
+          "typical African wildlife habitat"
+        ]
+      },
+      "text": "{\"country\": \"Kenya\", \"region\": \"Maasai Mara\", \"city\": \"Narok\", \"specific_location\": \"Maasai Mara National Reserve\", \"latitude\": -1.30, \"longitude\": 35.0, \"confidence\": 0.8, \"clues\": [\"grassy savannah\", \"wild zebras\", \"typical African wildlife habitat\"]}",
+      "latency_s": 6.32
+    },
+    "iceland_highlands": {
+      "model": "pixtral",
+      "answer": "Krýsuvík Geothermal Area, Reykjanesbær, Southwest, Iceland",
+      "parsed": {
+        "country": "Iceland",
+        "region": "Southwest",
+        "city": "Reykjanesbær",
+        "specific_location": "Krýsuvík Geothermal Area",
+        "latitude": 63.86,
+        "longitude": -22.43,
+        "confidence": 0.8,
+        "clues": [
+          "steam vents",
+          "colored pools",
+          "rocky terrain",
+          "grassy areas",
+          "mountainous backdrop"
+        ]
+      },
+      "text": "{\"country\": \"Iceland\", \"region\": \"Southwest\", \"city\": \"Reykjanesbær\", \"specific_location\": \"Krýsuvík Geothermal Area\", \"latitude\": 63.86, \"longitude\": -22.43, \"confidence\": 0.8, \"clues\": [\"steam vents\", \"colored pools\", \"rocky terrain\", \"grassy areas\", \"mountainous backdrop\"]}",
+      "latency_s": 6.88
+    },
+    "glen_coe": {
+      "model": "pixtral",
+      "answer": "Scafell Pike, Wasdale Valley, Keswick, Lake District, United Kingdom",
+      "parsed": {
+        "country": "United Kingdom",
+        "region": "Lake District",
+        "city": "Keswick",
+        "specific_location": "Scafell Pike, Wasdale Valley",
+        "latitude": 54.42,
+        "longitude": -3.25,
+        "confidence": 0.8,
+        "clues": [
+          "green rolling hills",
+          "mountainous terrain",
+          "misty peaks",
+          "lush vegetation",
+          "cloudy sky"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"United Kingdom\",\n  \"region\": \"Lake District\",\n  \"city\": \"Keswick\",\n  \"specific_location\": \"Scafell Pike, Wasdale Valley\",\n  \"latitude\": 54.42,\n  \"longitude\": -3.25,\n  \"confidence\": 0.8,\n  \"clues\": [\n    \"green rolling hills\",\n    \"mountainous terrain\",\n    \"misty peaks\",\n    \"lush vegetation\",\n    \"cloudy sky\"\n  ]\n}\n```",
+      "latency_s": 7.42
+    },
+    "svalbard": {
+      "model": "pixtral",
+      "answer": "Reynisfjara Beach, Reykjavik, Southwest, Iceland",
+      "parsed": {
+        "country": "Iceland",
+        "region": "Southwest",
+        "city": "Reykjavik",
+        "specific_location": "Reynisfjara Beach",
+        "latitude": 63.37,
+        "longitude": -19.49,
+        "confidence": 0.8,
+        "clues": [
+          "snowy landscape",
+          "dark night sky",
+          "unique rock formations in the background",
+          "presence of a beach"
+        ]
+      },
+      "text": "{\"country\": \"Iceland\", \"region\": \"Southwest\", \"city\": \"Reykjavik\", \"specific_location\": \"Reynisfjara Beach\", \"latitude\": 63.37, \"longitude\": -19.49, \"confidence\": 0.8, \"clues\": [\"snowy landscape\", \"dark night sky\", \"unique rock formations in the background\", \"presence of a beach\"]}",
+      "latency_s": 6.49
+    },
+    "lapland": {
+      "model": "pixtral",
+      "answer": "Reisavannet, Kautokeino, Kautokeino, Troms og Finnmark, Norway",
+      "parsed": {
+        "country": "Norway",
+        "region": "Troms og Finnmark",
+        "city": "Kautokeino",
+        "specific_location": "Reisavannet, Kautokeino",
+        "latitude": 70.05,
+        "longitude": 23.0,
+        "confidence": 0.8,
+        "clues": [
+          "mountainous terrain",
+          "sparse vegetation",
+          "small body of water",
+          "dark clouds",
+          "remote and rugged landscape"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Norway\",\n  \"region\": \"Troms og Finnmark\",\n  \"city\": \"Kautokeino\",\n  \"specific_location\": \"Reisavannet, Kautokeino\",\n  \"latitude\": 70.05,\n  \"longitude\": 23.0,\n  \"confidence\": 0.8,\n  \"clues\": [\n    \"mountainous terrain\",\n    \"sparse vegetation\",\n    \"small body of water\",\n    \"dark clouds\",\n    \"remote and rugged landscape\"\n  ]\n}\n```",
+      "latency_s": 8.13
+    },
+    "altai": {
+      "model": "pixtral",
+      "answer": "Mammoth Lakes Basin, Mammoth Lakes, California, United States",
+      "parsed": {
+        "country": "United States",
+        "region": "California",
+        "city": "Mammoth Lakes",
+        "specific_location": "Mammoth Lakes Basin",
+        "latitude": 37.64,
+        "longitude": -118.98,
+        "confidence": 0.8,
+        "clues": [
+          "mountainous terrain",
+          "pine trees",
+          "clear stream",
+          "green meadows",
+          "rocky hills",
+          "clear sky"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"United States\",\n  \"region\": \"California\",\n  \"city\": \"Mammoth Lakes\",\n  \"specific_location\": \"Mammoth Lakes Basin\",\n  \"latitude\": 37.64,\n  \"longitude\": -118.98,\n  \"confidence\": 0.8,\n  \"clues\": [\n    \"mountainous terrain\",\n    \"pine trees\",\n    \"clear stream\",\n    \"green meadows\",\n    \"rocky hills\",\n    \"clear sky\"\n  ]\n}\n```",
+      "latency_s": 7.15
+    },
+    "charyn": {
+      "model": "pixtral",
+      "answer": "Tizi n'Tichka pass, Ouarzazate, High Atlas, Morocco",
+      "parsed": {
+        "country": "Morocco",
+        "region": "High Atlas",
+        "city": "Ouarzazate",
+        "specific_location": "Tizi n'Tichka pass",
+        "latitude": 30.75,
+        "longitude": -6.95,
+        "confidence": 0.8,
+        "clues": [
+          "mountainous terrain",
+          "arid landscape",
+          "reddish-brown soil",
+          "sparse vegetation",
+          "clear blue sky"
+        ]
+      },
+      "text": "{\"country\": \"Morocco\", \"region\": \"High Atlas\", \"city\": \"Ouarzazate\", \"specific_location\": \"Tizi n'Tichka pass\", \"latitude\": 30.75, \"longitude\": -6.95, \"confidence\": 0.8, \"clues\": [\"mountainous terrain\", \"arid landscape\", \"reddish-brown soil\", \"sparse vegetation\", \"clear blue sky\"]}",
+      "latency_s": 6.93
+    },
+    "song_kol": {
+      "model": "pixtral",
+      "answer": "Laguna Colorada, Sajama, Oruro, Bolivia",
+      "parsed": {
+        "country": "Bolivia",
+        "region": "Oruro",
+        "city": "Sajama",
+        "specific_location": "Laguna Colorada",
+        "latitude": -19.3,
+        "longitude": -68.5,
+        "confidence": 0.8,
+        "clues": [
+          "high-altitude lake",
+          "arid landscape",
+          "hills and mountains",
+          "clear blue sky with scattered clouds",
+          "sparse vegetation"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Bolivia\",\n  \"region\": \"Oruro\",\n  \"city\": \"Sajama\",\n  \"specific_location\": \"Laguna Colorada\",\n  \"latitude\": -19.3,\n  \"longitude\": -68.5,\n  \"confidence\": 0.8,\n  \"clues\": [\n    \"high-altitude lake\",\n    \"arid landscape\",\n    \"hills and mountains\",\n    \"clear blue sky with scattered clouds\",\n    \"sparse vegetation\"\n  ]\n}\n```",
+      "latency_s": 7.82
+    },
+    "ladakh": {
+      "model": "pixtral",
+      "answer": "Chang La Pass, Leh, Ladakh, India",
+      "parsed": {
+        "country": "India",
+        "region": "Ladakh",
+        "city": "Leh",
+        "specific_location": "Chang La Pass",
+        "latitude": 34.15,
+        "longitude": 77.55,
+        "confidence": 0.8,
+        "clues": [
+          "high altitude desert landscape",
+          "winding road with hairpin turns",
+          "barren mountains",
+          "clear blue sky with scattered clouds",
+          "absence of vegetation"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"India\",\n  \"region\": \"Ladakh\",\n  \"city\": \"Leh\",\n  \"specific_location\": \"Chang La Pass\",\n  \"latitude\": 34.15,\n  \"longitude\": 77.55,\n  \"confidence\": 0.8,\n  \"clues\": [\n    \"high altitude desert landscape\",\n    \"winding road with hairpin turns\",\n    \"barren mountains\",\n    \"clear blue sky with scattered clouds\",\n    \"absence of vegetation\"\n  ]\n}\n```",
+      "latency_s": 8.37
+    },
+    "mongolia_steppe": {
+      "model": "pixtral",
+      "answer": "Gorkhi-Terelj National Park, Ulaanbaatar, Mongolian Steppe, Mongolia",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Mongolian Steppe",
+        "city": "Ulaanbaatar",
+        "specific_location": "Gorkhi-Terelj National Park",
+        "latitude": 47.68,
+        "longitude": 107.15,
+        "confidence": 0.8,
+        "clues": [
+          "open grassland",
+          "hilly terrain",
+          "wild horse",
+          "sparse vegetation"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Mongolia\",\n  \"region\": \"Mongolian Steppe\",\n  \"city\": \"Ulaanbaatar\",\n  \"specific_location\": \"Gorkhi-Terelj National Park\",\n  \"latitude\": 47.68,\n  \"longitude\": 107.15,\n  \"confidence\": 0.8,\n  \"clues\": [\n    \"open grassland\",\n    \"hilly terrain\",\n    \"wild horse\",\n    \"sparse vegetation\"\n  ]\n}\n```",
+      "latency_s": 7.88
+    },
+    "gobi": {
+      "model": "pixtral",
+      "answer": "Road to Toubkal National Park, Imlil, High Atlas, Morocco",
+      "parsed": {
+        "country": "Morocco",
+        "region": "High Atlas",
+        "city": "Imlil",
+        "specific_location": "Road to Toubkal National Park",
+        "latitude": 31.15,
+        "longitude": -8.0,
+        "confidence": 0.8,
+        "clues": [
+          "mountainous terrain",
+          "sign with goat silhouette",
+          "green vegetation on hills",
+          "cloudy sky"
+        ]
+      },
+      "text": "{\"country\": \"Morocco\", \"region\": \"High Atlas\", \"city\": \"Imlil\", \"specific_location\": \"Road to Toubkal National Park\", \"latitude\": 31.15, \"longitude\": -8.00, \"confidence\": 0.8, \"clues\": [\"mountainous terrain\", \"sign with goat silhouette\", \"green vegetation on hills\", \"cloudy sky\"]}",
+      "latency_s": 6.37
+    },
+    "wahiba": {
+      "model": "pixtral",
+      "answer": "Merzouga Dunes, Erg Chebbi, Sahara Desert, Morocco",
+      "parsed": {
+        "country": "Morocco",
+        "region": "Sahara Desert",
+        "city": "Erg Chebbi",
+        "specific_location": "Merzouga Dunes",
+        "latitude": 29.98,
+        "longitude": -4.15,
+        "confidence": 0.8,
+        "clues": [
+          "vast sand dunes",
+          "isolated desert vegetation",
+          "cloudy sky"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Morocco\",\n  \"region\": \"Sahara Desert\",\n  \"city\": \"Erg Chebbi\",\n  \"specific_location\": \"Merzouga Dunes\",\n  \"latitude\": 29.98,\n  \"longitude\": -4.15,\n  \"confidence\": 0.8,\n  \"clues\": [\"vast sand dunes\", \"isolated desert vegetation\", \"cloudy sky\"]\n}\n```",
+      "latency_s": 6.63
+    },
+    "denali_hwy": {
+      "model": "pixtral",
+      "answer": "Denali National Park, near Wonder Lake, Fairbanks, Alaska, United States",
+      "parsed": {
+        "country": "United States",
+        "region": "Alaska",
+        "city": "Fairbanks",
+        "specific_location": "Denali National Park, near Wonder Lake",
+        "latitude": 63.12,
+        "longitude": -149.95,
+        "confidence": 0.8,
+        "clues": [
+          "mountainous terrain with peaks",
+          "large body of water",
+          "dirt road",
+          "forested areas",
+          "cloudy sky"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"United States\",\n  \"region\": \"Alaska\",\n  \"city\": \"Fairbanks\",\n  \"specific_location\": \"Denali National Park, near Wonder Lake\",\n  \"latitude\": 63.12,\n  \"longitude\": -149.95,\n  \"confidence\": 0.8,\n  \"clues\": [\n    \"mountainous terrain with peaks\",\n    \"large body of water\",\n    \"dirt road\",\n    \"forested areas\",\n    \"cloudy sky\"\n  ]\n}\n```",
+      "latency_s": 7.64
+    },
+    "tombstone": {
+      "model": "pixtral",
+      "answer": "Jostedalsbreen National Park, Jostedal, Sogn og Fjordane, Norway",
+      "parsed": {
+        "country": "Norway",
+        "region": "Sogn og Fjordane",
+        "city": "Jostedal",
+        "specific_location": "Jostedalsbreen National Park",
+        "latitude": 61.65,
+        "longitude": 7.15,
+        "confidence": 0.8,
+        "clues": [
+          "glacial landscape",
+          "sharp peaks",
+          "cloudy sky"
+        ]
+      },
+      "text": "{\"country\": \"Norway\", \"region\": \"Sogn og Fjordane\", \"city\": \"Jostedal\", \"specific_location\": \"Jostedalsbreen National Park\", \"latitude\": 61.65, \"longitude\": 7.15, \"confidence\": 0.8, \"clues\": [\"glacial landscape\", \"sharp peaks\", \"cloudy sky\"]}",
+      "latency_s": 6.16
+    },
+    "kangerlussuaq": {
+      "model": "pixtral",
+      "answer": "Mine 7, Longyearbyen, Svalbard, Norway",
+      "parsed": {
+        "country": "Norway",
+        "region": "Svalbard",
+        "city": "Longyearbyen",
+        "specific_location": "Mine 7",
+        "latitude": 78.22,
+        "longitude": 16.25,
+        "confidence": 0.8,
+        "clues": [
+          "mining infrastructure",
+          "polar desert terrain",
+          "northern lights power lines",
+          "road signs in Norwegian"
+        ]
+      },
+      "text": "{\"country\": \"Norway\", \"region\": \"Svalbard\", \"city\": \"Longyearbyen\", \"specific_location\": \"Mine 7\", \"latitude\": 78.22, \"longitude\": 16.25, \"confidence\": 0.8, \"clues\": [\"mining infrastructure\", \"polar desert terrain\", \"northern lights power lines\", \"road signs in Norwegian\"]}",
+      "latency_s": 6.45
+    },
+    "colca": {
+      "model": "pixtral",
+      "answer": "Colca Canyon, Aguas Calientes, Cusco, Peru",
+      "parsed": {
+        "country": "Peru",
+        "region": "Cusco",
+        "city": "Aguas Calientes",
+        "specific_location": "Colca Canyon",
+        "latitude": -15.62,
+        "longitude": -71.83,
+        "confidence": 0.8,
+        "clues": [
+          "deep canyon landscape",
+          "mountainous terrain",
+          "wooden viewing platform",
+          "clear blue sky",
+          "people dressed in warm clothing"
+        ]
+      },
+      "text": "{\"country\": \"Peru\", \"region\": \"Cusco\", \"city\": \"Aguas Calientes\", \"specific_location\": \"Colca Canyon\", \"latitude\": -15.62, \"longitude\": -71.83, \"confidence\": 0.8, \"clues\": [\"deep canyon landscape\", \"mountainous terrain\", \"wooden viewing platform\", \"clear blue sky\", \"people dressed in warm clothing\"]}",
+      "latency_s": 6.98
+    },
+    "khibiny": {
+      "model": "pixtral",
+      "answer": "Mountain near Tromsø, Tromsø, Norway, Norway",
+      "parsed": {
+        "country": "Norway",
+        "region": "Norway",
+        "city": "Tromsø",
+        "specific_location": "Mountain near Tromsø",
+        "latitude": 69.69,
+        "longitude": 18.99,
+        "confidence": 0.7,
+        "clues": [
+          "mountainous terrain",
+          "northern vegetation",
+          "cloudy sky",
+          "autumnal colors"
+        ]
+      },
+      "text": "```json\n{\n  \"country\": \"Norway\",\n  \"region\": \"Norway\",\n  \"city\": \"Tromsø\",\n  \"specific_location\": \"Mountain near Tromsø\",\n  \"latitude\": 69.69,\n  \"longitude\": 18.99,\n  \"confidence\": 0.7,\n  \"clues\": [\"mountainous terrain\", \"northern vegetation\", \"cloudy sky\", \"autumnal colors\"]\n}\n```",
+      "latency_s": 7.3
+    }
+  }
+}

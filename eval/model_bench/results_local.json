@@ -1,0 +1,1666 @@
+{
+  "geoclip": {
+    "atacama": {
+      "model": "geoclip",
+      "answer": "-19.90106, -67.62646",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": -19.90106,
+            "longitude": -67.62646,
+            "probability": 0.1365
+          },
+          {
+            "latitude": -15.85581,
+            "longitude": -71.10489,
+            "probability": 0.104
+          },
+          {
+            "latitude": -23.14525,
+            "longitude": -68.05344,
+            "probability": 0.0685
+          },
+          {
+            "latitude": -23.72187,
+            "longitude": -67.83508,
+            "probability": 0.0373
+          },
+          {
+            "latitude": -22.65157,
+            "longitude": -68.16757,
+            "probability": 0.0343
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.83
+    },
+    "altiplano": {
+      "model": "geoclip",
+      "answer": "-23.72187, -67.83508",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": -23.72187,
+            "longitude": -67.83508,
+            "probability": 0.3697
+          },
+          {
+            "latitude": -23.51363,
+            "longitude": -66.81885,
+            "probability": 0.0919
+          },
+          {
+            "latitude": -20.23911,
+            "longitude": -67.6234,
+            "probability": 0.0523
+          },
+          {
+            "latitude": -23.14525,
+            "longitude": -68.05344,
+            "probability": 0.0414
+          },
+          {
+            "latitude": -19.90106,
+            "longitude": -67.62646,
+            "probability": 0.0406
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.79
+    },
+    "patagonia": {
+      "model": "geoclip",
+      "answer": "-51.28425, -72.61963",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": -51.28425,
+            "longitude": -72.61963,
+            "probability": 0.1123
+          },
+          {
+            "latitude": -49.53056,
+            "longitude": -72.29965,
+            "probability": 0.0665
+          },
+          {
+            "latitude": -51.09327,
+            "longitude": -72.64755,
+            "probability": 0.0527
+          },
+          {
+            "latitude": -50.96913,
+            "longitude": -72.68091,
+            "probability": 0.0511
+          },
+          {
+            "latitude": -15.85581,
+            "longitude": -71.10489,
+            "probability": 0.0397
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.79
+    },
+    "tierra_del_fuego": {
+      "model": "geoclip",
+      "answer": "-54.83945, -68.24844",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": -54.83945,
+            "longitude": -68.24844,
+            "probability": 0.2369
+          },
+          {
+            "latitude": -54.86848,
+            "longitude": -68.10279,
+            "probability": 0.0713
+          },
+          {
+            "latitude": -54.86871,
+            "longitude": -68.29102,
+            "probability": 0.0706
+          },
+          {
+            "latitude": -54.79831,
+            "longitude": -68.25531,
+            "probability": 0.0698
+          },
+          {
+            "latitude": -54.79549,
+            "longitude": -68.25943,
+            "probability": 0.058
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.78
+    },
+    "damaraland": {
+      "model": "geoclip",
+      "answer": "36.42708, -114.4614",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 36.42708,
+            "longitude": -114.4614,
+            "probability": 0.2078
+          },
+          {
+            "latitude": 36.43164,
+            "longitude": -114.44612,
+            "probability": 0.1776
+          },
+          {
+            "latitude": 36.42043,
+            "longitude": -114.50291,
+            "probability": 0.162
+          },
+          {
+            "latitude": 36.43788,
+            "longitude": -114.51302,
+            "probability": 0.1195
+          },
+          {
+            "latitude": 36.42247,
+            "longitude": -114.54913,
+            "probability": 0.0668
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.77
+    },
+    "namib": {
+      "model": "geoclip",
+      "answer": "-24.52713, 15.26276",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": -24.52713,
+            "longitude": 15.26276,
+            "probability": 0.312
+          },
+          {
+            "latitude": -24.76016,
+            "longitude": 15.29074,
+            "probability": 0.1833
+          },
+          {
+            "latitude": -24.74465,
+            "longitude": 15.28782,
+            "probability": 0.1112
+          },
+          {
+            "latitude": 26.54423,
+            "longitude": 13.10299,
+            "probability": 0.0432
+          },
+          {
+            "latitude": -24.28577,
+            "longitude": 16.13686,
+            "probability": 0.037
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.77
+    },
+    "tassili": {
+      "model": "geoclip",
+      "answer": "31.06644, -4.00261",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 31.06644,
+            "longitude": -4.00261,
+            "probability": 0.1485
+          },
+          {
+            "latitude": 19.85634,
+            "longitude": -13.55781,
+            "probability": 0.1399
+          },
+          {
+            "latitude": 26.54423,
+            "longitude": 13.10299,
+            "probability": 0.094
+          },
+          {
+            "latitude": 31.0991,
+            "longitude": -4.00589,
+            "probability": 0.0736
+          },
+          {
+            "latitude": 20.46891,
+            "longitude": -12.37129,
+            "probability": 0.0659
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.77
+    },
+    "simien": {
+      "model": "geoclip",
+      "answer": "13.27203, 38.11518",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 13.27203,
+            "longitude": 38.11518,
+            "probability": 0.5025
+          },
+          {
+            "latitude": 13.26158,
+            "longitude": 38.1926,
+            "probability": 0.2042
+          },
+          {
+            "latitude": 13.24964,
+            "longitude": 38.15689,
+            "probability": 0.0868
+          },
+          {
+            "latitude": 12.51272,
+            "longitude": 39.51543,
+            "probability": 0.0313
+          },
+          {
+            "latitude": 12.03344,
+            "longitude": 39.04232,
+            "probability": 0.0253
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.78
+    },
+    "maasai_mara": {
+      "model": "geoclip",
+      "answer": "-1.24942, 34.61575",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": -1.24942,
+            "longitude": 34.61575,
+            "probability": 0.0977
+          },
+          {
+            "latitude": -1.12028,
+            "longitude": 35.23127,
+            "probability": 0.0442
+          },
+          {
+            "latitude": -1.65802,
+            "longitude": 35.39486,
+            "probability": 0.0418
+          },
+          {
+            "latitude": -1.5163,
+            "longitude": 35.1761,
+            "probability": 0.0328
+          },
+          {
+            "latitude": -1.575,
+            "longitude": 35.15937,
+            "probability": 0.0292
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.8
+    },
+    "iceland_highlands": {
+      "model": "geoclip",
+      "answer": "64.12755, -20.60778",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 64.12755,
+            "longitude": -20.60778,
+            "probability": 0.0493
+          },
+          {
+            "latitude": 64.06834,
+            "longitude": -19.76883,
+            "probability": 0.0333
+          },
+          {
+            "latitude": 63.9454,
+            "longitude": -20.0882,
+            "probability": 0.031
+          },
+          {
+            "latitude": 65.3382,
+            "longitude": -20.19905,
+            "probability": 0.0291
+          },
+          {
+            "latitude": 63.96632,
+            "longitude": -19.84131,
+            "probability": 0.0277
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.79
+    },
+    "glen_coe": {
+      "model": "geoclip",
+      "answer": "56.66399, -4.97046",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 56.66399,
+            "longitude": -4.97046,
+            "probability": 0.2057
+          },
+          {
+            "latitude": 56.64509,
+            "longitude": -4.90548,
+            "probability": 0.0888
+          },
+          {
+            "latitude": 57.24044,
+            "longitude": -6.14353,
+            "probability": 0.0507
+          },
+          {
+            "latitude": 57.07388,
+            "longitude": -5.63667,
+            "probability": 0.048
+          },
+          {
+            "latitude": 56.64849,
+            "longitude": -4.84875,
+            "probability": 0.0285
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.78
+    },
+    "svalbard": {
+      "model": "geoclip",
+      "answer": "78.22675, 15.61363",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 78.22675,
+            "longitude": 15.61363,
+            "probability": 0.1467
+          },
+          {
+            "latitude": 78.22003,
+            "longitude": 15.65071,
+            "probability": 0.134
+          },
+          {
+            "latitude": 78.22774,
+            "longitude": 15.66376,
+            "probability": 0.124
+          },
+          {
+            "latitude": 78.30124,
+            "longitude": 15.73242,
+            "probability": 0.0845
+          },
+          {
+            "latitude": 78.22521,
+            "longitude": 15.7338,
+            "probability": 0.0599
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.79
+    },
+    "lapland": {
+      "model": "geoclip",
+      "answer": "69.06817, 20.76583",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 69.06817,
+            "longitude": 20.76583,
+            "probability": 0.1225
+          },
+          {
+            "latitude": 67.90014,
+            "longitude": 18.32174,
+            "probability": 0.0916
+          },
+          {
+            "latitude": 67.99599,
+            "longitude": 18.70766,
+            "probability": 0.0426
+          },
+          {
+            "latitude": 64.16721,
+            "longitude": 13.45722,
+            "probability": 0.0301
+          },
+          {
+            "latitude": 64.16459,
+            "longitude": 13.45757,
+            "probability": 0.0299
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.78
+    },
+    "altai": {
+      "model": "geoclip",
+      "answer": "44.31783, 6.7759",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 44.31783,
+            "longitude": 6.7759,
+            "probability": 0.0595
+          },
+          {
+            "latitude": 51.99829,
+            "longitude": 101.70879,
+            "probability": 0.0491
+          },
+          {
+            "latitude": 41.84501,
+            "longitude": 79.57088,
+            "probability": 0.0374
+          },
+          {
+            "latitude": 42.57972,
+            "longitude": 75.23575,
+            "probability": 0.0328
+          },
+          {
+            "latitude": 51.94628,
+            "longitude": 102.19036,
+            "probability": 0.0327
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.77
+    },
+    "charyn": {
+      "model": "geoclip",
+      "answer": "31.31023, -7.37251",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 31.31023,
+            "longitude": -7.37251,
+            "probability": 0.0346
+          },
+          {
+            "latitude": 43.58238,
+            "longitude": 104.41956,
+            "probability": 0.0194
+          },
+          {
+            "latitude": 31.13898,
+            "longitude": -6.31753,
+            "probability": 0.0193
+          },
+          {
+            "latitude": 45.53329,
+            "longitude": 102.62329,
+            "probability": 0.0175
+          },
+          {
+            "latitude": 30.88926,
+            "longitude": -5.9024,
+            "probability": 0.0164
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.78
+    },
+    "song_kol": {
+      "model": "geoclip",
+      "answer": "30.68126, 91.09737",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 30.68126,
+            "longitude": 91.09737,
+            "probability": 0.1063
+          },
+          {
+            "latitude": 42.11452,
+            "longitude": 76.99356,
+            "probability": 0.0835
+          },
+          {
+            "latitude": 42.15017,
+            "longitude": 76.58752,
+            "probability": 0.0701
+          },
+          {
+            "latitude": -16.59063,
+            "longitude": -68.8393,
+            "probability": 0.0526
+          },
+          {
+            "latitude": -16.03426,
+            "longitude": -69.14777,
+            "probability": 0.0314
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.78
+    },
+    "ladakh": {
+      "model": "geoclip",
+      "answer": "34.0134, 77.87092",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 34.0134,
+            "longitude": 77.87092,
+            "probability": 0.1055
+          },
+          {
+            "latitude": 33.79776,
+            "longitude": 78.60357,
+            "probability": 0.0608
+          },
+          {
+            "latitude": 33.79776,
+            "longitude": 78.60357,
+            "probability": 0.0608
+          },
+          {
+            "latitude": 33.79776,
+            "longitude": 78.60357,
+            "probability": 0.0608
+          },
+          {
+            "latitude": 29.01583,
+            "longitude": 87.49416,
+            "probability": 0.0545
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.78
+    },
+    "mongolia_steppe": {
+      "model": "geoclip",
+      "answer": "47.80116, 107.66808",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 47.80116,
+            "longitude": 107.66808,
+            "probability": 0.0947
+          },
+          {
+            "latitude": 47.9229,
+            "longitude": 104.43857,
+            "probability": 0.0807
+          },
+          {
+            "latitude": 47.81361,
+            "longitude": 107.40388,
+            "probability": 0.0439
+          },
+          {
+            "latitude": 48.44229,
+            "longitude": 107.26227,
+            "probability": 0.0359
+          },
+          {
+            "latitude": 48.44229,
+            "longitude": 107.26227,
+            "probability": 0.0359
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.78
+    },
+    "gobi": {
+      "model": "geoclip",
+      "answer": "29.01583, 87.49416",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 29.01583,
+            "longitude": 87.49416,
+            "probability": 0.0603
+          },
+          {
+            "latitude": 29.15889,
+            "longitude": 88.0556,
+            "probability": 0.0499
+          },
+          {
+            "latitude": 29.07086,
+            "longitude": 89.41028,
+            "probability": 0.0334
+          },
+          {
+            "latitude": 42.66679,
+            "longitude": 44.63745,
+            "probability": 0.031
+          },
+          {
+            "latitude": 41.84296,
+            "longitude": 75.07507,
+            "probability": 0.0275
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.77
+    },
+    "wahiba": {
+      "model": "geoclip",
+      "answer": "-24.52713, 15.26276",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": -24.52713,
+            "longitude": 15.26276,
+            "probability": 0.1434
+          },
+          {
+            "latitude": -24.74465,
+            "longitude": 15.28782,
+            "probability": 0.0931
+          },
+          {
+            "latitude": -24.76016,
+            "longitude": 15.29074,
+            "probability": 0.0894
+          },
+          {
+            "latitude": -24.50027,
+            "longitude": 15.80057,
+            "probability": 0.0649
+          },
+          {
+            "latitude": -24.51917,
+            "longitude": 15.79887,
+            "probability": 0.0574
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.77
+    },
+    "denali_hwy": {
+      "model": "geoclip",
+      "answer": "63.03286, -145.50499",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 63.03286,
+            "longitude": -145.50499,
+            "probability": 0.2077
+          },
+          {
+            "latitude": 61.35354,
+            "longitude": -138.9985,
+            "probability": 0.1097
+          },
+          {
+            "latitude": 62.64085,
+            "longitude": -141.02951,
+            "probability": 0.0884
+          },
+          {
+            "latitude": 63.1045,
+            "longitude": -147.52383,
+            "probability": 0.0881
+          },
+          {
+            "latitude": 63.867,
+            "longitude": -149.02083,
+            "probability": 0.0743
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.78
+    },
+    "tombstone": {
+      "model": "geoclip",
+      "answer": "63.52074, -150.04483",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 63.52074,
+            "longitude": -150.04483,
+            "probability": 0.0815
+          },
+          {
+            "latitude": 63.72783,
+            "longitude": -149.02405,
+            "probability": 0.0746
+          },
+          {
+            "latitude": 63.40036,
+            "longitude": -149.06009,
+            "probability": 0.0698
+          },
+          {
+            "latitude": 63.55392,
+            "longitude": -149.65736,
+            "probability": 0.066
+          },
+          {
+            "latitude": 63.45573,
+            "longitude": -148.79471,
+            "probability": 0.0415
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.85
+    },
+    "kangerlussuaq": {
+      "model": "geoclip",
+      "answer": "78.30124, 15.73242",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 78.30124,
+            "longitude": 15.73242,
+            "probability": 0.0913
+          },
+          {
+            "latitude": 78.22521,
+            "longitude": 15.7338,
+            "probability": 0.0786
+          },
+          {
+            "latitude": 78.22774,
+            "longitude": 15.66376,
+            "probability": 0.0716
+          },
+          {
+            "latitude": 78.21498,
+            "longitude": 15.73242,
+            "probability": 0.071
+          },
+          {
+            "latitude": 78.22003,
+            "longitude": 15.65071,
+            "probability": 0.0588
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.77
+    },
+    "colca": {
+      "model": "geoclip",
+      "answer": "-15.57542, -72.00302",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": -15.57542,
+            "longitude": -72.00302,
+            "probability": 0.2166
+          },
+          {
+            "latitude": -15.59592,
+            "longitude": -72.05982,
+            "probability": 0.1152
+          },
+          {
+            "latitude": -15.69312,
+            "longitude": -72.16095,
+            "probability": 0.102
+          },
+          {
+            "latitude": -15.61117,
+            "longitude": -71.90617,
+            "probability": 0.0777
+          },
+          {
+            "latitude": -15.68453,
+            "longitude": -72.18327,
+            "probability": 0.0752
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.78
+    },
+    "khibiny": {
+      "model": "geoclip",
+      "answer": "64.49468, 60.02518",
+      "parsed": {
+        "predictions": [
+          {
+            "latitude": 64.49468,
+            "longitude": 60.02518,
+            "probability": 0.3373
+          },
+          {
+            "latitude": 64.49468,
+            "longitude": 60.02518,
+            "probability": 0.3373
+          },
+          {
+            "latitude": 67.60083,
+            "longitude": 33.76,
+            "probability": 0.0166
+          },
+          {
+            "latitude": 67.90014,
+            "longitude": 18.32174,
+            "probability": 0.0131
+          },
+          {
+            "latitude": 69.06817,
+            "longitude": 20.76583,
+            "probability": 0.0088
+          }
+        ]
+      },
+      "text": "",
+      "latency_s": 0.75
+    }
+  },
+  "gaea": {
+    "atacama": {
+      "model": "gaea",
+      "answer": "San Pedro de Atacama, Chile",
+      "parsed": null,
+      "text": "San Pedro de Atacama, Chile",
+      "latency_s": 3.99
+    },
+    "altiplano": {
+      "model": "gaea",
+      "answer": "San Pedro de Atacama, Chile",
+      "parsed": null,
+      "text": "San Pedro de Atacama, Chile",
+      "latency_s": 1.11
+    },
+    "patagonia": {
+      "model": "gaea",
+      "answer": "San Carlos de Bariloche, Argentina",
+      "parsed": null,
+      "text": "San Carlos de Bariloche, Argentina",
+      "latency_s": 1.62
+    },
+    "tierra_del_fuego": {
+      "model": "gaea",
+      "answer": "Ushuaia, Argentina",
+      "parsed": null,
+      "text": "Ushuaia, Argentina",
+      "latency_s": 1.0
+    },
+    "damaraland": {
+      "model": "gaea",
+      "answer": "Tsumeb, Namibia",
+      "parsed": null,
+      "text": "Tsumeb, Namibia",
+      "latency_s": 1.01
+    },
+    "namib": {
+      "model": "gaea",
+      "answer": "Tamanrasset, Algeria",
+      "parsed": null,
+      "text": "Tamanrasset, Algeria",
+      "latency_s": 1.01
+    },
+    "tassili": {
+      "model": "gaea",
+      "answer": "Aswan, Egypt",
+      "parsed": null,
+      "text": "Aswan, Egypt",
+      "latency_s": 0.85
+    },
+    "simien": {
+      "model": "gaea",
+      "answer": "Gondar, Ethiopia",
+      "parsed": null,
+      "text": "Gondar, Ethiopia",
+      "latency_s": 0.93
+    },
+    "maasai_mara": {
+      "model": "gaea",
+      "answer": "Kihancha, Kenya",
+      "parsed": null,
+      "text": "Kihancha, Kenya",
+      "latency_s": 0.99
+    },
+    "iceland_highlands": {
+      "model": "gaea",
+      "answer": "Laugar, Iceland",
+      "parsed": null,
+      "text": "Laugar, Iceland",
+      "latency_s": 0.88
+    },
+    "glen_coe": {
+      "model": "gaea",
+      "answer": "Fort William, United Kingdom",
+      "parsed": null,
+      "text": "Fort William, United Kingdom",
+      "latency_s": 0.72
+    },
+    "svalbard": {
+      "model": "gaea",
+      "answer": "Hveragerdi, Iceland",
+      "parsed": null,
+      "text": "Hveragerdi, Iceland",
+      "latency_s": 1.0
+    },
+    "lapland": {
+      "model": "gaea",
+      "answer": "Kolari, Finland",
+      "parsed": null,
+      "text": "Kolari, Finland",
+      "latency_s": 0.94
+    },
+    "altai": {
+      "model": "gaea",
+      "answer": "Koktokay, China",
+      "parsed": null,
+      "text": "Koktokay, China",
+      "latency_s": 0.68
+    },
+    "charyn": {
+      "model": "gaea",
+      "answer": "Boulder City, United States",
+      "parsed": null,
+      "text": "Boulder City, United States",
+      "latency_s": 1.0
+    },
+    "song_kol": {
+      "model": "gaea",
+      "answer": "Khoton, Mongolia",
+      "parsed": null,
+      "text": "Khoton, Mongolia",
+      "latency_s": 0.94
+    },
+    "ladakh": {
+      "model": "gaea",
+      "answer": "Leh, India",
+      "parsed": null,
+      "text": "Leh, India",
+      "latency_s": 0.85
+    },
+    "mongolia_steppe": {
+      "model": "gaea",
+      "answer": "Ulaanbaatar, Mongolia",
+      "parsed": null,
+      "text": "Ulaanbaatar, Mongolia",
+      "latency_s": 1.05
+    },
+    "gobi": {
+      "model": "gaea",
+      "answer": "Kashi, China",
+      "parsed": null,
+      "text": "Kashi, China",
+      "latency_s": 0.88
+    },
+    "wahiba": {
+      "model": "gaea",
+      "answer": "Doha, Qatar",
+      "parsed": null,
+      "text": "Doha, Qatar",
+      "latency_s": 0.85
+    },
+    "denali_hwy": {
+      "model": "gaea",
+      "answer": "Healy, United States",
+      "parsed": null,
+      "text": "Healy, United States",
+      "latency_s": 0.78
+    },
+    "tombstone": {
+      "model": "gaea",
+      "answer": "Seceda, Italy",
+      "parsed": null,
+      "text": "Seceda, Italy",
+      "latency_s": 0.88
+    },
+    "kangerlussuaq": {
+      "model": "gaea",
+      "answer": "Kangerlussuaq, Greenland",
+      "parsed": null,
+      "text": "Kangerlussuaq, Greenland",
+      "latency_s": 1.11
+    },
+    "colca": {
+      "model": "gaea",
+      "answer": "Chivay, Peru",
+      "parsed": null,
+      "text": "Chivay, Peru",
+      "latency_s": 0.93
+    },
+    "khibiny": {
+      "model": "gaea",
+      "answer": "Setermoen, Norway",
+      "parsed": null,
+      "text": "Setermoen, Norway",
+      "latency_s": 0.98
+    }
+  },
+  "qwen": {
+    "atacama": {
+      "model": "qwen",
+      "answer": "Volcan Licancabur, near San Pedro de Atacama, San Pedro de Atacama, Atacama Desert, Chile",
+      "parsed": {
+        "country": "Chile",
+        "region": "Atacama Desert",
+        "city": "San Pedro de Atacama",
+        "specific_location": "Volcan Licancabur, near San Pedro de Atacama",
+        "latitude": -23.45,
+        "longitude": -68.05,
+        "confidence": 0.85,
+        "clues": [
+          "volcanic mountain",
+          "arid landscape",
+          "clear blue sky",
+          "dry vegetation"
+        ]
+      },
+      "text": "{\"country\": \"Chile\", \"region\": \"Atacama Desert\", \"city\": \"San Pedro de Atacama\", \"specific_location\": \"Volcan Licancabur, near San Pedro de Atacama\", \"latitude\": -23.45, \"longitude\": -68.05, \"confidence\": 0.85, \"clues\": [\"volcanic mountain\", \"arid landscape\", \"clear blue sky\", \"dry vegetation\"]}",
+      "latency_s": 10.83
+    },
+    "altiplano": {
+      "model": "qwen",
+      "answer": "Salinas Grandes Salt Flats, Uyuni, Altiplano, Bolivia",
+      "parsed": {
+        "country": "Bolivia",
+        "region": "Altiplano",
+        "city": "Uyuni",
+        "specific_location": "Salinas Grandes Salt Flats",
+        "latitude": -19.25,
+        "longitude": -66.1,
+        "confidence": 0.75,
+        "clues": [
+          "salt flats",
+          "arid landscape",
+          "mountain range"
+        ]
+      },
+      "text": "{\"country\": \"Bolivia\", \"region\": \"Altiplano\", \"city\": \"Uyuni\", \"specific_location\": \"Salinas Grandes Salt Flats\", \"latitude\": -19.25, \"longitude\": -66.1, \"confidence\": 0.75, \"clues\": [\"salt flats\", \"arid landscape\", \"mountain range\"]}",
+      "latency_s": 5.69
+    },
+    "patagonia": {
+      "model": "qwen",
+      "answer": "Lake George, Bathurst, New South Wales, Australia",
+      "parsed": {
+        "country": "Australia",
+        "region": "New South Wales",
+        "city": "Bathurst",
+        "specific_location": "Lake George",
+        "latitude": -32.85,
+        "longitude": 149.15,
+        "confidence": 0.65,
+        "clues": [
+          "sheep grazing",
+          "clear blue water",
+          "grassland"
+        ]
+      },
+      "text": "{\"country\": \"Australia\", \"region\": \"New South Wales\", \"city\": \"Bathurst\", \"specific_location\": \"Lake George\", \"latitude\": -32.85, \"longitude\": 149.15, \"confidence\": 0.65, \"clues\": [\"sheep grazing\", \"clear blue water\", \"grassland\"]}",
+      "latency_s": 5.93
+    },
+    "tierra_del_fuego": {
+      "model": "qwen",
+      "answer": "Beagle Channel, Ushuaia, Tierra del Fuego, Argentina",
+      "parsed": {
+        "country": "Argentina",
+        "region": "Tierra del Fuego",
+        "city": "Ushuaia",
+        "specific_location": "Beagle Channel",
+        "latitude": -54.98,
+        "longitude": -68.02,
+        "confidence": 0.75,
+        "clues": [
+          "mountainous landscape",
+          "large body of water",
+          "small boat",
+          "overcast sky"
+        ]
+      },
+      "text": "{\"country\": \"Argentina\", \"region\": \"Tierra del Fuego\", \"city\": \"Ushuaia\", \"specific_location\": \"Beagle Channel\", \"latitude\": -54.98, \"longitude\": -68.02, \"confidence\": 0.75, \"clues\": [\"mountainous landscape\", \"large body of water\", \"small boat\", \"overcast sky\"]}",
+      "latency_s": 5.94
+    },
+    "damaraland": {
+      "model": "qwen",
+      "answer": "Namib-Naukluft National Park, near Twyfelfontein, Windhoek, Damaraland, Namibia",
+      "parsed": {
+        "country": "Namibia",
+        "region": "Damaraland",
+        "city": "Windhoek",
+        "specific_location": "Namib-Naukluft National Park, near Twyfelfontein",
+        "latitude": -22.5,
+        "longitude": 15.5,
+        "confidence": 0.65,
+        "clues": [
+          "rock formations",
+          "arid landscape",
+          "clear blue sky"
+        ]
+      },
+      "text": "{\"country\": \"Namibia\", \"region\": \"Damaraland\", \"city\": \"Windhoek\", \"specific_location\": \"Namib-Naukluft National Park, near Twyfelfontein\", \"latitude\": -22.5, \"longitude\": 15.5, \"confidence\": 0.65, \"clues\": [\"rock formations\", \"arid landscape\", \"clear blue sky\"]}",
+      "latency_s": 6.13
+    },
+    "namib": {
+      "model": "qwen",
+      "answer": "Dead Vlei, near Sossusvlei, Sossusvlei, Namib Desert, Namibia",
+      "parsed": {
+        "country": "Namibia",
+        "region": "Namib Desert",
+        "city": "Sossusvlei",
+        "specific_location": "Dead Vlei, near Sossusvlei",
+        "latitude": -22.86,
+        "longitude": 15.97,
+        "confidence": 0.85,
+        "clues": [
+          "dry, barren landscape",
+          "red sand dunes",
+          "dead trees"
+        ]
+      },
+      "text": "{\"country\": \"Namibia\", \"region\": \"Namib Desert\", \"city\": \"Sossusvlei\", \"specific_location\": \"Dead Vlei, near Sossusvlei\", \"latitude\": -22.86, \"longitude\": 15.97, \"confidence\": 0.85, \"clues\": [\"dry, barren landscape\", \"red sand dunes\", \"dead trees\"]}",
+      "latency_s": 6.07
+    },
+    "tassili": {
+      "model": "qwen",
+      "answer": "Desert highway, unknown, Western Desert, Egypt",
+      "parsed": {
+        "country": "Egypt",
+        "region": "Western Desert",
+        "city": "unknown",
+        "specific_location": "Desert highway",
+        "latitude": 25.0,
+        "longitude": 30.0,
+        "confidence": 0.6,
+        "clues": [
+          "desert landscape",
+          "sand dunes",
+          "road markings",
+          "clear sky"
+        ]
+      },
+      "text": "{\"country\": \"Egypt\", \"region\": \"Western Desert\", \"city\": \"unknown\", \"specific_location\": \"Desert highway\", \"latitude\": 25.0, \"longitude\": 30.0, \"confidence\": 0.6, \"clues\": [\"desert landscape\", \"sand dunes\", \"road markings\", \"clear sky\"]}",
+      "latency_s": 5.2
+    },
+    "simien": {
+      "model": "qwen",
+      "answer": "Simien Mountains National Park, Mekelle, Tigray, Ethiopia",
+      "parsed": {
+        "country": "Ethiopia",
+        "region": "Tigray",
+        "city": "Mekelle",
+        "specific_location": "Simien Mountains National Park",
+        "latitude": 13.25,
+        "longitude": 38.5,
+        "confidence": 0.75,
+        "clues": [
+          "mountainous terrain",
+          "rocky cliffs",
+          "herd of cattle",
+          "sparse vegetation"
+        ]
+      },
+      "text": "{\"country\": \"Ethiopia\", \"region\": \"Tigray\", \"city\": \"Mekelle\", \"specific_location\": \"Simien Mountains National Park\", \"latitude\": 13.25, \"longitude\": 38.5, \"confidence\": 0.75, \"clues\": [\"mountainous terrain\", \"rocky cliffs\", \"herd of cattle\", \"sparse vegetation\"]}",
+      "latency_s": 5.94
+    },
+    "maasai_mara": {
+      "model": "qwen",
+      "answer": "Maasai Mara National Reserve, N/A, Maasai Mara, Kenya",
+      "parsed": {
+        "country": "Kenya",
+        "region": "Maasai Mara",
+        "city": "N/A",
+        "specific_location": "Maasai Mara National Reserve",
+        "latitude": -1.85,
+        "longitude": 35.05,
+        "confidence": 0.85,
+        "clues": [
+          "zebras",
+          "grassland",
+          "savanna"
+        ]
+      },
+      "text": "{\"country\": \"Kenya\", \"region\": \"Maasai Mara\", \"city\": \"N/A\", \"specific_location\": \"Maasai Mara National Reserve\", \"latitude\": -1.85, \"longitude\": 35.05, \"confidence\": 0.85, \"clues\": [\"zebras\", \"grassland\", \"savanna\"]}",
+      "latency_s": 5.42
+    },
+    "iceland_highlands": {
+      "model": "qwen",
+      "answer": "Geothermal area near Reykjanes Peninsula, Reykjavík, South, Iceland",
+      "parsed": {
+        "country": "Iceland",
+        "region": "South",
+        "city": "Reykjavík",
+        "specific_location": "Geothermal area near Reykjanes Peninsula",
+        "latitude": 64.15,
+        "longitude": -21.95,
+        "confidence": 0.75,
+        "clues": [
+          "geothermal activity",
+          "volcanic landscape",
+          "hot springs"
+        ]
+      },
+      "text": "{\"country\": \"Iceland\", \"region\": \"South\", \"city\": \"Reykjavík\", \"specific_location\": \"Geothermal area near Reykjanes Peninsula\", \"latitude\": 64.15, \"longitude\": -21.95, \"confidence\": 0.75, \"clues\": [\"geothermal activity\", \"volcanic landscape\", \"hot springs\"]}",
+      "latency_s": 5.8
+    },
+    "glen_coe": {
+      "model": "qwen",
+      "answer": "Glencoe Valley, Glencoe, Scotland, United Kingdom",
+      "parsed": {
+        "country": "United Kingdom",
+        "region": "Scotland",
+        "city": "Glencoe",
+        "specific_location": "Glencoe Valley",
+        "latitude": 56.17,
+        "longitude": -4.6,
+        "confidence": 0.85,
+        "clues": [
+          "mountainous landscape",
+          "green valley",
+          "scenic path"
+        ]
+      },
+      "text": "{\"country\": \"United Kingdom\", \"region\": \"Scotland\", \"city\": \"Glencoe\", \"specific_location\": \"Glencoe Valley\", \"latitude\": 56.17, \"longitude\": -4.60, \"confidence\": 0.85, \"clues\": [\"mountainous landscape\", \"green valley\", \"scenic path\"]}",
+      "latency_s": 5.12
+    },
+    "svalbard": {
+      "model": "qwen",
+      "answer": "Borgarfjörður, Borgarnes, Snaefellsnes Peninsula, Iceland",
+      "parsed": {
+        "country": "Iceland",
+        "region": "Snaefellsnes Peninsula",
+        "city": "Borgarnes",
+        "specific_location": "Borgarfjörður",
+        "latitude": 64.55,
+        "longitude": -21.05,
+        "confidence": 0.75,
+        "clues": [
+          "snow-covered mountains",
+          "ice-covered landscape",
+          "dog on leash"
+        ]
+      },
+      "text": "{\"country\": \"Iceland\", \"region\": \"Snaefellsnes Peninsula\", \"city\": \"Borgarnes\", \"specific_location\": \"Borgarfjörður\", \"latitude\": 64.55, \"longitude\": -21.05, \"confidence\": 0.75, \"clues\": [\"snow-covered mountains\", \"ice-covered landscape\", \"dog on leash\"]}",
+      "latency_s": 5.96
+    },
+    "lapland": {
+      "model": "qwen",
+      "answer": "Kautokeino, near the mountain, Kautokeino, Norwegian Arctic, Norway",
+      "parsed": {
+        "country": "Norway",
+        "region": "Norwegian Arctic",
+        "city": "Kautokeino",
+        "specific_location": "Kautokeino, near the mountain",
+        "latitude": 68.5,
+        "longitude": 20.5,
+        "confidence": 0.7,
+        "clues": [
+          "mountain with snow patches",
+          "northern vegetation",
+          "small wooden structure"
+        ]
+      },
+      "text": "{\"country\": \"Norway\", \"region\": \"Norwegian Arctic\", \"city\": \"Kautokeino\", \"specific_location\": \"Kautokeino, near the mountain\", \"latitude\": 68.5, \"longitude\": 20.5, \"confidence\": 0.7, \"clues\": [\"mountain with snow patches\", \"northern vegetation\", \"small wooden structure\"]}",
+      "latency_s": 5.77
+    },
+    "altai": {
+      "model": "qwen",
+      "answer": "Mountains near Lhasa, Lhasa, Tibet, China",
+      "parsed": {
+        "country": "China",
+        "region": "Tibet",
+        "city": "Lhasa",
+        "specific_location": "Mountains near Lhasa",
+        "latitude": 29.6579,
+        "longitude": 91.1044,
+        "confidence": 0.6,
+        "clues": [
+          "mountainous terrain",
+          "sparse vegetation",
+          "rocky slopes",
+          "clear blue sky"
+        ]
+      },
+      "text": "{\n  \"country\": \"China\",\n  \"region\": \"Tibet\",\n  \"city\": \"Lhasa\",\n  \"specific_location\": \"Mountains near Lhasa\",\n  \"latitude\": 29.6579,\n  \"longitude\": 91.1044,\n  \"confidence\": 0.6,\n  \"clues\": [\"mountainous terrain\", \"sparse vegetation\", \"rocky slopes\", \"clear blue sky\"]\n}",
+      "latency_s": 6.33
+    },
+    "charyn": {
+      "model": "qwen",
+      "answer": "Desert landscape near Tucson, Tucson, Arizona, United States",
+      "parsed": {
+        "country": "United States",
+        "region": "Arizona",
+        "city": "Tucson",
+        "specific_location": "Desert landscape near Tucson",
+        "latitude": 32.15,
+        "longitude": -110.67,
+        "confidence": 0.65,
+        "clues": [
+          "arid desert terrain",
+          "sparse vegetation",
+          "clear blue sky"
+        ]
+      },
+      "text": "{\"country\": \"United States\", \"region\": \"Arizona\", \"city\": \"Tucson\", \"specific_location\": \"Desert landscape near Tucson\", \"latitude\": 32.15, \"longitude\": -110.67, \"confidence\": 0.65, \"clues\": [\"arid desert terrain\", \"sparse vegetation\", \"clear blue sky\"]}",
+      "latency_s": 5.47
+    },
+    "song_kol": {
+      "model": "qwen",
+      "answer": "Lake Khuvsgul, Ulgii, Uvs, Mongolia",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Uvs",
+        "city": "Ulgii",
+        "specific_location": "Lake Khuvsgul",
+        "latitude": 60.0,
+        "longitude": 100.0,
+        "confidence": 0.6,
+        "clues": [
+          "large lake",
+          "mountainous terrain",
+          "sparse vegetation"
+        ]
+      },
+      "text": "{\"country\": \"Mongolia\", \"region\": \"Uvs\", \"city\": \"Ulgii\", \"specific_location\": \"Lake Khuvsgul\", \"latitude\": 60.0, \"longitude\": 100.0, \"confidence\": 0.6, \"clues\": [\"large lake\", \"mountainous terrain\", \"sparse vegetation\"]}",
+      "latency_s": 5.41
+    },
+    "ladakh": {
+      "model": "qwen",
+      "answer": "Zanskar Highway, near Zanskar, Leh, Ladakh, India",
+      "parsed": {
+        "country": "India",
+        "region": "Ladakh",
+        "city": "Leh",
+        "specific_location": "Zanskar Highway, near Zanskar",
+        "latitude": 33.03,
+        "longitude": 80.03,
+        "confidence": 0.75,
+        "clues": [
+          "high mountain range",
+          "winding road",
+          "sparse vegetation"
+        ]
+      },
+      "text": "{\"country\": \"India\", \"region\": \"Ladakh\", \"city\": \"Leh\", \"specific_location\": \"Zanskar Highway, near Zanskar\", \"latitude\": 33.03, \"longitude\": 80.03, \"confidence\": 0.75, \"clues\": [\"high mountain range\", \"winding road\", \"sparse vegetation\"]}",
+      "latency_s": 5.61
+    },
+    "mongolia_steppe": {
+      "model": "qwen",
+      "answer": "Gobi Desert, Ulaanbaatar, Northern Mongolia, Mongolia",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Northern Mongolia",
+        "city": "Ulaanbaatar",
+        "specific_location": "Gobi Desert",
+        "latitude": 47.68,
+        "longitude": 106.34,
+        "confidence": 0.65,
+        "clues": [
+          "Przewalski's horse",
+          "open grassland",
+          "sparse vegetation"
+        ]
+      },
+      "text": "{\"country\": \"Mongolia\", \"region\": \"Northern Mongolia\", \"city\": \"Ulaanbaatar\", \"specific_location\": \"Gobi Desert\", \"latitude\": 47.68, \"longitude\": 106.34, \"confidence\": 0.65, \"clues\": [\"Przewalski's horse\", \"open grassland\", \"sparse vegetation\"]}",
+      "latency_s": 5.74
+    },
+    "gobi": {
+      "model": "qwen",
+      "answer": "Highland area near Ulaanbaatar, Ulaanbaatar, Central Mongolia, Mongolia",
+      "parsed": {
+        "country": "Mongolia",
+        "region": "Central Mongolia",
+        "city": "Ulaanbaatar",
+        "specific_location": "Highland area near Ulaanbaatar",
+        "latitude": 47.12,
+        "longitude": 106.92,
+        "confidence": 0.65,
+        "clues": [
+          "mountainous terrain",
+          "road sign with goat symbol",
+          "dirt road"
+        ]
+      },
+      "text": "{\"country\": \"Mongolia\", \"region\": \"Central Mongolia\", \"city\": \"Ulaanbaatar\", \"specific_location\": \"Highland area near Ulaanbaatar\", \"latitude\": 47.12, \"longitude\": 106.92, \"confidence\": 0.65, \"clues\": [\"mountainous terrain\", \"road sign with goat symbol\", \"dirt road\"]}",
+      "latency_s": 6.17
+    },
+    "wahiba": {
+      "model": "qwen",
+      "answer": "Dubai Desert Conservation Reserve, Dubai, Dubai, United Arab Emirates",
+      "parsed": {
+        "country": "United Arab Emirates",
+        "region": "Dubai",
+        "city": "Dubai",
+        "specific_location": "Dubai Desert Conservation Reserve",
+        "latitude": 25.2001,
+        "longitude": 55.2744,
+        "confidence": 0.75,
+        "clues": [
+          "sand dunes",
+          "sparse vegetation",
+          "desert landscape"
+        ]
+      },
+      "text": "{\"country\": \"United Arab Emirates\", \"region\": \"Dubai\", \"city\": \"Dubai\", \"specific_location\": \"Dubai Desert Conservation Reserve\", \"latitude\": 25.2001, \"longitude\": 55.2744, \"confidence\": 0.75, \"clues\": [\"sand dunes\", \"sparse vegetation\", \"desert landscape\"]}",
+      "latency_s": 5.66
+    },
+    "denali_hwy": {
+      "model": "qwen",
+      "answer": "Kluane Lake, Whitehorse, Yukon, Canada",
+      "parsed": {
+        "country": "Canada",
+        "region": "Yukon",
+        "city": "Whitehorse",
+        "specific_location": "Kluane Lake",
+        "latitude": 60.12,
+        "longitude": -135.08,
+        "confidence": 0.75,
+        "clues": [
+          "mountainous landscape",
+          "lake",
+          "dirt road"
+        ]
+      },
+      "text": "{\"country\": \"Canada\", \"region\": \"Yukon\", \"city\": \"Whitehorse\", \"specific_location\": \"Kluane Lake\", \"latitude\": 60.12, \"longitude\": -135.08, \"confidence\": 0.75, \"clues\": [\"mountainous landscape\", \"lake\", \"dirt road\"]}",
+      "latency_s": 5.22
+    },
+    "tombstone": {
+      "model": "qwen",
+      "answer": "Voss, Sogn og Fjordane, Voss, Sogn og Fjordane, Norway",
+      "parsed": {
+        "country": "Norway",
+        "region": "Sogn og Fjordane",
+        "city": "Voss",
+        "specific_location": "Voss, Sogn og Fjordane",
+        "latitude": 60.75,
+        "longitude": 5.95,
+        "confidence": 0.65,
+        "clues": [
+          "mountainous terrain",
+          "rocky peaks",
+          "cloudy sky"
+        ]
+      },
+      "text": "{\"country\": \"Norway\", \"region\": \"Sogn og Fjordane\", \"city\": \"Voss\", \"specific_location\": \"Voss, Sogn og Fjordane\", \"latitude\": 60.75, \"longitude\": 5.95, \"confidence\": 0.65, \"clues\": [\"mountainous terrain\", \"rocky peaks\", \"cloudy sky\"]}",
+      "latency_s": 6.06
+    },
+    "kangerlussuaq": {
+      "model": "qwen",
+      "answer": "Ilulissat Icefjord, Ilulissat, East Greenland, Greenland",
+      "parsed": {
+        "country": "Greenland",
+        "region": "East Greenland",
+        "city": "Ilulissat",
+        "specific_location": "Ilulissat Icefjord",
+        "latitude": 67.02,
+        "longitude": -51.42,
+        "confidence": 0.65,
+        "clues": [
+          "rocky terrain",
+          "icebergs",
+          "mountains"
+        ]
+      },
+      "text": "{\"country\": \"Greenland\", \"region\": \"East Greenland\", \"city\": \"Ilulissat\", \"specific_location\": \"Ilulissat Icefjord\", \"latitude\": 67.02, \"longitude\": -51.42, \"confidence\": 0.65, \"clues\": [\"rocky terrain\", \"icebergs\", \"mountains\"]}",
+      "latency_s": 5.7
+    },
+    "colca": {
+      "model": "qwen",
+      "answer": "Colca Canyon, Cusco, Cusco Region, Peru",
+      "parsed": {
+        "country": "Peru",
+        "region": "Cusco Region",
+        "city": "Cusco",
+        "specific_location": "Colca Canyon",
+        "latitude": -14.05,
+        "longitude": -71.95,
+        "confidence": 0.85,
+        "clues": [
+          "deep canyon",
+          "rugged mountains",
+          "tourists on viewing platform",
+          "dry landscape"
+        ]
+      },
+      "text": "{\"country\": \"Peru\", \"region\": \"Cusco Region\", \"city\": \"Cusco\", \"specific_location\": \"Colca Canyon\", \"latitude\": -14.05, \"longitude\": -71.95, \"confidence\": 0.85, \"clues\": [\"deep canyon\", \"rugged mountains\", \"tourists on viewing platform\", \"dry landscape\"]}",
+      "latency_s": 5.83
+    },
+    "khibiny": {
+      "model": "qwen",
+      "answer": "Jotunheimen National Park, near Trondheim, Trondheim, Sør-Trøndelag, Norway",
+      "parsed": {
+        "country": "Norway",
+        "region": "Sør-Trøndelag",
+        "city": "Trondheim",
+        "specific_location": "Jotunheimen National Park, near Trondheim",
+        "latitude": 63.41,
+        "longitude": 10.39,
+        "confidence": 0.65,
+        "clues": [
+          "mountainous terrain",
+          "sparse vegetation",
+          "ski lift infrastructure"
+        ]
+      },
+      "text": "{\"country\": \"Norway\", \"region\": \"Sør-Trøndelag\", \"city\": \"Trondheim\", \"specific_location\": \"Jotunheimen National Park, near Trondheim\", \"latitude\": 63.41, \"longitude\": 10.39, \"confidence\": 0.65, \"clues\": [\"mountainous terrain\", \"sparse vegetation\", \"ski lift infrastructure\"]}",
+      "latency_s": 6.08
+    }
+  },
+  "pixtral": {
+    "atacama": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "altiplano": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "patagonia": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "tierra_del_fuego": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "damaraland": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "namib": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "tassili": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "simien": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "maasai_mara": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "iceland_highlands": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "glen_coe": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "svalbard": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "lapland": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "altai": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "charyn": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "song_kol": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "ladakh": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "mongolia_steppe": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "gobi": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "wahiba": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "denali_hwy": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "tombstone": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "kangerlussuaq": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "colca": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    },
+    "khibiny": {
+      "model": "pixtral",
+      "error": "ValueError('can only concatenate str (not \"list\") to str')"
+    }
+  }
+}

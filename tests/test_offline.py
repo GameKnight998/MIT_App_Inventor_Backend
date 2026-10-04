@@ -635,6 +635,56 @@ def _t17():
         O.forward_geocode_candidates = original
 
 
+@check("a far-away homonym of a pinned candidate is dropped, a nearby match kept")
+def _t17b():
+    import utils.osint as O
+
+    def hit(lat, lon):
+        return {"latitude": lat, "longitude": lon, "name": "Lapland",
+                "country": None, "region": None, "display_name": "Lapland"}
+
+    original = O.forward_geocode_candidates
+    try:
+        O.forward_geocode_candidates = lambda q, limit=3: [
+            hit(67.9, 26.5),   # ~60 km away: a refinement
+            hit(45.0, -93.0),  # another continent: a homonym
+        ]
+        cand = {"name": "Lapland", "confidence": 0.7, "latitude": 68.4, "longitude": 27.0}
+        hyps = O._hypotheses_for_candidate(cand, 0.0)
+        assert [h["source"] for h in hyps] == ["vision_coordinates", "vision_geocoded"], hyps
+        assert hyps[1]["latitude"] == 67.9, hyps
+        # Without model coordinates there is nothing to drift from: keep both.
+        assert len(O._hypotheses_for_candidate({"name": "Lapland", "confidence": 0.7}, 0.0)) == 2
+    finally:
+        O.forward_geocode_candidates = original
+
+
+@check("search areas lead with the pin, rank the rest and merge overlaps")
+def _t17c():
+    import utils.osint as O
+
+    result = {"latitude": 36.10, "longitude": -116.10, "location_name": "Pin",
+              "confidence": 0.4, "source": "vision_coordinates",
+              "verification": {"status": "partial"}}
+    hyps = [
+        {"name": "Pin", "latitude": 36.10, "longitude": -116.10, "base": 0.6,
+         "source": "vision_coordinates", "verification": {"status": "partial"}},
+        {"name": "Near", "latitude": 36.15, "longitude": -116.12, "base": 0.5,
+         "source": "vision_geocoded", "verification": {"status": "mismatch"}},
+        {"name": "Weak", "latitude": 38.0, "longitude": -117.0, "base": 0.3,
+         "source": "vision_coordinates", "verification": {"status": "mismatch"}},
+        {"name": "Strong", "latitude": 39.5, "longitude": -119.8, "base": 0.5,
+         "source": "vision_coordinates"},
+    ]
+    areas = O._build_search_areas(result, hyps)
+    names = [a["name"] for a in areas]
+    assert names == ["Pin", "Strong", "Weak"], names
+    assert [a["rank"] for a in areas] == [1, 2, 3]
+    assert areas[0]["search_radius_km"] == 15.0
+    assert areas[1]["map_status"] == "untested"
+    assert O._build_search_areas({}, []) == []
+
+
 @check("street refinement rewrites the location and relabels the source")
 def _t18():
     import utils.osint as O

@@ -204,8 +204,13 @@ _SYSTEM_PROMPT = (
     "- Provide up to 3 candidates. Each confidence and the top-level confidence "
     "are 0.0-1.0. Do not invent text you cannot actually read.\n"
     "- Pin each candidate on the specific landmark, street, building or "
-    "shoreline in the photo, not the city or region centroid. Coordinates must "
-    "be accurate to within 2 km of the real camera position."
+    "shoreline in the photo, not the city or region centroid. Aim for within "
+    "2 km of the real camera position.\n"
+    "- ALWAYS give numeric latitude/longitude for every candidate, even when "
+    "unsure: use your best estimate of the most likely spot (or the centre of "
+    "the area you mean) and express uncertainty through `confidence`, never by "
+    "leaving coordinates null. Keep `name` a short, geocodable place name (e.g. "
+    "'Ushuaia, Beagle Channel'), not a description of the view."
 )
 
 _ROUTER_SYSTEM = (

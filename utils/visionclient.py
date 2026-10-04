@@ -44,6 +44,13 @@ _MAGIC = (
 
 VISION_TIMEOUT = float(os.getenv("VISION_TIMEOUT", "60"))
 VISION_MAX_TOKENS = int(os.getenv("VISION_MAX_TOKENS", "2000"))
+
+# OpenAI reasoning models (GPT-5 family, o-series) reject `temperature` and
+# count hidden reasoning against `max_completion_tokens`, so they need a larger
+# budget and timeout; answers took up to ~40 s on the remote-terrain benchmark.
+_REASONING_PREFIXES = ("gpt-5", "o1", "o3", "o4")
+REASONING_MAX_TOKENS = int(os.getenv("VISION_REASONING_MAX_TOKENS", "16000"))
+REASONING_TIMEOUT = float(os.getenv("VISION_REASONING_TIMEOUT", "180"))
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
 
@@ -157,11 +164,19 @@ def _call_openai(
 
     data, mime = _read(image_path)
     b64 = base64.b64encode(data).decode("utf-8")
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=VISION_TIMEOUT)
+    model = model_name()
+    if model.startswith(_REASONING_PREFIXES):
+        timeout = max(VISION_TIMEOUT, REASONING_TIMEOUT)
+        limits: dict[str, Any] = {
+            "max_completion_tokens": max(max_tokens, REASONING_MAX_TOKENS)
+        }
+    else:
+        timeout = VISION_TIMEOUT
+        limits = {"temperature": temperature, "max_tokens": max_tokens}
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=timeout)
     resp = client.chat.completions.create(
-        model=model_name(),
-        temperature=temperature,
-        max_tokens=max_tokens,
+        model=model,
+        **limits,
         response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": system},

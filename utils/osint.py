@@ -42,6 +42,22 @@ from utils.verify import VERIFY_RADIUS_M, detect_expected_features, verify_locat
 
 MAX_VERIFY_ATTEMPTS = int(os.getenv("MAX_VERIFY_ATTEMPTS", "5"))
 GEO_CANDIDATES_PER_NAME = int(os.getenv("GEO_CANDIDATES_PER_NAME", "3"))
+# A geocoded match for a candidate's name farther than this from the coordinates
+# the model gave for that same candidate is a homonym (another "Lapland",
+# another "Tombstone"), not a refinement, and is dropped.
+GEOCODE_MAX_DRIFT_KM = float(os.getenv("GEOCODE_MAX_DRIFT_KM", "300"))
+# Search areas: distinct places worth searching, ranked, for callers (e.g.
+# missing-person searches) that need every plausible area rather than one pin.
+# Radii are the area to sweep around each point, by how well the map backed it.
+MAX_SEARCH_AREAS = int(os.getenv("MAX_SEARCH_AREAS", "8"))
+_SEARCH_RADIUS_KM = {
+    "verified": 5.0,
+    "skipped": 15.0,
+    "partial": 15.0,
+    "unavailable": 25.0,
+    "untested": 25.0,
+    "mismatch": 50.0,
+}
 # Candidates whose coordinates fall within this distance of each other are
 # treated as the same geographic region for cluster reporting (#11).
 CLUSTER_RADIUS_KM = float(os.getenv("CLUSTER_RADIUS_KM", "150"))
@@ -394,6 +410,10 @@ def _hypotheses_for_candidate(
             p for p in (name, cand.get("region"), cand.get("country")) if p
         )
         for g in forward_geocode_candidates(query, GEO_CANDIDATES_PER_NAME):
+            if _has_coords(cand) and _haversine_km(
+                cand["latitude"], cand["longitude"], g["latitude"], g["longitude"]
+            ) > GEOCODE_MAX_DRIFT_KM:
+                continue
             options.append(
                 {
                     "name": name or g.get("name"),
@@ -631,6 +651,7 @@ def _select_location(
         "alternatives": alternatives,
         "name_only": name_only,
         "attempts": attempts,
+        "hypotheses": [hyp for _, hyp in plan],
     }
 
 
@@ -663,6 +684,7 @@ def determine_location(
                 result["evidence"].append(f"Forensics: {note}")
                 break
     _attach_defined_radius(result)
+    result["search_areas"] = _build_search_areas(result, result.pop("_hypotheses", []))
     result["reasoning_trace"] = _build_reasoning_trace(
         result, metadata, vision, forensics
     )
@@ -756,6 +778,7 @@ def _determine_core(
             vision, chosen.get("name"), selection["alternatives"]
         )
         result["rejected"] = selection["rejected"][:5]
+        result["_hypotheses"] = selection["hypotheses"]
         if report:
             result["verification"] = report
 
@@ -952,6 +975,73 @@ def _merge_alternatives(
     for entry in extra:
         add(entry)
     return alts[:3]
+
+
+def _build_search_areas(
+    result: dict[str, Any], hypotheses: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Rank every distinct place considered into areas to search, best first.
+
+    The final pin always leads. Every other hypothesis -- including ones the map
+    contradicted, since OpenStreetMap is sparse in remote terrain -- follows by
+    its AI confidence scaled by how well the map backed it. A point already
+    inside a higher-ranked area's radius adds nothing to search and is merged.
+    """
+    areas: list[dict[str, Any]] = []
+
+    def add(entry: dict[str, Any]) -> None:
+        for area in areas:
+            if _haversine_km(
+                area["latitude"], area["longitude"], entry["latitude"], entry["longitude"]
+            ) <= area["search_radius_km"]:
+                return
+        areas.append(entry)
+
+    if _has_coords(result):
+        status = (result.get("verification") or {}).get("status", "skipped")
+        precision = result.get("precision_m")
+        radius = (
+            max(float(precision) / 1000, 0.05)
+            if precision is not None
+            else _SEARCH_RADIUS_KM.get(status, 25.0)
+        )
+        add(
+            {
+                "name": result.get("location_name"),
+                "country": result.get("country"),
+                "latitude": result["latitude"],
+                "longitude": result["longitude"],
+                "search_radius_km": round(radius, 2),
+                "score": round(float(result.get("confidence", 0.0)), 3),
+                "map_status": status,
+                "source": result.get("source"),
+            }
+        )
+
+    others = []
+    for hyp in hypotheses:
+        status = (hyp.get("verification") or {}).get("status", "untested")
+        factor = _STATUS_FACTOR.get(status, 0.7)
+        others.append((hyp.get("base", 0.0) * factor, status, hyp))
+    others.sort(key=lambda item: item[0], reverse=True)
+    for score, status, hyp in others:
+        add(
+            {
+                "name": hyp.get("name"),
+                "country": hyp.get("country"),
+                "latitude": hyp["latitude"],
+                "longitude": hyp["longitude"],
+                "search_radius_km": _SEARCH_RADIUS_KM.get(status, 25.0),
+                "score": round(_clamp(score), 3),
+                "map_status": status,
+                "source": hyp.get("source"),
+            }
+        )
+
+    areas = areas[:MAX_SEARCH_AREAS]
+    for rank, area in enumerate(areas, 1):
+        area["rank"] = rank
+    return areas
 
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -1367,6 +1457,9 @@ def apply_vehicle_signal(
         result["confidence"] = _fuse_confidence(signals)
     elif status == "conflict":
         result["confidence"] = _clamp(result.get("confidence", 0.0) * 0.85)
+    areas = result.get("search_areas") or []
+    if areas and areas[0].get("source") == result.get("source"):
+        areas[0]["score"] = round(float(result["confidence"]), 3)
 
     if status == "conflict" and not result.get("warning"):
         result["warning"] = result["vehicle_check"]["note"]

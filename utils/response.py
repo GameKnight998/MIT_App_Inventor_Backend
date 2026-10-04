@@ -130,6 +130,9 @@ def build_response(
         "verified": location.get("verification", {}).get("status", "skipped"),
         "warning": location.get("warning", ""),
         "alternatives": location.get("alternatives", []),
+        # Every distinct place worth searching, ranked, each with a sweep radius
+        # (km). The pin above is rank 1; use the rest when it comes up empty.
+        "search_areas": location.get("search_areas", []),
         # Locations that were tried and crossed out because the scene did not
         # match their real-world surroundings.
         "rejected": location.get("rejected", []),
@@ -208,6 +211,7 @@ def error_response(message: str, *, filename: str | None = None) -> dict[str, An
         "verified": "skipped",
         "warning": "",
         "alternatives": [],
+        "search_areas": [],
         "rejected": [],
         "nearby_places": [],
         "alternative_clusters": [],

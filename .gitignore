@@ -15,6 +15,12 @@ uploads/*
 # Local test fixtures (downloaded sample images)
 testdata/
 
+# Model benchmark: re-downloadable photos and per-run logs
+eval/model_bench/images/
+eval/model_bench/log_*.txt
+eval/model_bench/err_*.txt
+eval/model_bench/*_cache.json
+
 # Python caches
 __pycache__/
 *.py[cod]

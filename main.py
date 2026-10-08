@@ -22,6 +22,9 @@ Endpoints:
     POST /analyze-video  a short clip (key frames are fused)
     POST /case           several images analysed and cross-referenced
     GET  /case/{id}      a stored case
+    POST /gps-test       accuracy test: geotagged photos are stripped, located
+                         blind and scored against their own GPS (background job)
+    GET  /gps-test/{id}  progress, accuracy summary and per-image results
     GET  /ui             browser interface
 
 App Inventor's Web component cannot send multipart/form-data, so the upload
@@ -50,7 +53,7 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from starlette.concurrency import run_in_threadpool
 
-from utils import casestore, geocode, streetlevel, synthetic, vehicle
+from utils import casestore, geocode, gpstest, streetlevel, synthetic, vehicle
 from utils.cache import parallel_map
 from utils.clustering import cluster_multi_image_candidates
 from utils.exif import extract_exif
@@ -85,6 +88,9 @@ CASE_MAX_IMAGES = int(os.getenv("CASE_MAX_IMAGES", "6"))
 # How many images of a case to analyse at once. Each one makes several vision
 # calls, so this stays low deliberately.
 CASE_PARALLEL_IMAGES = int(os.getenv("CASE_PARALLEL_IMAGES", "2"))
+# Accuracy testing holds a whole folder in memory while its job runs.
+GPS_TEST_ENABLED = os.getenv("GPS_TEST_ENABLED", "1") not in ("0", "false", "False")
+GPS_TEST_MAX_BYTES = int(os.getenv("GPS_TEST_MAX_BYTES", str(150 * 1024 * 1024)))
 
 # Map Pillow's detected format to a file extension for saving.
 _FORMAT_EXT = {
@@ -143,7 +149,14 @@ def root(request: Request):
         content={
             "status": "ok",
             "message": "Image Locator backend is running.",
-            "endpoints": ["/analyze", "/analyze-video", "/case", "/health", "/ui"],
+            "endpoints": [
+                "/analyze",
+                "/analyze-video",
+                "/case",
+                "/gps-test",
+                "/health",
+                "/ui",
+            ],
         }
     )
 
@@ -160,6 +173,7 @@ def health() -> dict[str, object]:
         "video_enabled": VIDEO_ENABLED and video_support_available(),
         "enhancement_enabled": enhancement_available(),
         "cases_enabled": casestore.CASE_ENABLED,
+        "gps_test_enabled": GPS_TEST_ENABLED,
         "web_ui": WEB_DIR.is_dir(),
         # Kept flat (no nesting) so App Inventor can read each flag directly.
         "street_refine_enabled": streetlevel.STREET_REFINE_ENABLED,
@@ -816,6 +830,85 @@ def remove_case(case_id: str) -> JSONResponse:
             status_code=404, content=error_response(f"Case {case_id} not found.")
         )
     return JSONResponse(status_code=200, content={"success": True, "case_id": case_id})
+
+
+@app.post("/gps-test")
+async def start_gps_test(request: Request) -> JSONResponse:
+    """Measure accuracy on photos whose true location is in their own EXIF GPS.
+
+    Send the folder's images as multipart file parts (or JSON
+    `{"images": [...]}`). Each is stripped of location metadata, run through the
+    normal pipeline, and scored by distance from its GPS. `?mode=all` strips all
+    metadata instead of just location. Returns 202 with a job id; poll
+    `GET /gps-test/{job_id}` for progress and results.
+    """
+    if not GPS_TEST_ENABLED:
+        return JSONResponse(
+            status_code=503,
+            content=error_response("GPS accuracy testing is disabled on this server."),
+        )
+    mode = request.query_params.get("mode") or "location"
+    if mode not in gpstest.STRIP_MODES:
+        return JSONResponse(
+            status_code=400,
+            content=error_response(f"mode must be one of {list(gpstest.STRIP_MODES)}."),
+        )
+
+    media = await _extract_media_list(request)
+    if not media:
+        return JSONResponse(
+            status_code=400,
+            content=error_response(
+                "No images found. Send the folder's images as multipart file parts "
+                'or JSON {"images": [{"filename": ..., "image_base64": ...}]}.'
+            ),
+        )
+    if len(media) > gpstest.GPS_TEST_MAX_IMAGES:
+        return JSONResponse(
+            status_code=413,
+            content=error_response(
+                f"A test run holds at most {gpstest.GPS_TEST_MAX_IMAGES} images; "
+                f"got {len(media)}."
+            ),
+        )
+    if sum(len(data) for data, _ in media) > GPS_TEST_MAX_BYTES:
+        return JSONResponse(
+            status_code=413,
+            content=error_response(
+                f"A test run is limited to {GPS_TEST_MAX_BYTES // (1024 * 1024)} MB in total."
+            ),
+        )
+
+    images = [
+        (name or f"image_{i + 1}", data) for i, (data, name) in enumerate(media)
+    ]
+    job_id = gpstest.jobs.start(images, _analyze_image_bytes, mode)
+    return JSONResponse(
+        status_code=202,
+        content={
+            "success": True,
+            "job_id": job_id,
+            "status": "running",
+            "images": len(images),
+            "strip_mode": mode,
+            "status_url": f"/gps-test/{job_id}",
+        },
+    )
+
+
+@app.get("/gps-test/{job_id}")
+def read_gps_test(job_id: str) -> JSONResponse:
+    """Progress of an accuracy test; summary and per-image results once done."""
+    job = gpstest.jobs.get(job_id)
+    if job is None:
+        return JSONResponse(
+            status_code=404,
+            content=error_response(
+                f"Test job {job_id} not found (jobs are kept in memory and are "
+                "lost when the server restarts)."
+            ),
+        )
+    return JSONResponse(status_code=200, content={"success": True, **job})
 
 
 @app.on_event("startup")

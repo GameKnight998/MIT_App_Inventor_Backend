@@ -1141,6 +1141,134 @@ def _t25():
         ) = saved
 
 
+def _geotagged_jpeg(lat=(47, 50, 30.0), lon=(120, 1, 12.0), size=(320, 240)) -> bytes:
+    import io
+
+    exif = Image.Exif()
+    exif[0x010F] = "Canon"
+    exif[0x0132] = "2024:06:01 12:00:00"
+    exif[0x010E] = "Lake Chelan trip"
+    gps = exif.get_ifd(0x8825)
+    gps.update({1: "N", 2: lat, 3: "W", 4: lon})
+    buf = io.BytesIO()
+    Image.fromarray(
+        np.random.default_rng(5).integers(0, 255, (size[1], size[0], 3)).astype("uint8")
+    ).save(
+        buf, format="JPEG", exif=exif.tobytes(),
+        xmp=b'<x:xmpmeta><exif:GPSLatitude>47,50.5N</exif:GPSLatitude></x:xmpmeta>',
+    )
+    return buf.getvalue()
+
+
+@check("GPS stripping removes location tags, keeps camera/time, and never re-compresses")
+def _t26():
+    from utils import gpstest as G
+    from utils.exif import extract_exif
+    import io
+
+    data = _geotagged_jpeg()
+    truth = G.read_gps(data)
+    assert truth and abs(truth["latitude"] - 47.841667) < 1e-4, truth
+    assert truth["longitude"] < 0, truth
+
+    stripped = G.strip_location(data, "location")
+    assert G.read_gps(stripped) is None
+    meta = extract_exif(io.BytesIO(stripped))
+    assert meta["camera"]["make"] == "Canon", meta["camera"]
+    assert meta["timestamp"] == "2024:06:01 12:00:00", meta["timestamp"]
+    assert "ImageDescription" not in meta["raw"], "captions leak the answer"
+    assert b"GPSLatitude" not in stripped, "XMP GPS must go too"
+    sos = lambda b: b[b.index(b"\xff\xda"):]
+    assert sos(stripped) == sos(data), "compressed image data must be untouched"
+
+    bare = G.strip_location(data, "all")
+    assert extract_exif(io.BytesIO(bare))["has_exif"] is False
+    with Image.open(io.BytesIO(bare)) as img:
+        assert img.size == (320, 240)
+
+    png = io.BytesIO()
+    with Image.open(io.BytesIO(data)) as img:
+        img.save(png, format="PNG", exif=img.getexif().tobytes())
+    assert G.read_gps(png.getvalue()) is not None
+    assert G.read_gps(G.strip_location(png.getvalue())) is None
+
+
+@check("the GPS test scores each image, skips untagged ones and summarises accuracy")
+def _t27():
+    from utils import gpstest as G
+    import io
+
+    near = _geotagged_jpeg()                              # 47.8417, -120.02
+    far = _geotagged_jpeg(lat=(36, 30, 0.0), lon=(116, 0, 0.0))  # 36.5, -116.0
+    plain = io.BytesIO()
+    Image.new("RGB", (64, 64)).save(plain, format="JPEG")
+
+    seen = []
+
+    def analyze(data, name):
+        seen.append(G.read_gps(data))
+        payload = {
+            "success": True, "latitude": 47.84, "longitude": -120.03,
+            "location_name": "Lake Chelan", "country": "United States",
+            "confidence": 0.7, "source": "Map-verified",
+            "search_areas": [
+                {"rank": 1, "latitude": 47.84, "longitude": -120.03, "search_radius_km": 5},
+                {"rank": 2, "latitude": 36.6, "longitude": -116.1, "search_radius_km": 25},
+            ],
+        }
+        return 200, payload
+
+    report = G.run_test(
+        [("near.jpg", near), ("far.jpg", far), ("plain.jpg", plain.getvalue())],
+        analyze, parallel=1,
+    )
+    assert seen == [None, None], "the backend must only ever see stripped images"
+    cases = {c["filename"]: c for c in report["cases"]}
+    assert cases["plain.jpg"]["status"] == "skipped"
+    assert cases["near.jpg"]["error_km"] < 1.5, cases["near.jpg"]
+    assert cases["near.jpg"]["within_defined_radius"] is True
+    assert cases["near.jpg"]["search_area_hit_rank"] == 1
+    assert cases["far.jpg"]["error_km"] > 1000, cases["far.jpg"]
+    assert cases["far.jpg"]["search_area_hit_rank"] == 2, "a lower-ranked area still counts"
+
+    s = report["summary"]
+    assert (s["images"], s["tested"], s["skipped"], s["answered"]) == (3, 2, 1, 2), s
+    assert s["within_defined_radius"] == 0.5
+    assert s["accuracy"]["750km"] == 0.5 and s["search_area_hit_rate"] == 1.0, s
+
+
+@check("the /gps-test endpoint runs a background job and reports the results")
+def _t28():
+    import time
+    import main
+    from fastapi.testclient import TestClient
+
+    original = main._analyze_image_bytes
+    main._analyze_image_bytes = lambda data, name, ct="(none)": (
+        200, {"success": True, "latitude": 47.84, "longitude": -120.03,
+              "confidence": 0.5, "search_areas": []},
+    )
+    try:
+        client = TestClient(main.app)
+        resp = client.post(
+            "/gps-test", files=[("images", ("a.jpg", _geotagged_jpeg(), "image/jpeg"))]
+        )
+        assert resp.status_code == 202, resp.text
+        job_id = resp.json()["job_id"]
+        for _ in range(100):
+            job = client.get(f"/gps-test/{job_id}").json()
+            if job["status"] != "running":
+                break
+            time.sleep(0.05)
+        assert job["status"] == "done", job
+        assert job["completed"] == 1 and job["summary"]["tested"] == 1, job
+        assert job["cases"][0]["error_km"] < 1.5, job["cases"]
+        assert client.post("/gps-test?mode=bogus", files=[("i", ("a.jpg", b"x"))]).status_code == 400
+        assert client.get("/gps-test/missing").status_code == 404
+    finally:
+        main._analyze_image_bytes = original
+
+
 # --------------------------------------------------------------------------
 def main_() -> int:
     passed = sum(1 for _, ok, _ in _results if ok)

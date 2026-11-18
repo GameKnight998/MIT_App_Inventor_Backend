@@ -15,11 +15,19 @@ uploads/*
 # Local test fixtures (downloaded sample images)
 testdata/
 
+# Live geolocation benchmark (images re-fetchable; cache may hold API payloads)
+eval/images/
+eval/cache/
+eval/results/
+
 # Model benchmark: re-downloadable photos and per-run logs
 eval/model_bench/images/
 eval/model_bench/log_*.txt
 eval/model_bench/err_*.txt
 eval/model_bench/*_cache.json
+# Terrain geolocation bench photos (re-fetchable from Commons)
+eval/terrain_bench/**/*.jpg
+eval/terrain_bench/fetch_log.txt
 
 # Python caches
 __pycache__/

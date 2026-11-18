@@ -14,6 +14,16 @@ from typing import Any, Optional
 
 from utils.osint import DEFINED_RADIUS_KM, DEFINED_RADIUS_M
 
+try:
+    from utils.visionclient import model_name as _vision_model_name
+    from utils.visionclient import provider as _vision_provider_name
+except Exception:  # pragma: no cover
+    def _vision_model_name() -> str:
+        return "unknown"
+
+    def _vision_provider_name() -> str:
+        return "unknown"
+
 # Turn the internal machine source codes into readable labels (no underscores).
 _SOURCE_LABELS = {
     "exif_gps": "GPS metadata",
@@ -117,6 +127,9 @@ def build_response(
         ),
         "map_url": _map_url(lat, lon),
         "confidence": round(float(location.get("confidence", 0.0)), 3),
+        # Which vision backend produced the candidates (for debugging / eval).
+        "vision_provider": _vision_provider_name(),
+        "vision_model": _vision_model_name(),
         # Friendly, underscore-free source label for display.
         "source": _source_label(source_code),
         "summary": _build_summary(name, country, lat, lon, meets),
@@ -202,6 +215,8 @@ def error_response(message: str, *, filename: str | None = None) -> dict[str, An
         "coordinates": "Latitude Unknown Longitude Unknown",
         "map_url": None,
         "confidence": 0.0,
+        "vision_provider": _vision_provider_name(),
+        "vision_model": _vision_model_name(),
         "source": "Error",
         "summary": message,
         "defined_radius_km": DEFINED_RADIUS_KM,

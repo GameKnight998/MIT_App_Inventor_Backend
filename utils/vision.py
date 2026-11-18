@@ -16,7 +16,7 @@ import json
 import os
 from typing import Any
 
-VISION_MODEL = os.getenv("VISION_MODEL", "gpt-4o")
+VISION_MODEL = os.getenv("VISION_MODEL", "gpt-6.1-terra")
 
 # Boolean scene descriptors. Emitted as a structured object so downstream
 # verification never has to grep free-text wording (which was brittle).

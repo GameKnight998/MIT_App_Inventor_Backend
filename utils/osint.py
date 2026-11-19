@@ -704,7 +704,16 @@ def _select_location(
     # Erg Chebbi). The only allowed overturn: the top pin misses a named
     # landmark that is itself a later AI candidate whose coords match that name.
     picks: list[tuple[dict[str, Any], dict[str, Any], dict[str, Any]]] = []
+    bridge_names: set[str] = set()
     for cand, hyps in buckets:
+        # After the top pick, only score peers whose names appear in the missed
+        # landmark note (possible bridge targets) — skip the rest.
+        if picks and bridge_names:
+            cname = str((hyps[0] if hyps else {}).get("name") or cand.get("name") or "")
+            if cname.lower() not in bridge_names and not any(
+                cname.lower() in b or b in cname.lower() for b in bridge_names if len(b) >= 4
+            ):
+                continue
         pick = _best_in_bucket(cand, hyps)
         if pick is None:
             continue
@@ -713,6 +722,16 @@ def _select_location(
         top_named = (picks[0][2] or {}).get("named") or {}
         if top_named.get("landmark_status") != "missed":
             break
+        if len(picks) == 1:
+            note = (top_named.get("note") or "").lower()
+            bridge_names = {
+                str(c.get("name") or "").strip().lower()
+                for c, _hyps in buckets[1:4]
+                if str(c.get("name") or "").strip()
+                and str(c.get("name") or "").strip().lower() in note
+            }
+            if not bridge_names:
+                break
         if len(picks) >= 4 or attempts >= MAX_VERIFY_ATTEMPTS:
             break
 

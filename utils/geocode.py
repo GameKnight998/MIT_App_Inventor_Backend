@@ -246,17 +246,19 @@ def forward_geocode_candidates(query: str, limit: int = 3) -> list[dict[str, Any
         return []
 
     limit_n = max(1, min(int(limit), 10))
-    hits = _nominatim_search(
+    # Prefer Open-Meteo when Nominatim is rate-limited: it is free, fast, and
+    # covers peaks/cities well. Fall back to Nominatim for POIs Open-Meteo misses.
+    hits = _open_meteo_candidates(query, limit_n)
+    if hits:
+        return hits[:limit_n]
+    return _nominatim_search(
         {
             "q": query.strip(),
             "format": "jsonv2",
             "limit": limit_n,
             "addressdetails": 1,
         }
-    )
-    if hits:
-        return hits[:limit_n]
-    return _open_meteo_candidates(query, limit_n)[:limit_n]
+    )[:limit_n]
 
 
 def forward_geocode(query: str) -> Optional[dict[str, Any]]:

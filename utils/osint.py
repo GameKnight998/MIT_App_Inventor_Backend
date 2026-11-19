@@ -657,13 +657,27 @@ def _select_location(
         nonlocal fallback
         best: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
         best_key: Optional[tuple[float, int, float]] = None
+        vision_missed = False
         for hyp in hyps:
+            # Skip geocode peers while a vision-coordinate hyp is still in play;
+            # only consider them after the model pin is place-vetoed. Blindly
+            # preferring a cleaner geocode of the same name caused urban losses.
+            if (
+                hyp.get("source") == "vision_geocoded"
+                and best is not None
+                and best[0].get("source") == "vision_coordinates"
+                and not vision_missed
+            ):
+                alternatives.append(_alt(hyp))
+                continue
             if attempts >= MAX_VERIFY_ATTEMPTS and hyp.get("verification") is None:
                 alternatives.append(_alt(hyp))
                 continue
             report = _evaluate(hyp)
             named = report.get("named") or {}
             if named.get("place_status") == "missed":
+                if hyp.get("source") == "vision_coordinates":
+                    vision_missed = True
                 rejected.append(
                     {
                         "name": hyp.get("name"),
@@ -685,32 +699,39 @@ def _select_location(
                 best_key = key
         return best
 
-    # Default: AI order. Soft-rank peers only when the top candidate is low-
-    # confidence (ambiguous peak lists, etc.); otherwise a clean geocode of a
-    # wrong same-named school can overturn a correct pin.
-    _AI_RANK_PENALTY = 0.15
-    _SOFT_RANK_CONF = 0.4
-    scored: list[tuple[float, dict[str, Any], dict[str, Any], dict[str, Any]]] = []
-    for cand_index, (cand, hyps) in enumerate(buckets):
+    # AI order first. Soft verify-ranking across candidates is unsafe while
+    # geocoders know some wrong peers better than the right one (Erg Chegaga vs
+    # Erg Chebbi). The only allowed overturn: the top pin misses a named
+    # landmark that is itself a later AI candidate whose coords match that name.
+    picks: list[tuple[dict[str, Any], dict[str, Any], dict[str, Any]]] = []
+    for cand, hyps in buckets:
         pick = _best_in_bucket(cand, hyps)
         if pick is None:
             continue
         hyp, report = pick
-        score = _verify_rank(report) - _AI_RANK_PENALTY * cand_index
-        score += 0.01 * float(hyp.get("cand_conf") or 0.0)
-        scored.append((score, cand, hyp, report))
-        top_conf = float(scored[0][2].get("cand_conf") or 0.0)
-        # Confident top lock: do not shop later candidates.
-        if cand_index == 0 and top_conf >= _SOFT_RANK_CONF:
+        picks.append((cand, hyp, report))
+        top_named = (picks[0][2] or {}).get("named") or {}
+        if top_named.get("landmark_status") != "missed":
             break
-        # Low-conf top: compare up to 3 candidates then stop.
-        if cand_index >= 2 or attempts >= MAX_VERIFY_ATTEMPTS:
+        if len(picks) >= 4 or attempts >= MAX_VERIFY_ATTEMPTS:
             break
 
-    if scored:
-        scored.sort(key=lambda row: row[0], reverse=True)
-        _, chosen_cand, chosen, chosen_report = scored[0]
-        for _, _cand, hyp, _report in scored[1:]:
+    if picks:
+        chosen_cand, chosen, chosen_report = picks[0]
+        top_named = (chosen_report or {}).get("named") or {}
+        if top_named.get("landmark_status") == "missed":
+            note = (top_named.get("note") or "").lower()
+            for cand, hyp, report in picks[1:]:
+                name = str(hyp.get("name") or "").strip()
+                if len(name) < 4 or name.lower() not in note:
+                    continue
+                peer_named = (report or {}).get("named") or {}
+                if peer_named.get("place_status") == "matched":
+                    chosen_cand, chosen, chosen_report = cand, hyp, report
+                    break
+        for _cand, hyp, _report in picks:
+            if hyp is chosen:
+                continue
             alternatives.append(_alt(hyp))
     elif fallback is not None:
         chosen, chosen_report = fallback

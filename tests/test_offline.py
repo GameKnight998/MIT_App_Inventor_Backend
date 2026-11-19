@@ -723,9 +723,11 @@ def _t18():
         assert result["location_name"] == "85 Pike Street", result
         assert any("Pike Street" in e for e in result["evidence"]), result["evidence"]
 
-        # A map-contradicted region must not be refined into a precise wrong spot.
+        # Statuses outside the refine allow-list must not move the pin.
+        # (soft "mismatch" is intentionally refineable — AI-order may keep a
+        # regionally-right pin the map scored as a soft miss.)
         blocked = dict(result, source="vision_geocoded", evidence=[])
-        O._apply_street_refinement(blocked, {"scene": {"urban": True}}, "img.jpg", "mismatch")
+        O._apply_street_refinement(blocked, {"scene": {"urban": True}}, "img.jpg", "blocked")
         assert blocked["source"] == "vision_geocoded", blocked
     finally:
         O.refine_street_level = original
@@ -1104,7 +1106,7 @@ def _t25():
     )
     try:
         main.analyze_image = lambda path, scene_type=None: dict(fake_vision)
-        O.verify_location = lambda lat, lon, expected, radius=None: {
+        O.verify_location = lambda lat, lon, expected, radius=None, bands=None: {
             "status": "verified", "note": "ok (stub)", "expected": expected,
             "confirmed": list(expected), "missing": [], "context": [],
             "nearest_m": {}, "anchors": {}, "match_score": 1.0,
@@ -1265,6 +1267,102 @@ def _t28():
         assert job["cases"][0]["error_km"] < 1.5, job["cases"]
         assert client.post("/gps-test?mode=bogus", files=[("i", ("a.jpg", b"x"))]).status_code == 400
         assert client.get("/gps-test/missing").status_code == 404
+    finally:
+        main._analyze_image_bytes = original
+
+
+@check("GPS compare runs both providers on the same stripped photo and picks a winner")
+def _t29():
+    from utils import gpstest as G
+    from utils.visionclient import provider as vision_provider
+
+    calls: list[str] = []
+
+    def analyze(data, name):
+        calls.append(vision_provider())
+        assert G.read_gps(data) is None
+        # openai nearly on truth; gemini far away
+        if vision_provider() == "openai":
+            payload = {
+                "success": True, "latitude": 47.84, "longitude": -120.03,
+                "location_name": "Lake Chelan", "country": "United States",
+                "region": "Washington", "confidence": 0.8, "source": "AI",
+                "summary": "near", "verified": "verified", "search_areas": [],
+                "details": {"vision": {"candidates": [
+                    {"name": "Lake Chelan", "country": "United States",
+                     "latitude": 47.84, "longitude": -120.03, "confidence": 0.8}
+                ]}},
+            }
+        else:
+            payload = {
+                "success": True, "latitude": 36.5, "longitude": -116.0,
+                "location_name": "Death Valley", "country": "United States",
+                "region": "California", "confidence": 0.4, "source": "AI",
+                "summary": "far", "verified": "partial", "search_areas": [],
+                "details": {"vision": {"candidates": []}},
+            }
+        return 200, payload
+
+    report = G.run_compare(
+        [("near.jpg", _geotagged_jpeg())], analyze, parallel=1
+    )
+    assert calls == ["openai", "gemini"], calls
+    case = report["cases"][0]
+    assert case["winner"] == "openai", case
+    assert case["openai"]["error_km"] < 2, case["openai"]
+    assert case["gemini"]["error_km"] > 1000, case["gemini"]
+    assert case["openai"]["response"]["location_name"] == "Lake Chelan"
+    assert case["gemini"]["response"]["location_name"] == "Death Valley"
+    wins = report["summary"]["wins"]
+    assert wins["openai"] == 1 and wins["gemini"] == 0 and wins["tie"] == 0, wins
+    # Thread override must not leak after the compare finishes.
+    assert vision_provider() == (os.getenv("VISION_PROVIDER") or "openai").strip().lower()
+
+
+@check("the /gps-test?compare=1 endpoint returns a head-to-head job")
+def _t30():
+    import time
+    import main
+    from fastapi.testclient import TestClient
+    from utils.visionclient import provider as vision_provider
+
+    original = main._analyze_image_bytes
+
+    def fake(data, name, ct="(none)"):
+        if vision_provider() == "gemini":
+            return 200, {
+                "success": True, "latitude": 36.5, "longitude": -116.0,
+                "location_name": "Far", "country": "US", "confidence": 0.3,
+                "search_areas": [], "details": {"vision": {}},
+            }
+        return 200, {
+            "success": True, "latitude": 47.84, "longitude": -120.03,
+            "location_name": "Near", "country": "US", "confidence": 0.7,
+            "search_areas": [], "details": {"vision": {}},
+        }
+
+    main._analyze_image_bytes = fake
+    try:
+        client = TestClient(main.app)
+        resp = client.post(
+            "/gps-test?compare=1",
+            files=[("images", ("a.jpg", _geotagged_jpeg(), "image/jpeg"))],
+        )
+        assert resp.status_code == 202, resp.text
+        assert resp.json()["mode"] == "compare"
+        job_id = resp.json()["job_id"]
+        for _ in range(200):
+            job = client.get(f"/gps-test/{job_id}").json()
+            if job["status"] != "running":
+                break
+            time.sleep(0.05)
+        assert job["status"] == "done", job
+        assert job["summary"]["wins"]["openai"] == 1, job["summary"]
+        assert job["cases"][0]["winner"] == "openai"
+        assert job["cases"][0]["openai"]["response"]["location_name"] == "Near"
+        assert client.post(
+            "/gps-test?compare=claude", files=[("i", ("a.jpg", b"x"))]
+        ).status_code == 400
     finally:
         main._analyze_image_bytes = original
 

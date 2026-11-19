@@ -29,13 +29,43 @@ import requests
 
 from utils.cache import cached
 
-NOMINATIM_URL = "https://nominatim.openstreetmap.org"
+NOMINATIM_URL = os.getenv(
+    "NOMINATIM_URL", "https://nominatim.openstreetmap.org"
+).rstrip("/")
 PHOTON_URL = os.getenv("PHOTON_URL", "https://photon.komoot.io/api")
+OPEN_METEO_GEOCODE_URL = os.getenv(
+    "OPEN_METEO_GEOCODE_URL", "https://geocoding-api.open-meteo.com/v1/search"
+)
 USER_AGENT = os.getenv(
     "GEOCODER_USER_AGENT", "ImageLocatorBackend/1.0 (MIT App Inventor capstone)"
 )
 TIMEOUT = float(os.getenv("GEOCODER_TIMEOUT", "8"))
 PHOTON_ENABLED = os.getenv("PHOTON_ENABLED", "1") not in ("0", "false", "False")
+OPEN_METEO_ENABLED = os.getenv("OPEN_METEO_GEOCODE", "1") not in (
+    "0",
+    "false",
+    "False",
+)
+# Nominatim public instances enforce ~1 req/s; keep a process-wide gate so
+# parallel prefetch does not earn a long 429 ban mid-eval.
+_NOMINATIM_MIN_INTERVAL = float(os.getenv("NOMINATIM_MIN_INTERVAL", "1.1"))
+_last_nominatim_at = 0.0
+_nominatim_lock = None
+
+
+def _nominatim_gate() -> None:
+    """Serialize Nominatim calls and pace them to the usage policy."""
+    global _last_nominatim_at, _nominatim_lock
+    if _nominatim_lock is None:
+        import threading
+
+        _nominatim_lock = threading.Lock()
+    with _nominatim_lock:
+        now = time.monotonic()
+        wait = _NOMINATIM_MIN_INTERVAL - (now - _last_nominatim_at)
+        if wait > 0:
+            time.sleep(wait)
+        _last_nominatim_at = time.monotonic()
 
 # OSM keys that represent something specific enough to be a street-level answer.
 _STREET_LEVEL_TYPES = ("house", "street", "locality")
@@ -101,36 +131,132 @@ def _parse_result(item: dict[str, Any]) -> Optional[dict[str, Any]]:
     }
 
 
-@cached(cache_empty=False)
-def forward_geocode_candidates(query: str, limit: int = 3) -> list[dict[str, Any]]:
-    """Resolve a place name to up to `limit` ranked real-world matches.
+def _parse_open_meteo(item: dict[str, Any]) -> Optional[dict[str, Any]]:
+    """Normalise an Open-Meteo geocoding hit into our standard shape."""
+    try:
+        lat = round(float(item["latitude"]), 6)
+        lon = round(float(item["longitude"]), 6)
+    except (KeyError, TypeError, ValueError):
+        return None
+    # GeoNames feature codes: MT=mountain, PPL=populated place, LK=lake, etc.
+    code = (item.get("feature_code") or "").upper()
+    osm_type = {
+        "MT": "peak",
+        "MTS": "mountain_range",
+        "VLC": "volcano",
+        "LK": "lake",
+        "BAY": "bay",
+        "CAPE": "cape",
+        "ISL": "island",
+        "PRK": "park",
+        "PPL": "city",
+        "PPLA": "city",
+        "PPLA2": "town",
+        "PPLA3": "village",
+        "PPLX": "suburb",
+        "STM": "river",
+        "FLLS": "waterfall",
+        "PASS": "saddle",
+        "HLL": "hill",
+    }.get(code, code.lower() or None)
+    admin = item.get("admin1") or item.get("admin2")
+    return {
+        "latitude": lat,
+        "longitude": lon,
+        "display_name": ", ".join(
+            p
+            for p in (item.get("name"), admin, item.get("country"))
+            if p
+        ),
+        "name": item.get("name"),
+        "country": item.get("country"),
+        "country_code": (item.get("country_code") or "").upper() or None,
+        "region": admin,
+        "importance": None,
+        "category": "natural" if code in {"MT", "MTS", "VLC", "HLL", "LK"} else "place",
+        "osm_type": osm_type,
+        "addresstype": osm_type,
+        "provider": "open-meteo",
+    }
 
-    A single HTTP request returns several candidates, which lets the caller try
-    the next real place when the first one fails verification (e.g. an ambiguous
-    name like "Springfield" that exists in many states).
-    """
-    if not _enabled() or not query or not query.strip():
+
+def _open_meteo_candidates(query: str, limit: int) -> list[dict[str, Any]]:
+    if not OPEN_METEO_ENABLED or not query or not query.strip():
         return []
-
+    # Open-Meteo matches best on the head name; strip trailing region hints.
+    name = query.strip().split(",")[0].strip()
+    if not name:
+        return []
     try:
         resp = requests.get(
-            f"{NOMINATIM_URL}/search",
+            OPEN_METEO_GEOCODE_URL,
             params={
-                "q": query.strip(),
-                "format": "jsonv2",
-                "limit": max(1, min(int(limit), 10)),
-                "addressdetails": 1,
+                "name": name,
+                "count": max(1, min(int(limit), 10)),
+                "language": "en",
+                "format": "json",
             },
             headers=_headers(),
             timeout=TIMEOUT,
         )
         resp.raise_for_status()
-        results = resp.json()
+        results = resp.json().get("results") or []
     except Exception:
         return []
-
-    parsed = [_parse_result(item) for item in results]
+    parsed = [_parse_open_meteo(item) for item in results]
     return [p for p in parsed if p is not None]
+
+
+def _nominatim_search(params: dict[str, Any]) -> list[dict[str, Any]]:
+    """GET Nominatim /search with pacing and one retry on 429."""
+    last_err: Optional[Exception] = None
+    for attempt in range(2):
+        try:
+            _nominatim_gate()
+            resp = requests.get(
+                f"{NOMINATIM_URL}/search",
+                params=params,
+                headers=_headers(),
+                timeout=TIMEOUT,
+            )
+            if resp.status_code == 429:
+                time.sleep(2.0 + attempt * 2.0)
+                last_err = RuntimeError("nominatim 429")
+                continue
+            resp.raise_for_status()
+            results = resp.json()
+            parsed = [_parse_result(item) for item in results]
+            return [p for p in parsed if p is not None]
+        except Exception as exc:
+            last_err = exc
+            time.sleep(0.5)
+    _ = last_err
+    return []
+
+
+@cached(cache_empty=False)
+def forward_geocode_candidates(query: str, limit: int = 3) -> list[dict[str, Any]]:
+    """Resolve a place name to up to `limit` ranked real-world matches.
+
+    Nominatim first (best OSM types); Open-Meteo as a free fallback when the
+    public Nominatim instance rate-limits or errors. A single request returns
+    several candidates so callers can try the next real place on ambiguity.
+    """
+    if not _enabled() or not query or not query.strip():
+        return []
+
+    limit_n = max(1, min(int(limit), 10))
+    hits = _nominatim_search(
+        {
+            "q": query.strip(),
+            "format": "jsonv2",
+            "limit": limit_n,
+            "addressdetails": 1,
+        }
+    )
+    if hits:
+        return hits[:limit_n]
+    return _open_meteo_candidates(query, limit_n)[:limit_n]
 
 
 def forward_geocode(query: str) -> Optional[dict[str, Any]]:
@@ -146,6 +272,7 @@ def reverse_geocode(latitude: float, longitude: float) -> Optional[dict[str, Any
         return None
 
     try:
+        _nominatim_gate()
         resp = requests.get(
             f"{NOMINATIM_URL}/reverse",
             params={
@@ -158,6 +285,21 @@ def reverse_geocode(latitude: float, longitude: float) -> Optional[dict[str, Any
             headers=_headers(),
             timeout=TIMEOUT,
         )
+        if resp.status_code == 429:
+            time.sleep(2.0)
+            _nominatim_gate()
+            resp = requests.get(
+                f"{NOMINATIM_URL}/reverse",
+                params={
+                    "lat": latitude,
+                    "lon": longitude,
+                    "format": "jsonv2",
+                    "addressdetails": 1,
+                    "zoom": 14,
+                },
+                headers=_headers(),
+                timeout=TIMEOUT,
+            )
         resp.raise_for_status()
         data = resp.json()
     except Exception:
@@ -201,27 +343,26 @@ def search_nearby(
     # viewbox: min_lon, max_lat, max_lon, min_lat
     viewbox = f"{lon - dlon},{lat + dlat},{lon + dlon},{lat - dlat}"
 
-    try:
-        resp = requests.get(
-            f"{NOMINATIM_URL}/search",
-            params={
-                "q": query.strip(),
-                "format": "jsonv2",
-                "limit": max(1, min(int(limit), 10)),
-                "addressdetails": 1,
-                "viewbox": viewbox,
-                "bounded": 1,
-            },
-            headers=_headers(),
-            timeout=TIMEOUT,
-        )
-        resp.raise_for_status()
-        results = resp.json()
-    except Exception:
-        return []
-
-    parsed = [_parse_result(item) for item in results]
-    return [p for p in parsed if p is not None]
+    hits = _nominatim_search(
+        {
+            "q": query.strip(),
+            "format": "jsonv2",
+            "limit": max(1, min(int(limit), 10)),
+            "addressdetails": 1,
+            "viewbox": viewbox,
+            "bounded": 1,
+        }
+    )
+    if hits:
+        return hits
+    # Unbounded Open-Meteo fallback, then filter to the search radius.
+    loose = _open_meteo_candidates(query, limit)
+    return [
+        h
+        for h in loose
+        if _distance_km(latitude, longitude, h["latitude"], h["longitude"])
+        <= radius_km
+    ]
 
 
 def _distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -374,6 +515,11 @@ def geocode_street(
     hit = usable(search_nearby(query, latitude, longitude, radius_km, limit))
     if hit is not None:
         hit.setdefault("provider", "nominatim")
+        return hit
+
+    hit = usable(_open_meteo_candidates(query, limit))
+    if hit is not None:
+        hit.setdefault("provider", "open-meteo")
         return hit
     return None
 

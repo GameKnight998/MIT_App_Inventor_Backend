@@ -31,9 +31,11 @@ LANDMARK_ENABLED = os.getenv("LANDMARK_VERIFY_ENABLED", "1") not in (
 )
 # How far a named lake/peak/city may sit from the guessed point and still count.
 # Lakes are long; a shoreline photo can be tens of km from the OSM centroid.
-PLACE_MATCH_KM = float(os.getenv("LANDMARK_PLACE_MATCH_KM", "50"))
+# Peaks/buildings should sit near the pin; lakes may still use a wider allowance
+# inside verify_named_and_water because OSM lake centroids are often offshore.
+PLACE_MATCH_KM = float(os.getenv("LANDMARK_PLACE_MATCH_KM", "20"))
 WATER_SEARCH_KM = float(os.getenv("LANDMARK_WATER_SEARCH_KM", "25"))
-LANDMARK_MATCH_KM = float(os.getenv("LANDMARK_MATCH_KM", "40"))
+LANDMARK_MATCH_KM = float(os.getenv("LANDMARK_MATCH_KM", "25"))
 
 # Place types specific enough that a large name↔coord gap is a real contradiction.
 _SPECIFIC_TYPES = {
@@ -80,10 +82,13 @@ _FEATURE_WORDS = (
     "loch",
     "reservoir",
     "mount",
+    "mont ",
+    "monte ",
     "mountain",
     "mt.",
     "mt ",
     "peak",
+    "aiguille",
     "river",
     "falls",
     "bay",
@@ -100,8 +105,17 @@ _FEATURE_WORDS = (
     "bridge",
     "cathedral",
     "temple",
+    "shrine",
     "mosque",
     "palace",
+    "castle",
+    "abbey",
+    "church",
+    "dunes",
+    "desert",
+    "fjord",
+    "beach",
+    "falls",
 )
 _BROAD_REGION = re.compile(
     r"\b(pacific northwest|midwest|new england|scandinavia|balkans|"
@@ -162,6 +176,11 @@ def _scene_wants_water(vision: Optional[dict[str, Any]], expected: list[str]) ->
     return "water" in (expected or []) or "coast" in (expected or [])
 
 
+def _water_in_foreground(vision: Optional[dict[str, Any]]) -> bool:
+    dist = (vision or {}).get("feature_distances") or {}
+    return dist.get("water") in ("at", "near") or dist.get("coast") in ("at", "near")
+
+
 def _is_water_hit(hit: dict[str, Any]) -> bool:
     kind = (hit.get("osm_type") or hit.get("addresstype") or "").lower()
     cat = (hit.get("category") or "").lower()
@@ -198,7 +217,7 @@ def prefetch_named_lookups(
     jobs: list[Any] = []
     for name in extract_named_features(vision):
         jobs.append(lambda n=name: forward_geocode_candidates(n, limit=3))
-    if _scene_wants_water(vision, expected or []):
+    if _scene_wants_water(vision, expected or []) and not _water_in_foreground(vision):
         for lat, lon in coords:
             jobs.append(
                 lambda la=lat, lo=lon: search_nearby(
@@ -237,16 +256,26 @@ def verify_named_and_water(
     notes: list[str] = []
 
     # 1. Does the candidate's own name actually live near these coordinates?
-    if place_name and _looks_like_named_feature(place_name):
-        geo = _geocode_one(place_name)
+    # Vision candidate names are already curated place strings, so always try
+    # geocoding them (not only names that contain English feature words like
+    # "Lake" / "Mount" — "Mont Blanc", "Jungfrau", "Sossusvlei" must count).
+    if place_name and str(place_name).strip():
+        geo = _geocode_one(str(place_name).strip())
         if geo and geo.get("latitude") is not None:
             dist = _haversine_km(
                 latitude, longitude, geo["latitude"], geo["longitude"]
             )
             report["place_distance_km"] = round(dist, 1)
             kind = (geo.get("osm_type") or geo.get("addresstype") or "").lower()
-            specific = kind in _SPECIFIC_TYPES or _looks_like_named_feature(place_name)
-            if specific and dist <= PLACE_MATCH_KM:
+            specific = (
+                kind in _SPECIFIC_TYPES
+                or _looks_like_named_feature(place_name)
+                or bool(kind)  # Open-Meteo / OSM typed hit
+            )
+            match_km = PLACE_MATCH_KM
+            if kind in _WATER_TYPES or kind in {"lake", "reservoir", "bay", "sea"}:
+                match_km = max(match_km, 50.0)
+            if specific and dist <= match_km:
                 report["place_status"] = "matched"
                 report["place_name"] = place_name
                 report["place_latitude"] = geo["latitude"]
@@ -255,11 +284,11 @@ def verify_named_and_water(
                 notes.append(
                     f"'{place_name}' geocodes {dist:.0f} km from this point."
                 )
-            elif specific and dist > PLACE_MATCH_KM:
+            elif specific and dist > match_km:
                 report["place_status"] = "missed"
                 notes.append(
                     f"'{place_name}' is actually ~{dist:.0f} km from these "
-                    f"coordinates (expected within {PLACE_MATCH_KM:.0f} km)."
+                    f"coordinates (expected within {match_km:.0f} km)."
                 )
 
     # 2. Named landmarks from vision near the point.
@@ -298,7 +327,12 @@ def verify_named_and_water(
         )
 
     # 3. Large named water body, when the scene claims a lake/coast/river.
-    if _scene_wants_water(vision, expected or []):
+    # A geocoded lake is a centroid, which says nothing about whether the shore
+    # is at the camera; when the photo shows water that close, the map-outline
+    # distance check in utils.verify decides instead.
+    if _water_in_foreground(vision):
+        pass
+    elif _scene_wants_water(vision, expected or []):
         hits = search_nearby("lake", latitude, longitude, WATER_SEARCH_KM, limit=5)
         water = next((h for h in hits if _is_water_hit(h)), None)
         if water is None:

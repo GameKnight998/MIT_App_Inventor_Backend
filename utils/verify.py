@@ -23,15 +23,17 @@ import requests
 from utils.cache import cache_get, cache_set
 
 # Prefer mirrors that answer from typical residential networks.
+# osm.ch is fast but has been observed returning empty around: results for
+# well-mapped alpine peaks; put the fuller French mirror first.
 _DEFAULT_OVERPASS = (
-    "https://overpass.osm.ch/api/interpreter,"
-    "https://overpass-api.de/api/interpreter,"
+    "https://overpass.openstreetmap.fr/api/interpreter,"
     "https://overpass.kumi.systems/api/interpreter,"
     "https://overpass.private.coffee/api/interpreter,"
-    "https://overpass.openstreetmap.fr/api/interpreter,"
+    "https://overpass-api.de/api/interpreter,"
+    "https://overpass.osm.ch/api/interpreter,"
     "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
 )
-_PREFERRED_OVERPASS = "https://overpass.osm.ch/api/interpreter"
+_PREFERRED_OVERPASS = "https://overpass.openstreetmap.fr/api/interpreter"
 
 
 def _load_overpass_endpoints() -> list[str]:
@@ -213,11 +215,16 @@ def _unavailable(note: str, expected: list[str]) -> dict[str, Any]:
     return _report("unavailable", note, expected)
 
 
-def _query_overpass(query: str) -> tuple[Optional[list[dict[str, Any]]], str]:
+def _query_overpass(
+    query: str, *, reject_empty: bool = False
+) -> tuple[Optional[list[dict[str, Any]]], str]:
     """Try each Overpass mirror in turn. Returns (elements, note).
 
     Serialized so parallel prefetch cannot stampede a mirror and trip the
-    breaker for the rest of the request.
+    breaker for the rest of the request. When `reject_empty` is set, an HTTP
+    200 with zero elements is treated as a soft miss and the next mirror is
+    tried — some mirrors silently return empty around: results for regions
+    they have not fully imported.
     """
     global _circuit_open_until, _consecutive_failures
 
@@ -234,6 +241,8 @@ def _query_overpass(query: str) -> tuple[Optional[list[dict[str, Any]]], str]:
                 "ImageLocatorBackend/1.0 (MIT App Inventor capstone)",
             )
         }
+        empty_ok: Optional[list[dict[str, Any]]] = None
+        empty_note = ""
         for url in OVERPASS_ENDPOINTS:
             if time.monotonic() - start > OVERPASS_TOTAL_BUDGET:
                 last_error = (
@@ -248,11 +257,22 @@ def _query_overpass(query: str) -> tuple[Optional[list[dict[str, Any]]], str]:
                     timeout=(OVERPASS_CONNECT_TIMEOUT, VERIFY_TIMEOUT + 5),
                 )
                 resp.raise_for_status()
+                elements = resp.json().get("elements", []) or []
+                if reject_empty and not elements:
+                    last_error = f"{url}: empty result"
+                    empty_ok = elements
+                    empty_note = f"ok via {url} (empty)"
+                    continue
                 _consecutive_failures = 0
-                return resp.json().get("elements", []), f"ok via {url}"
+                return elements, f"ok via {url}"
             except Exception as exc:
                 last_error = f"{url}: {exc}"
                 continue
+
+        if empty_ok is not None:
+            # Every mirror that answered returned nothing; accept empty.
+            _consecutive_failures = 0
+            return empty_ok, empty_note or last_error
 
         _consecutive_failures += 1
         if _consecutive_failures >= OVERPASS_BREAKER_FAILS:
@@ -303,7 +323,7 @@ def verify_location(
         f"out tags center 200;"
     )
 
-    elements, note = _query_overpass(query)
+    elements, note = _query_overpass(query, reject_empty=True)
     if elements is None:
         # Distinct from "skipped": we DID want to verify but couldn't reach the
         # map service, so the caller knows the result is simply unverified.
@@ -318,27 +338,37 @@ def verify_location(
     # Nearest anchor point per category (node coords, else the way/relation
     # "center"), used by the narrowing pass to re-centre on the real feature.
     anchors: dict[str, dict[str, float]] = {}
+    # around:radius should keep every hit nearby; anything farther is a bad
+    # mirror payload (or a lat/lon leak across elements) and must be ignored.
+    max_anchor_m = float(r) * 1.5
     for el in elements:
         cat = _classify(el.get("tags", {}) or {})
         if not cat:
             continue
-        present.add(cat)
+        plat: Optional[float] = None
+        plon: Optional[float] = None
         if el.get("type") == "node" and el.get("lat") is not None:
             plat, plon = float(el["lat"]), float(el["lon"])
-            dist = _haversine_m(latitude, longitude, plat, plon)
-            if cat not in nearest_node or dist < nearest_node[cat]:
-                nearest_node[cat] = round(dist, 1)
         else:
             center = el.get("center") or {}
-            plat = center.get("lat")
-            plon = center.get("lon")
+            if center.get("lat") is not None and center.get("lon") is not None:
+                plat, plon = float(center["lat"]), float(center["lon"])
         if plat is None or plon is None:
+            # Tag presence without a usable point still counts as "nearby"
+            # because Overpass around: already filtered the element.
+            present.add(cat)
             continue
-        adist = _haversine_m(latitude, longitude, float(plat), float(plon))
+        adist = _haversine_m(latitude, longitude, plat, plon)
+        if adist > max_anchor_m:
+            continue
+        present.add(cat)
+        if el.get("type") == "node":
+            if cat not in nearest_node or adist < nearest_node[cat]:
+                nearest_node[cat] = round(adist, 1)
         if cat not in anchors or adist < anchors[cat]["dist_m"]:
             anchors[cat] = {
-                "lat": round(float(plat), 6),
-                "lon": round(float(plon), 6),
+                "lat": round(plat, 6),
+                "lon": round(plon, 6),
                 "dist_m": round(adist, 1),
             }
 

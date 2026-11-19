@@ -98,17 +98,30 @@ def worth_refining(vision: Optional[dict[str, Any]]) -> bool:
 
     Skipping hopeless scenes is what keeps the second pass affordable: a forest
     has no shopfronts to read, so spending a vision call on it is pure cost.
+    Named landmarks and waterfronts still refine: the second pass can return a
+    model pin even when no street text is readable.
     """
     if not vision:
         return False
     scene = vision.get("scene") or {}
     if scene.get("urban") or scene.get("suburban"):
         return True
-    if vision.get("scene_type") in ("urban", "suburban", "indoor", "vehicle_interior"):
+    if vision.get("scene_type") in (
+        "urban",
+        "suburban",
+        "indoor",
+        "vehicle_interior",
+        "waterfront",
+    ):
         return True
     # Any readable text or a named landmark means there is something to ground.
     for key in ("ocr_text", "signage", "landmarks", "vehicles_plates"):
         if vision.get(key):
+            return True
+    # Distinctive terrain with a candidate name: allow a model pin refine.
+    if scene.get("mountains") or scene.get("coastline") or scene.get("beach"):
+        cands = vision.get("candidates") or []
+        if any((c or {}).get("name") for c in cands):
             return True
     return False
 
@@ -290,14 +303,77 @@ def refine_street_level(
                 s["distance_km"] if s["distance_km"] is not None else 1e9,
             )
         )
-        best = scored[0]
-        hit = best["_hit"]
-        moved = _haversine_km(latitude, longitude, hit["latitude"], hit["longitude"])
-        precision = _precision_for(best["method"], hit)
-        if street.get("precision_estimate_m"):
-            # Trust whichever source is more conservative.
-            precision = int(max(precision, min(street["precision_estimate_m"], 5000)))
+        # Only accept grounded, street-level features. A city/admin centroid
+        # "refinement" often moves the pin farther from the camera.
+        precise = [
+            s
+            for s in scored
+            if s["street_level"]
+            or s["method"] in ("address", "business", "intersection", "transit")
+        ]
+        if not precise:
+            result["note"] = (
+                "Geocoded clues only resolved to broad places; keeping the "
+                "regional estimate."
+            )
+        else:
+            best = precise[0]
+            hit = best["_hit"]
+            moved = _haversine_km(
+                latitude, longitude, hit["latitude"], hit["longitude"]
+            )
+            precision = _precision_for(best["method"], hit)
+            if street.get("precision_estimate_m"):
+                precision = int(
+                    max(precision, min(street["precision_estimate_m"], 5000))
+                )
+            if precision >= 1500:
+                result["note"] = (
+                    f"Rejected coarse geocode '{best['query']}' "
+                    f"(precision {precision} m); keeping the regional estimate."
+                )
+            else:
+                result.update(
+                    {
+                        "refined": True,
+                        "latitude": hit["latitude"],
+                        "longitude": hit["longitude"],
+                        "address": hit.get("display_name") or hit.get("name"),
+                        "precision_m": precision,
+                        "method": f"{best['method']}_geocode",
+                        "matched_query": best["query"],
+                        "distance_moved_km": round(moved, 2),
+                        "note": (
+                            f"Refined to {hit.get('display_name') or hit.get('name')} by "
+                            f"matching '{best['query']}' on the map "
+                            f"({moved:.1f} km from the regional estimate)."
+                        ),
+                    }
+                )
+                result["evidence"].append(result["note"])
+                return result
 
+    # Nothing street-grounded. Prefer a geocoded refined_place / landmark name
+    # inside the radius over trusting free model coordinates alone.
+    place_queries: list[str] = []
+    if street.get("refined_place"):
+        place_queries.append(str(street["refined_place"]))
+    for mark in (vision or {}).get("landmarks") or []:
+        if mark and str(mark) not in place_queries:
+            place_queries.append(str(mark))
+    for q in place_queries[:2]:
+        query = f"{q}, {city_hint}" if city_hint else q
+        hit = geocode_street(query, latitude, longitude, radius)
+        if not hit:
+            continue
+        moved = _haversine_km(latitude, longitude, hit["latitude"], hit["longitude"])
+        # Only snap when the name resolves near the regional pin; otherwise it
+        # is likely a homonym. Skip tiny moves that do not buy a tighter pin.
+        if moved < 0.15 or moved > min(radius, 12.0):
+            continue
+        precision = _precision_for("place", hit)
+        if precision >= 2000 and not is_street_level(hit):
+            continue
         result.update(
             {
                 "refined": True,
@@ -305,12 +381,12 @@ def refine_street_level(
                 "longitude": hit["longitude"],
                 "address": hit.get("display_name") or hit.get("name"),
                 "precision_m": precision,
-                "method": f"{best['method']}_geocode",
-                "matched_query": best["query"],
+                "method": "place_geocode",
+                "matched_query": query,
                 "distance_moved_km": round(moved, 2),
                 "note": (
                     f"Refined to {hit.get('display_name') or hit.get('name')} by "
-                    f"matching '{best['query']}' on the map "
+                    f"matching landmark '{query}' on the map "
                     f"({moved:.1f} km from the regional estimate)."
                 ),
             }
@@ -318,38 +394,46 @@ def refine_street_level(
         result["evidence"].append(result["note"])
         return result
 
-    # Nothing grounded. The model's own coordinates are a weak last resort, and
-    # only inside the radius so they cannot override the verified region.
+    # Model's own coordinates are a last resort, only inside the radius.
     mlat = street.get("refined_latitude")
     mlon = street.get("refined_longitude")
+    min_conf = STREET_REFINE_MIN_CONFIDENCE
+    # Wilderness / landmark scenes rarely have shopfronts; accept a slightly
+    # softer model pin when the refine pass still proposed coordinates.
+    scene = (vision or {}).get("scene") or {}
+    if scene.get("mountains") or scene.get("coastline") or scene.get("beach"):
+        min_conf = min(min_conf, 0.15)
     if (
         mlat is not None
         and mlon is not None
-        and street.get("confidence", 0.0) >= STREET_REFINE_MIN_CONFIDENCE
+        and street.get("confidence", 0.0) >= min_conf
         and _haversine_km(latitude, longitude, mlat, mlon) <= radius
     ):
         moved = _haversine_km(latitude, longitude, mlat, mlon)
-        result.update(
-            {
-                "refined": True,
-                "latitude": round(float(mlat), 6),
-                "longitude": round(float(mlon), 6),
-                "precision_m": int(
-                    max(
-                        _PRECISION_BY_METHOD["model_estimate"],
-                        min(street.get("precision_estimate_m") or 1500, 5000),
-                    )
-                ),
-                "method": "model_estimate",
-                "distance_moved_km": round(moved, 2),
-                "note": (
-                    "Refined using the model's own estimate; the named clues "
-                    "could not be confirmed on the map, so precision is coarse."
-                ),
-            }
-        )
-        result["evidence"].append(result["note"])
-        return result
+        est_m = street.get("precision_estimate_m") or 1500
+        # Ignore no-op jitters; keep moves that can pull a 2–10 km miss under 2 km.
+        if moved >= 0.2:
+            result.update(
+                {
+                    "refined": True,
+                    "latitude": round(float(mlat), 6),
+                    "longitude": round(float(mlon), 6),
+                    "precision_m": int(
+                        max(
+                            _PRECISION_BY_METHOD["model_estimate"],
+                            min(est_m, 5000),
+                        )
+                    ),
+                    "method": "model_estimate",
+                    "distance_moved_km": round(moved, 2),
+                    "note": (
+                        "Refined using the model's own estimate; the named clues "
+                        "could not be confirmed on the map, so precision is coarse."
+                    ),
+                }
+            )
+            result["evidence"].append(result["note"])
+            return result
 
     result["note"] = (
         "Street-level clues were read but none could be matched on the map "

@@ -48,7 +48,7 @@ VISION_MAX_TOKENS = int(os.getenv("VISION_MAX_TOKENS", "2000"))
 # OpenAI reasoning models (GPT-5 family, o-series) reject `temperature` and
 # count hidden reasoning against `max_completion_tokens`, so they need a larger
 # budget and timeout; answers took up to ~40 s on the remote-terrain benchmark.
-_REASONING_PREFIXES = ("gpt-5", "o1", "o3", "o4")
+_REASONING_PREFIXES = ("gpt-5", "gpt-6", "o1", "o3", "o4")
 REASONING_MAX_TOKENS = int(os.getenv("VISION_REASONING_MAX_TOKENS", "16000"))
 REASONING_TIMEOUT = float(os.getenv("VISION_REASONING_TIMEOUT", "180"))
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")

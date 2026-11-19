@@ -140,10 +140,11 @@ _SYSTEM_PROMPT = (
     "- Road markings, signage design, utility poles, bollards, fire hydrants.\n"
     "- Vegetation, crops, soil colour, terrain, mountains, coastline.\n"
     "- Climate/weather and sun position/shadows (hemisphere & rough time of day).\n\n"
-    "Then reason from these clues to a RANKED list of candidate locations, most "
-    "likely first. Be as specific as the evidence allows (ideally city or "
-    "neighbourhood; otherwise region or country). Provide coordinates only when "
-    "you are reasonably confident; otherwise use null and rely on the place name.\n\n"
+    "First list the visual clues, then reason to a RANKED list of candidate "
+    "locations (clues before answer). Be as specific as the evidence allows: "
+    "prefer a named peak, trailhead, beach, plaza or street over a city/park "
+    "centroid. The latitude/longitude must estimate the CAMERA position, not "
+    "the city centre.\n\n"
     "Respond with STRICT JSON only (no markdown) matching this schema:\n"
     "{\n"
     '  "ocr_text": [string],\n'
@@ -164,6 +165,10 @@ _SYSTEM_PROMPT = (
     '     "farmland": bool, "desert": bool, "snow": bool, "urban": bool,\n'
     '     "suburban": bool, "rural": bool\n'
     "  },\n"
+    '  "feature_distances": {\n'
+    '     "water": "at"|"near"|"mid"|"far"|null, "coast": "at"|"near"|"mid"|"far"|null,\n'
+    '     "mountain": "at"|"near"|"mid"|"far"|null, "forest": "at"|"near"|"mid"|"far"|null\n'
+    "  },\n"
     '  "text_analysis": {\n'
     '     "primary_script": string, "regional_spelling": [string],\n'
     '     "implied_countries": [string]\n'
@@ -179,8 +184,8 @@ _SYSTEM_PROMPT = (
     '  "environment": string,\n'
     '  "candidates": [\n'
     '     {"name": string, "region": string, "country": string, '
-    '"latitude": number|null, "longitude": number|null, '
-    '"confidence": number, "why": string}\n'
+    '"latitude": number, "longitude": number, '
+    '"uncertainty_km": number, "confidence": number, "why": string}\n'
     "  ],\n"
     '  "reasoning": string,\n'
     '  "confidence": number\n'
@@ -189,6 +194,14 @@ _SYSTEM_PROMPT = (
     "- In `scene`, set each boolean STRICTLY by what is actually visible in the "
     "image. Do not guess a feature that is not shown, and do not infer it from the "
     "candidate region. This object drives map verification.\n"
+    "- In `feature_distances`, say how far from the CAMERA each visible feature "
+    "is: `water` = lake/river/reservoir, `coast` = sea or ocean shore. "
+    '"at" = the camera is on it or at its edge (water filling the foreground, '
+    'standing on the shore or a dock, under the trees), within ~150 m; "near" = '
+    'clearly close, within ~500 m; "mid" = middle distance, ~0.5-3 km; "far" = '
+    "distant or on the horizon. null when the feature is not visible. Candidates "
+    "are ruled out if the map puts the feature farther away than this, so pin "
+    "candidates where the camera could actually see it that way.\n"
     "- In `text_analysis`, reason from any visible text: the script/alphabet, "
     "regional spelling (e.g. 'colour' vs 'color', 'Apotek' vs 'Farmacia', "
     "'Strasse' vs 'Street'), and which countries those imply.\n"
@@ -201,16 +214,17 @@ _SYSTEM_PROMPT = (
     "(e.g. 'toward the camera', 'to the left/north-east'), whether shadows are "
     "short or long, and whether the sun looks low, medium or high. Leave fields "
     "null/false if not visible. Do NOT infer these from the guessed location.\n"
-    "- Provide up to 3 candidates. Each confidence and the top-level confidence "
+    "- Provide up to 5 candidates. Each confidence and the top-level confidence "
     "are 0.0-1.0. Do not invent text you cannot actually read.\n"
-    "- Pin each candidate on the specific landmark, street, building or "
-    "shoreline in the photo, not the city or region centroid. Aim for within "
-    "2 km of the real camera position.\n"
-    "- ALWAYS give numeric latitude/longitude for every candidate, even when "
-    "unsure: use your best estimate of the most likely spot (or the centre of "
-    "the area you mean) and express uncertainty through `confidence`, never by "
-    "leaving coordinates null. Keep `name` a short, geocodable place name (e.g. "
-    "'Ushuaia, Beagle Channel'), not a description of the view."
+    "- Pin each candidate on the specific landmark, street, building, peak or "
+    "shoreline in the photo, not a city/region centroid. Target within 2 km of "
+    "the real camera. Set `uncertainty_km` to your radius of doubt.\n"
+    "- ALWAYS give numeric latitude/longitude for every candidate. Express "
+    "uncertainty via `uncertainty_km` and `confidence`, never by omitting "
+    "coordinates. Keep `name` a short, geocodable place name (e.g. "
+    "'Ushuaia, Beagle Channel'), not a description of the view.\n"
+    "- Strong GeoGuessr-style cues: bollards, road line colours, plate colours, "
+    "utility poles, driving side, script/alphabet, vegetation zones."
 )
 
 _ROUTER_SYSTEM = (
@@ -265,11 +279,13 @@ _STREET_SYSTEM = (
     "cannot actually read. An empty list is a correct and useful answer.\n"
     "- `refined_place` should be the most searchable string you can build, e.g. "
     "'Cafe Vesuvio, Columbus Avenue' or '221B Baker Street'.\n"
-    "- Give `refined_latitude`/`refined_longitude` only if a named landmark or "
-    "address makes you genuinely confident; otherwise null.\n"
+    "- ALWAYS give `refined_latitude`/`refined_longitude` estimating the CAMERA "
+    "position within the known region (not a city centroid). If a named landmark, "
+    "peak, beach, plaza or address is visible, pin on the camera's viewpoint "
+    "relative to it. Only leave null when you truly have no localising clue.\n"
     "- `precision_estimate_m` is how tightly you believe the spot is pinned "
-    "(e.g. 50 for a specific address, 500 for the right block, 5000 for only the "
-    "right district).\n"
+    "(e.g. 50 for a specific address, 500 for the right block, 2000 for the "
+    "correct side of a named dune/peak/shore, 5000 for only the right district).\n"
     "- `confidence` is 0.0-1.0 for the refinement itself, not the region."
 )
 
@@ -295,6 +311,7 @@ def _empty_analysis(note: str) -> dict[str, Any]:
         "climate": None,
         "terrain": None,
         "scene": _empty_scene(),
+        "feature_distances": _normalize_feature_distances(None),
         "scene_type": None,
         "text_analysis": {
             "primary_script": None,
@@ -366,6 +383,18 @@ def _normalize_scene(raw: Any) -> dict[str, bool]:
             if key in raw:
                 scene[key] = _as_bool(raw[key])
     return scene
+
+
+_DISTANCE_BANDS = ("at", "near", "mid", "far")
+
+
+def _normalize_feature_distances(raw: Any) -> dict[str, Optional[str]]:
+    out: dict[str, Optional[str]] = {k: None for k in ("water", "coast", "mountain", "forest")}
+    if isinstance(raw, dict):
+        for key in out:
+            band = str(raw.get(key) or "").strip().lower()
+            out[key] = band if band in _DISTANCE_BANDS else None
+    return out
 
 
 def _normalize_text_analysis(raw: Any) -> dict[str, Any]:
@@ -494,6 +523,7 @@ def analyze_image(
             analysis[key] = parsed[key]
 
     analysis["scene"] = _normalize_scene(parsed.get("scene"))
+    analysis["feature_distances"] = _normalize_feature_distances(parsed.get("feature_distances"))
     analysis["text_analysis"] = _normalize_text_analysis(parsed.get("text_analysis"))
     analysis["sun"] = _normalize_sun(parsed.get("sun"))
 

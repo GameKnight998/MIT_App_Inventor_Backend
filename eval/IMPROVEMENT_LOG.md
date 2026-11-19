@@ -137,3 +137,23 @@ statuses. Vehicle/synthetic can still stack after fusion.
 3. **Prompt: 5 cands + clues-before-answer** (D) for the 26 vision misses — costs API; run 3×.
 4. Keep `.env` / `OVERPASS_URL` with `overpass.osm.ch` first locally (gitignored); align `render.yaml` when merging.
 5. Optional: allow accept when ECE improves significantly and no accuracy threshold regresses &gt;2pp.
+
+---
+
+## Loop 12 — gpt-6.1-terra + geocode/Overpass recovery (2026-11-19)
+
+### Terra baseline (full pipeline, prior OSINT)
+- `--split dev`: **acc@2=0.429**, @25=0.743, median 2.5 km (gpt-4o was ~0.15 @2).
+- Vision oracle any-cand@2 ≈ 0.52; 27 near-misses in 2–10 km.
+
+### Changes
+- `VISION_MODEL=gpt-6.1-terra`; camera-precise prompt + `uncertainty_km`.
+- Open-Meteo geocode fallback (Nominatim 429 / Photon 403); Nominatim pacing.
+- Prefer `overpass.openstreetmap.fr`; retry empty mirrors; drop corrupt far anchors.
+- Always geocode candidate place names; place match 20 km (50 km for water).
+- Soft re-rank later AI cands only when top conf &lt; 0.4; prefer model coords on ties.
+- Street refine: landmark place geocode + model pin for wilderness.
+
+### Status
+- Selection recovers alpine misses (e.g. Mont Blanc) without overturning confident urban pins.
+- Still short of 70%@2; continue street refine + prompt work on near-misses.

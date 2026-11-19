@@ -73,7 +73,9 @@ DEFINED_RADIUS_KM = float(os.getenv("DEFINED_RADIUS_KM", "2"))
 DEFINED_RADIUS_M = int(round(DEFINED_RADIUS_KM * 1000))
 # Verification statuses that make street-level refinement worth its extra vision
 # call: we only zoom in on a region the map did not contradict.
-_REFINE_STATUSES = ("verified", "partial", "skipped", "unavailable")
+# Include mismatch: AI-order may keep a regionally-right pin the map scored as
+# a soft miss; street refinement can still snap it onto a nearby business/POI.
+_REFINE_STATUSES = ("verified", "partial", "skipped", "unavailable", "mismatch")
 
 _STATUS_FACTOR = {
     "verified": 1.0,
@@ -442,10 +444,15 @@ def _verify_rank(report: Optional[dict[str, Any]]) -> float:
         return 0.0
     score = float(report.get("match_score") or 0.0)
     named = report.get("named") or {}
+    # Name-coordinate consistency is the strongest map signal we have when
+    # Overpass is noisy (every alpine peak "verifies" as mountain).
     if named.get("place_status") == "matched":
-        score += 0.5
+        score += 1.2
     if named.get("landmark_status") == "matched":
         score += 0.4
+    elif named.get("landmark_status") == "missed":
+        # Vision named a landmark that is not near this pin — strong demotion.
+        score -= 0.5
     if named.get("water_status") == "matched":
         score += 0.3
     if named.get("place_status") == "missed":
@@ -481,6 +488,15 @@ def _augment_verification(
         if named.get("note"):
             out["note"] = named["note"]
         return out
+
+    # A geocoded place name that lands on these coordinates outweighs a soft
+    # Overpass mismatch (e.g. peak photos where the map tags disagree).
+    if named.get("place_status") == "matched" and status == "mismatch":
+        out["status"] = "partial"
+        out["match_score"] = round(
+            max(float(out.get("match_score") or 0.0), 0.75), 3
+        )
+        status = "partial"
 
     if named.get("water_status") == "missed" and status == "verified":
         out["status"] = "partial"
@@ -556,18 +572,45 @@ def _prefetch_verification(
     parallel_map(lambda c: verify_location(c[0], c[1], expected), coords)
 
 
+def _cand_uncertainty_km(cand: Optional[dict[str, Any]]) -> float:
+    """Radius of doubt the vision model reported for this candidate, if any."""
+    if not cand:
+        return 25.0
+    try:
+        val = float(cand.get("uncertainty_km"))
+    except (TypeError, ValueError):
+        return 25.0
+    if val != val or val <= 0:  # NaN / non-positive
+        return 25.0
+    return val
+
+
+def _hyp_preference(
+    hyp: dict[str, Any], report: Optional[dict[str, Any]]
+) -> tuple[float, int, float]:
+    """Sort key: higher verify rank, prefer model coords on ties, then AI base.
+
+    Preferring geocode on ties pulled several correct urban pins onto homonym
+    school/park centroids; only beat the model coords when verify rank is higher.
+    """
+    rank = _verify_rank(report)
+    source_rank = 1 if hyp.get("source") == "vision_coordinates" else 0
+    return (rank, source_rank, float(hyp.get("base") or 0.0))
+
+
 def _select_location(
     candidates: list[dict[str, Any]],
     bonus: float,
     expected: list[str],
     vision: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
-    """Pick a location in AI rank order; map verify informs confidence, not order.
+    """Pick a location in AI rank order; map verify chooses the pin within each cand.
 
-    Live eval showed hard Overpass accept/reject moves pins the wrong way more
-    often than the right way. Keep vision's ranking, only skip a hypothesis when
-    a *named* place/landmark check clearly misses. Generic feature mismatch is
-    soft evidence applied later in fusion.
+    Live eval showed hard Overpass accept/reject across regions moves pins the
+    wrong way. Keep vision's candidate ranking, but within each candidate compare
+    the model coordinates against geocoded name hits and keep the better-verified
+    pin. When the top candidate is weak (low conf / large uncertainty), also
+    score the next few and switch only if verification is clearly stronger.
     """
     attempts = 0
     rejected: list[dict[str, Any]] = []
@@ -575,15 +618,27 @@ def _select_location(
     fallback: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
     chosen: Optional[dict[str, Any]] = None
     chosen_report: Optional[dict[str, Any]] = None
+    chosen_cand: Optional[dict[str, Any]] = None
 
     plan, name_only = _plan_hypotheses(candidates, bonus)
     _prefetch_verification(plan, expected, vision)
 
-    for _cand, hyp in plan:
-        if attempts >= MAX_VERIFY_ATTEMPTS:
-            alternatives.append(_alt(hyp))
-            continue
+    # Group hypotheses back into AI-ranked candidate buckets while preserving
+    # the de-duplicated hyp order from `_plan_hypotheses`.
+    buckets: list[tuple[dict[str, Any], list[dict[str, Any]]]] = []
+    index_of: dict[int, int] = {}
+    for cand, hyp in plan:
+        key = id(cand)
+        if key not in index_of:
+            index_of[key] = len(buckets)
+            buckets.append((cand, []))
+        buckets[index_of[key]][1].append(hyp)
 
+    def _evaluate(hyp: dict[str, Any]) -> dict[str, Any]:
+        nonlocal attempts
+        cached = hyp.get("verification")
+        if isinstance(cached, dict) and cached.get("status"):
+            return cached
         report = _augment_verification(
             hyp["latitude"],
             hyp["longitude"],
@@ -594,32 +649,87 @@ def _select_location(
         )
         attempts += 1
         hyp["verification"] = report
-        named = report.get("named") or {}
+        return report
 
-        # Only named-place miss is a hard veto (wrong lake/city homonym).
-        if named.get("place_status") == "missed":
-            rejected.append(
-                {
-                    "name": hyp.get("name"),
-                    "latitude": hyp.get("latitude"),
-                    "longitude": hyp.get("longitude"),
-                    "reason": named.get("note")
-                    or "named place not found near coordinates",
-                }
-            )
-            if fallback is None or float(hyp.get("base") or 0.0) > float(
-                fallback[0].get("base") or 0.0
-            ):
-                fallback = (hyp, report)
-            alternatives.append(_alt(hyp))
+    def _best_in_bucket(
+        cand: dict[str, Any], hyps: list[dict[str, Any]]
+    ) -> Optional[tuple[dict[str, Any], dict[str, Any]]]:
+        nonlocal fallback
+        best: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
+        best_key: Optional[tuple[float, int, float]] = None
+        for hyp in hyps:
+            if attempts >= MAX_VERIFY_ATTEMPTS and hyp.get("verification") is None:
+                alternatives.append(_alt(hyp))
+                continue
+            report = _evaluate(hyp)
+            named = report.get("named") or {}
+            if named.get("place_status") == "missed":
+                rejected.append(
+                    {
+                        "name": hyp.get("name"),
+                        "latitude": hyp.get("latitude"),
+                        "longitude": hyp.get("longitude"),
+                        "reason": named.get("note")
+                        or "named place not found near coordinates",
+                    }
+                )
+                if fallback is None or float(hyp.get("base") or 0.0) > float(
+                    fallback[0].get("base") or 0.0
+                ):
+                    fallback = (hyp, report)
+                alternatives.append(_alt(hyp))
+                continue
+            key = _hyp_preference(hyp, report)
+            if best is None or key > best_key:
+                best = (hyp, report)
+                best_key = key
+        return best
+
+    # Default: AI order. Soft-rank peers only when the top candidate is low-
+    # confidence (ambiguous peak lists, etc.); otherwise a clean geocode of a
+    # wrong same-named school can overturn a correct pin.
+    _AI_RANK_PENALTY = 0.15
+    _SOFT_RANK_CONF = 0.4
+    scored: list[tuple[float, dict[str, Any], dict[str, Any], dict[str, Any]]] = []
+    for cand_index, (cand, hyps) in enumerate(buckets):
+        pick = _best_in_bucket(cand, hyps)
+        if pick is None:
             continue
+        hyp, report = pick
+        score = _verify_rank(report) - _AI_RANK_PENALTY * cand_index
+        score += 0.01 * float(hyp.get("cand_conf") or 0.0)
+        scored.append((score, cand, hyp, report))
+        top_conf = float(scored[0][2].get("cand_conf") or 0.0)
+        # Confident top lock: do not shop later candidates.
+        if cand_index == 0 and top_conf >= _SOFT_RANK_CONF:
+            break
+        # Low-conf top: compare up to 3 candidates then stop.
+        if cand_index >= 2 or attempts >= MAX_VERIFY_ATTEMPTS:
+            break
 
-        # AI order wins: first non-vetoed hypothesis.
-        chosen, chosen_report = hyp, report
-        break
-
-    if chosen is None and fallback is not None:
+    if scored:
+        scored.sort(key=lambda row: row[0], reverse=True)
+        _, chosen_cand, chosen, chosen_report = scored[0]
+        for _, _cand, hyp, _report in scored[1:]:
+            alternatives.append(_alt(hyp))
+    elif fallback is not None:
         chosen, chosen_report = fallback
+
+    # Unused later-bucket hyps become alternatives for the client.
+    if chosen is not None:
+        for cand, hyps in buckets:
+            if chosen_cand is not None and cand is chosen_cand:
+                continue
+            for hyp in hyps:
+                if hyp is chosen:
+                    continue
+                if hyp.get("verification") and (
+                    (hyp.get("verification") or {}).get("named") or {}
+                ).get("place_status") == "missed":
+                    continue
+                alt = _alt(hyp)
+                if alt not in alternatives and alt.get("name") != chosen.get("name"):
+                    alternatives.append(alt)
 
     return {
         "chosen": chosen,

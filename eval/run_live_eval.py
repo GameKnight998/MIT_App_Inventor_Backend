@@ -35,7 +35,7 @@ IMAGES = ROOT / "eval" / "images"
 CACHE = ROOT / "eval" / "cache"
 RESULTS = ROOT / "eval" / "results"
 
-THRESHOLDS_KM = (1, 25, 200, 750, 2500)
+THRESHOLDS_KM = (1, 2, 25, 200, 750, 2500)
 
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -384,6 +384,7 @@ def main() -> int:
         "git_sha": _git_sha(),
         "mean": {
             "acc_1km": mean_of(["summary", "accuracy", "1km"]),
+            "acc_2km": mean_of(["summary", "accuracy", "2km"]),
             "acc_25km": mean_of(["summary", "accuracy", "25km"]),
             "acc_200km": mean_of(["summary", "accuracy", "200km"]),
             "acc_750km": mean_of(["summary", "accuracy", "750km"]),
@@ -407,8 +408,8 @@ def main() -> int:
         f"sha={aggregate['git_sha']}"
     )
     print(
-        f"acc@1={m['acc_1km']}  @25={m['acc_25km']}  @200={m['acc_200km']}  "
-        f"@750={m['acc_750km']}  median_km={m['median_km']}"
+        f"acc@1={m['acc_1km']}  @2={m['acc_2km']}  @25={m['acc_25km']}  "
+        f"@200={m['acc_200km']}  @750={m['acc_750km']}  median_km={m['median_km']}"
     )
     print(
         f"country={m['country_accuracy']}  ECE@25={m['ece_25km']}  "

@@ -20,7 +20,7 @@ services:
       - key: VISION_PROVIDER
         value: openai
       - key: VISION_MODEL
-        value: gpt-4o
+        value: gpt-6.1-terra
       - key: VISION_TIMEOUT
         value: "60"
       - key: VISION_MAX_TOKENS

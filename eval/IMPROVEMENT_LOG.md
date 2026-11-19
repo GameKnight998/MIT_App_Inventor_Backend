@@ -155,5 +155,6 @@ statuses. Vehicle/synthetic can still stack after fusion.
 - Street refine: landmark place geocode + model pin for wilderness.
 
 ### Status
-- Selection recovers alpine misses (e.g. Mont Blanc) without overturning confident urban pins.
-- Still short of 70%@2; continue street refine + prompt work on near-misses.
+- Loop12 terra+street: **acc@2=0.429**. Loop13 selection/geocode (no street): **acc@2=0.419**.
+- Landmark-bridge recovers Mont Blanc / Lake Louise-class misses; nearest-homonym geocode fix restores Herbert Lake.
+- Vision oracle any-cand@2 ≈0.52 — **selection alone cannot reach 70%@2**; need tighter vision pins on the ~48% with no cand inside 2 km.

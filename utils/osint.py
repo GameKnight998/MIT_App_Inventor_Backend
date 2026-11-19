@@ -79,8 +79,9 @@ _STATUS_FACTOR = {
     "verified": 1.0,
     "skipped": 1.0,
     "unavailable": 1.0,  # map service unreachable -> can't verify, don't penalise
-    "partial": 0.7,
-    "mismatch": 0.4,
+    "partial": 0.9,
+    # Was 0.4: crushed search_areas / caption scores into a 12–25% band.
+    "mismatch": 0.85,
 }
 # Statuses that end the retry loop with an immediate accept. "unavailable" is
 # deliberately NOT here: when we can't reach the map, we must not accept
@@ -122,12 +123,16 @@ def _w(name: str, default: float) -> float:
 # final confidence from the AI's self-reported number: instead of trusting the
 # model and multiplying penalties, each signal casts an additive vote and we
 # squash the sum back into [0, 1].
-_FUSION_PRIOR = _w("PRIOR", 0.2)
+# Prior was 0.2: with typical AI conf 0.5–0.7 and a map partial/mismatch,
+# fusion always landed near 0.12 / 0.18 / 0.25 — matching the app's stuck
+# 12 / 18 / 25 display. Raise the prior so a strong AI vote can reach the
+# 50–75% band that matches live acc@25 (~68% on dev).
+_FUSION_PRIOR = _w("PRIOR", 0.45)
 _VERIFY_LOGIT = {
     "verified": _w("VERIFIED", 1.8),
-    "partial": _w("PARTIAL", 0.3),
+    "partial": _w("PARTIAL", 0.2),
     # Soft: sparse OSM / scene-boolean noise must not crush a good AI pin.
-    "mismatch": _w("MISMATCH", -0.6),
+    "mismatch": _w("MISMATCH", -0.35),
     "unavailable": _w("UNAVAILABLE", 0.0),
     "skipped": _w("SKIPPED", 0.0),
 }
@@ -142,12 +147,12 @@ _CLIMATE_LOGIT = {
 }
 _NAMED_LOGIT = {
     "matched": _w("NAMED_OK", 1.2),
-    "missed": _w("NAMED_BAD", -0.9),
+    "missed": _w("NAMED_BAD", -0.5),
     "unknown": 0.0,
 }
 _WATER_NAMED_LOGIT = {
     "matched": _w("WATER_OK", 0.7),
-    "missed": _w("WATER_BAD", -0.8),
+    "missed": _w("WATER_BAD", -0.45),
     "unknown": 0.0,
 }
 # Script and regional spelling are among the strongest country-level signals in
@@ -155,7 +160,7 @@ _WATER_NAMED_LOGIT = {
 # are independent of the map checks, so they get their own vote rather than being
 # lost in the generic clue bonus.
 _TEXT_LOGIT = {"match": _w("TEXT_OK", 0.8), "conflict": _w("TEXT_BAD", -1.1)}
-_AI_WEIGHT = _w("AI", 1.3)
+_AI_WEIGHT = _w("AI", 1.6)
 _CLUE_WEIGHT = _w("CLUE", 3.0)
 _AMBIGUITY_WEIGHT = _w("AMBIGUITY", -0.8)
 _LANDMARK_CORROBORATED = _w("LANDMARK_CORROBORATED", 1.0)

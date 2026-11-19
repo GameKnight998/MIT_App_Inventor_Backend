@@ -108,7 +108,8 @@ statuses. Vehicle/synthetic can still stack after fusion.
 | 2026-11-18 | (reverted) | Prefer working Overpass mirrors first (osm.ch); richer UA | still 66× unavailable (parallel prefetch trips breaker); acc@25 flat | — | **reject**: connectivity order alone insufficient under parallel load |
 | 2026-11-18 | (reverted) | Serialize Overpass + osm.ch first + softer breaker | with working Overpass: acc@25 67.6→61.9%, ECE worse, 16 pin flips (7↑/9↓); hard verify rejects good pins | — | **reject**: restoring map verify without softening selection hurts accuracy |
 | 2026-11-18 | (reverted) | Soft OSM miss→partial + score-all selection + reliable Overpass + softer MISMATCH | acc@25 67.6→61.0%, ECE 0.25→0.21 | — | **reject**: score-all still lets map displace good AI pins |
-| 2026-11-18 | (pending commit) | AI-order select (named-miss veto only) + soft MISMATCH (−1.6→−0.6) + reliable Overpass | acc@25/median flat; ECE 0.254→0.220; mean_conf 0.43→0.46; 1 pin improved; no threshold regression | — | **accept**: accuracy preserved, calibration better, Overpass usable without displacing AI pins |
+| 2026-11-18 | ae83df3 | AI-order select (named-miss veto only) + soft MISMATCH (−1.6→−0.6) + reliable Overpass | acc@25/median flat; ECE 0.254→0.220; mean_conf 0.43→0.46 | — | **accept** |
+| 2026-11-18 | (pending) | Recalibrate fusion prior 0.2→0.45, AI weight 1.3→1.6, soften STATUS_FACTOR mismatch 0.4→0.85 | running… | — | **running** |
 
 ---
 

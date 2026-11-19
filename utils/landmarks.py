@@ -199,6 +199,32 @@ def _geocode_one(query: str) -> Optional[dict[str, Any]]:
     return hits[0] if hits else None
 
 
+def _geocode_near(
+    query: str, latitude: float, longitude: float, *, limit: int = 5
+) -> Optional[dict[str, Any]]:
+    """Best geocode hit for `query` relative to a candidate pin.
+
+    Open-Meteo / Nominatim often return a same-named lake or peak on another
+    continent first. Picking the hit closest to the AI coordinates avoids
+    hard-vetoing a correct pin because of a distant homonym.
+    """
+    hits = forward_geocode_candidates(query, limit=limit)
+    if not hits:
+        return None
+    best = None
+    best_dist = 1e9
+    for hit in hits:
+        if hit.get("latitude") is None or hit.get("longitude") is None:
+            continue
+        dist = _haversine_km(
+            latitude, longitude, float(hit["latitude"]), float(hit["longitude"])
+        )
+        if dist < best_dist:
+            best = hit
+            best_dist = dist
+    return best
+
+
 def prefetch_named_lookups(
     coords: list[tuple[float, float]],
     vision: Optional[dict[str, Any]] = None,
@@ -260,7 +286,7 @@ def verify_named_and_water(
     # geocoding them (not only names that contain English feature words like
     # "Lake" / "Mount" — "Mont Blanc", "Jungfrau", "Sossusvlei" must count).
     if place_name and str(place_name).strip():
-        geo = _geocode_one(str(place_name).strip())
+        geo = _geocode_near(str(place_name).strip(), latitude, longitude)
         if geo and geo.get("latitude") is not None:
             dist = _haversine_km(
                 latitude, longitude, geo["latitude"], geo["longitude"]
@@ -295,7 +321,7 @@ def verify_named_and_water(
     landmarks = extract_named_features(vision)
     matched: list[dict[str, Any]] = []
     for name in landmarks:
-        geo = _geocode_one(name)
+        geo = _geocode_near(name, latitude, longitude)
         if not geo or geo.get("latitude") is None:
             continue
         dist = _haversine_km(latitude, longitude, geo["latitude"], geo["longitude"])

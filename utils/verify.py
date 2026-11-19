@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import math
 import os
+import threading
 import time
 from typing import Any, Optional
 
@@ -21,36 +22,42 @@ import requests
 
 from utils.cache import cache_get, cache_set
 
-# Several public Overpass mirrors; we try them in order so a single mirror being
-# down (or unreachable from the host) doesn't disable verification entirely.
+# Prefer mirrors that answer from typical residential networks.
 _DEFAULT_OVERPASS = (
+    "https://overpass.osm.ch/api/interpreter,"
     "https://overpass-api.de/api/interpreter,"
     "https://overpass.kumi.systems/api/interpreter,"
     "https://overpass.private.coffee/api/interpreter,"
-    "https://overpass.osm.ch/api/interpreter,"
     "https://overpass.openstreetmap.fr/api/interpreter,"
     "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
 )
-OVERPASS_ENDPOINTS = [
-    u.strip() for u in os.getenv("OVERPASS_URL", _DEFAULT_OVERPASS).split(",") if u.strip()
-]
+_PREFERRED_OVERPASS = "https://overpass.osm.ch/api/interpreter"
+
+
+def _load_overpass_endpoints() -> list[str]:
+    raw = [
+        u.strip()
+        for u in os.getenv("OVERPASS_URL", _DEFAULT_OVERPASS).split(",")
+        if u.strip()
+    ]
+    if _PREFERRED_OVERPASS in raw:
+        return [_PREFERRED_OVERPASS] + [u for u in raw if u != _PREFERRED_OVERPASS]
+    return raw
+
+
+OVERPASS_ENDPOINTS = _load_overpass_endpoints()
 VERIFY_RADIUS_M = int(os.getenv("VERIFY_RADIUS_M", "3000"))
 VERIFY_TIMEOUT = float(os.getenv("VERIFY_TIMEOUT", "15"))
 # Fail fast on a mirror we can't even connect to (separate from slow reads).
-OVERPASS_CONNECT_TIMEOUT = float(os.getenv("OVERPASS_CONNECT_TIMEOUT", "6"))
-# Hard wall-clock cap for trying mirrors on a SINGLE verify call, so a total
-# outage can't stack up (mirrors x timeout) into a multi-minute request.
+OVERPASS_CONNECT_TIMEOUT = float(os.getenv("OVERPASS_CONNECT_TIMEOUT", "4"))
 OVERPASS_TOTAL_BUDGET = float(os.getenv("OVERPASS_TOTAL_BUDGET", "25"))
-# After a full outage, skip the network for this long so the remaining
-# candidates in one request return "unavailable" instantly instead of each
-# re-probing every dead mirror.
-OVERPASS_COOLDOWN = float(os.getenv("OVERPASS_COOLDOWN", "120"))
-# Beyond this distance a "confirmed" feature is treated as only approximate.
+OVERPASS_COOLDOWN = float(os.getenv("OVERPASS_COOLDOWN", "30"))
+OVERPASS_BREAKER_FAILS = int(os.getenv("OVERPASS_BREAKER_FAILS", "3"))
 PRECISION_M = int(os.getenv("VERIFY_PRECISION_M", "800"))
 
-# Simple in-process circuit breaker: monotonic timestamp until which we treat
-# Overpass as down and short-circuit without hitting the network.
 _circuit_open_until = 0.0
+_consecutive_failures = 0
+_overpass_lock = threading.Lock()
 
 # Words in the vision analysis that imply a checkable geographic feature.
 _CATEGORY_KEYWORDS: dict[str, list[str]] = {
@@ -209,40 +216,49 @@ def _unavailable(note: str, expected: list[str]) -> dict[str, Any]:
 def _query_overpass(query: str) -> tuple[Optional[list[dict[str, Any]]], str]:
     """Try each Overpass mirror in turn. Returns (elements, note).
 
-    Stops at the first mirror that answers. Bounded by a per-call time budget
-    and a short circuit-breaker cooldown so a total outage degrades quickly
-    instead of stalling every candidate in the retry loop.
+    Serialized so parallel prefetch cannot stampede a mirror and trip the
+    breaker for the rest of the request.
     """
-    global _circuit_open_until
+    global _circuit_open_until, _consecutive_failures
 
-    now = time.monotonic()
-    if now < _circuit_open_until:
-        return None, "Overpass recently unreachable (cooling down, skipped network)"
+    with _overpass_lock:
+        now = time.monotonic()
+        if now < _circuit_open_until:
+            return None, "Overpass recently unreachable (cooling down, skipped network)"
 
-    start = now
-    last_error = "no endpoints configured"
-    headers = {"User-Agent": os.getenv("GEOCODER_USER_AGENT", "ImageLocatorBackend/1.0")}
-    for url in OVERPASS_ENDPOINTS:
-        if time.monotonic() - start > OVERPASS_TOTAL_BUDGET:
-            last_error = f"time budget {OVERPASS_TOTAL_BUDGET:.0f}s exceeded ({last_error})"
-            break
-        try:
-            resp = requests.post(
-                url,
-                data={"data": query},
-                headers=headers,
-                timeout=(OVERPASS_CONNECT_TIMEOUT, VERIFY_TIMEOUT + 5),
+        start = now
+        last_error = "no endpoints configured"
+        headers = {
+            "User-Agent": os.getenv(
+                "GEOCODER_USER_AGENT",
+                "ImageLocatorBackend/1.0 (MIT App Inventor capstone)",
             )
-            resp.raise_for_status()
-            return resp.json().get("elements", []), f"ok via {url}"
-        except Exception as exc:
-            last_error = f"{url}: {exc}"
-            continue
+        }
+        for url in OVERPASS_ENDPOINTS:
+            if time.monotonic() - start > OVERPASS_TOTAL_BUDGET:
+                last_error = (
+                    f"time budget {OVERPASS_TOTAL_BUDGET:.0f}s exceeded ({last_error})"
+                )
+                break
+            try:
+                resp = requests.post(
+                    url,
+                    data={"data": query},
+                    headers=headers,
+                    timeout=(OVERPASS_CONNECT_TIMEOUT, VERIFY_TIMEOUT + 5),
+                )
+                resp.raise_for_status()
+                _consecutive_failures = 0
+                return resp.json().get("elements", []), f"ok via {url}"
+            except Exception as exc:
+                last_error = f"{url}: {exc}"
+                continue
 
-    # Every mirror failed (or we ran out of time): open the breaker so the rest
-    # of this request doesn't re-probe the same dead endpoints.
-    _circuit_open_until = time.monotonic() + OVERPASS_COOLDOWN
-    return None, f"all Overpass mirrors failed ({last_error})"
+        _consecutive_failures += 1
+        if _consecutive_failures >= OVERPASS_BREAKER_FAILS:
+            _circuit_open_until = time.monotonic() + OVERPASS_COOLDOWN
+            _consecutive_failures = 0
+        return None, f"all Overpass mirrors failed ({last_error})"
 
 
 def verify_location(
@@ -340,7 +356,10 @@ def verify_location(
     # corroborating context (roads, railways, farmland, urban land, etc.).
     context = [c for c in _CONTEXT_CATEGORIES if c in present]
 
-    if not confirmed:
+    # Soft: empty OSM answer is weak (sparse map data), not a hard contradict.
+    if not confirmed and not present:
+        status = "partial"
+    elif not confirmed:
         status = "mismatch"
     elif missing:
         status = "partial"

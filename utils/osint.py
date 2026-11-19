@@ -126,7 +126,8 @@ _FUSION_PRIOR = _w("PRIOR", 0.2)
 _VERIFY_LOGIT = {
     "verified": _w("VERIFIED", 1.8),
     "partial": _w("PARTIAL", 0.3),
-    "mismatch": _w("MISMATCH", -1.6),
+    # Soft: sparse OSM / scene-boolean noise must not crush a good AI pin.
+    "mismatch": _w("MISMATCH", -0.6),
     "unavailable": _w("UNAVAILABLE", 0.0),
     "skipped": _w("SKIPPED", 0.0),
 }
@@ -556,18 +557,17 @@ def _select_location(
     expected: list[str],
     vision: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
-    """Try candidate locations, crossing out those the map contradicts.
+    """Pick a location in AI rank order; map verify informs confidence, not order.
 
-    Returns a dict with the chosen hypothesis (or None), its verification
-    report, the list of rejected locations, untried alternatives, a name-only
-    fallback, and the number of verification attempts made.
+    Live eval showed hard Overpass accept/reject moves pins the wrong way more
+    often than the right way. Keep vision's ranking, only skip a hypothesis when
+    a *named* place/landmark check clearly misses. Generic feature mismatch is
+    soft evidence applied later in fusion.
     """
     attempts = 0
     rejected: list[dict[str, Any]] = []
     alternatives: list[dict[str, Any]] = []
-    best_partial: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
-    best_unavailable: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
-    best_mismatch: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
+    fallback: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
     chosen: Optional[dict[str, Any]] = None
     chosen_report: Optional[dict[str, Any]] = None
 
@@ -589,60 +589,32 @@ def _select_location(
         )
         attempts += 1
         hyp["verification"] = report
-        status = report.get("status")
+        named = report.get("named") or {}
 
-        if status in _ACCEPT_STATUSES:
-            chosen, chosen_report = hyp, report
-            break
-
-        if status == "partial":
-            if best_partial is None or _verify_rank(report) > _verify_rank(
-                best_partial[1]
-            ):
-                best_partial = (hyp, report)
-            alternatives.append(_alt(hyp))
-        elif status == "unavailable":
-            # Couldn't check this one. Keep the highest-confidence such
-            # candidate (candidates arrive best-first) as a fallback, preferring
-            # one whose named landmark/place still matched.
-            if best_unavailable is None:
-                best_unavailable = (hyp, report)
-            elif _verify_rank(report) > _verify_rank(best_unavailable[1]):
-                best_unavailable = (hyp, report)
-            elif _verify_rank(report) == _verify_rank(
-                best_unavailable[1]
-            ) and hyp.get("base", 0.0) > best_unavailable[0].get("base", 0.0):
-                best_unavailable = (hyp, report)
-            alternatives.append(_alt(hyp))
-        else:  # mismatch -> cross it out
-            named_note = (report.get("named") or {}).get("note")
-            reason = named_note or (
-                f"expected {report.get('missing')} not found within "
-                f"{report.get('radius_m')} m"
-            )
+        # Only named-place miss is a hard veto (wrong lake/city homonym).
+        if named.get("place_status") == "missed":
             rejected.append(
                 {
                     "name": hyp.get("name"),
                     "latitude": hyp.get("latitude"),
                     "longitude": hyp.get("longitude"),
-                    "reason": reason,
+                    "reason": named.get("note")
+                    or "named place not found near coordinates",
                 }
             )
-            if best_mismatch is None or _verify_rank(report) > _verify_rank(
-                best_mismatch[1]
+            if fallback is None or float(hyp.get("base") or 0.0) > float(
+                fallback[0].get("base") or 0.0
             ):
-                best_mismatch = (hyp, report)
+                fallback = (hyp, report)
+            alternatives.append(_alt(hyp))
+            continue
 
-    if chosen is None:
-        # Preference when nothing verified cleanly: a real partial match (has
-        # corroborating evidence) > the AI's top un-checkable pick > a location
-        # the map actively contradicted.
-        if best_partial is not None:
-            chosen, chosen_report = best_partial
-        elif best_unavailable is not None:
-            chosen, chosen_report = best_unavailable
-        elif best_mismatch is not None:
-            chosen, chosen_report = best_mismatch
+        # AI order wins: first non-vetoed hypothesis.
+        chosen, chosen_report = hyp, report
+        break
+
+    if chosen is None and fallback is not None:
+        chosen, chosen_report = fallback
 
     return {
         "chosen": chosen,

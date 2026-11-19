@@ -90,7 +90,7 @@ services:
       - key: OVERPASS_TOTAL_BUDGET
         value: "25"
       - key: OVERPASS_COOLDOWN
-        value: "120"
+        value: "30"
       - key: MAX_VERIFY_ATTEMPTS
         value: "5"
       - key: GEO_CANDIDATES_PER_NAME

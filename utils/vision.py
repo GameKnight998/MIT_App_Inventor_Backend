@@ -12,6 +12,7 @@ analysis so the rest of the pipeline still runs (e.g. EXIF-only locating).
 from __future__ import annotations
 
 import base64
+import io
 import json
 import os
 from typing import Any
@@ -90,15 +91,18 @@ _SYSTEM_PROMPT = (
     '  "time_of_day": string,\n'
     '  "hemisphere_hint": string,\n'
     '  "environment": string,\n'
+    '  "reasoning": string,\n'
     '  "candidates": [\n'
     '     {"name": string, "region": string, "country": string, '
     '"latitude": number|null, "longitude": number|null, '
     '"confidence": number, "why": string}\n'
     "  ],\n"
-    '  "reasoning": string,\n'
     '  "confidence": number\n'
     "}\n"
     "Rules:\n"
+    "- Fill the fields in the order shown. Write `reasoning` BEFORE `candidates`: "
+    "weigh the clues step by step (what each one rules in or out, and where they "
+    "agree or conflict), then derive the candidates from that reasoning.\n"
     "- In `scene`, set each boolean STRICTLY by what is actually visible in the "
     "image. Do not guess a feature that is not shown, and do not infer it from the "
     "candidate region. This object drives map verification.\n"
@@ -168,9 +172,38 @@ def _empty_analysis(note: str) -> dict[str, Any]:
     }
 
 
+# Longest side sent to the model. High-detail vision input is downscaled to
+# about this size by the API anyway, so larger uploads only add latency.
+MAX_IMAGE_SIDE = int(os.getenv("VISION_MAX_IMAGE_SIDE", "2048"))
+
+
 def _encode_image(image_path: str) -> str:
-    with open(image_path, "rb") as f:
-        return base64.b64encode(f.read()).decode("utf-8")
+    """Return the image as base64 JPEG, whatever format was uploaded.
+
+    The request labels the data as image/jpeg, so PNG, WebP, GIF, BMP and TIFF
+    uploads are re-encoded to real JPEG (alpha flattened onto white, EXIF
+    orientation applied) rather than sent under the wrong media type.
+    """
+    try:
+        from PIL import Image, ImageOps
+
+        with Image.open(image_path) as img:
+            img = ImageOps.exif_transpose(img)
+            if img.mode in ("RGBA", "LA", "P"):
+                rgba = img.convert("RGBA")
+                background = Image.new("RGB", rgba.size, (255, 255, 255))
+                background.paste(rgba, mask=rgba.split()[-1])
+                img = background
+            elif img.mode != "RGB":
+                img = img.convert("RGB")
+            img.thumbnail((MAX_IMAGE_SIDE, MAX_IMAGE_SIDE))
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=90)
+            return base64.b64encode(buf.getvalue()).decode("utf-8")
+    except Exception:
+        # Fall back to the original bytes rather than failing the analysis.
+        with open(image_path, "rb") as f:
+            return base64.b64encode(f.read()).decode("utf-8")
 
 
 def _clamp(value: Any) -> float:

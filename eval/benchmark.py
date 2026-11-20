@@ -294,6 +294,16 @@ def _style(ax: Any) -> None:
     ax.set_axisbelow(True)
 
 
+def _chunks(items: list[Any], size: int) -> list[list[Any]]:
+    return [items[i:i + size] for i in range(0, len(items), size)] or [[]]
+
+
+def _footnote(fig: Any, skipped: list[str]) -> None:
+    if skipped:
+        fig.text(0.01, 0.01, "Not charted (no answers, every run failed): " + ", ".join(skipped),
+                 fontsize=10, color=_MUTED, ha="left", va="bottom")
+
+
 def charts(summary: list[dict[str, Any]], rows: list[dict[str, Any]], out_dir: Path) -> None:
     import matplotlib
 
@@ -302,37 +312,87 @@ def charts(summary: list[dict[str, Any]], rows: list[dict[str, Any]], out_dir: P
 
     plt.rcParams.update({"font.size": 13, "font.family": "DejaVu Sans", "text.color": _INK,
                          "axes.labelcolor": _MUTED, "figure.dpi": 150})
-    models = [s["model"] for s in summary]
-    color = {m: _SERIES[i % len(_SERIES)] for i, m in enumerate(models)}
-    if len(models) > len(_SERIES):
-        print("Warning: more than 8 models; colours repeat. Split the chart.")
+    # A model that never answered (e.g. refused every photo) has no accuracy or
+    # confidence to show: drawing it as 0% bars would read as "always wrong".
+    # It stays in the summary CSVs and the printed table, and is named in a footnote.
+    skipped = [s["model"] for s in summary if s["failed"] >= s["photos"]]
+    summary = [s for s in summary if s["failed"] < s["photos"]]
+    for old in list(out_dir.glob("accuracy_by_threshold*.png")) + list(out_dir.glob("calibration*.png")):
+        old.unlink()
+    if not summary:
+        return
+    # The palette has 8 validated hues and a colour is never reused within a
+    # chart, so more than 8 models are split into separate charts.
+    groups = _chunks(summary, len(_SERIES))
+    if len(groups) > 1:
+        print(f"Note: {len(summary)} models; multi-series charts split into {len(groups)} parts of up to {len(_SERIES)}.")
 
-    # 1. Accuracy at distance thresholds (grouped bars).
-    fig, ax = plt.subplots(figsize=(12, 6.2))
-    _style(ax)
-    n = len(models)
-    width = 0.8 / max(n, 1)
-    for i, s in enumerate(summary):
-        xs = [k + (i - (n - 1) / 2) * width for k in range(len(THRESHOLDS_KM))]
-        ys = [100 * (s[f"acc_{t}km"] or 0) for t in THRESHOLDS_KM]
-        ax.bar(xs, ys, width * 0.9, color=color[s["model"]], label=s["model"],
-               edgecolor=_SURFACE, linewidth=2)
-        if s is summary[0] or n <= 3:  # label one series' values, not every bar
-            for x, y in zip(xs, ys):
-                ax.text(x, y + 1.2, f"{y:.0f}%", ha="center", va="bottom", fontsize=10, color=_INK)
-    ax.set_xticks(range(len(THRESHOLDS_KM)), THRESHOLD_LABELS)
-    ax.set_ylim(0, 105)
-    ax.set_ylabel("Photos located within distance (%)")
-    ax.set_title("Share of photos located within each distance", loc="left", fontsize=16, color=_INK, pad=14)
-    ax.legend(frameon=False, ncol=min(n, 4), loc="upper left", bbox_to_anchor=(0, -0.13))
-    fig.tight_layout()
-    fig.savefig(out_dir / "accuracy_by_threshold.png", facecolor=_SURFACE)
-    plt.close(fig)
+    for part, group in enumerate(groups, 1):
+        suffix = f"_part{part}" if len(groups) > 1 else ""
+        color = {s["model"]: _SERIES[i] for i, s in enumerate(group)}
+        n = len(group)
+
+        # 1. Accuracy at distance thresholds (grouped bars).
+        fig, ax = plt.subplots(figsize=(12, 6.6))
+        _style(ax)
+        width = 0.8 / max(n, 1)
+        for i, s in enumerate(group):
+            xs = [k + (i - (n - 1) / 2) * width for k in range(len(THRESHOLDS_KM))]
+            ys = [100 * (s[f"acc_{t}km"] or 0) for t in THRESHOLDS_KM]
+            ax.bar(xs, ys, width * 0.9, color=color[s["model"]], label=s["model"],
+                   edgecolor=_SURFACE, linewidth=2)
+            if s is group[0] or n <= 3:  # label one series' values, not every bar
+                for x, y in zip(xs, ys):
+                    ax.text(x, y + 1.2, f"{y:.0f}%", ha="center", va="bottom", fontsize=10, color=_INK)
+        ax.set_xticks(range(len(THRESHOLDS_KM)), THRESHOLD_LABELS)
+        ax.set_ylim(0, 105)
+        ax.set_ylabel("Photos located within distance (%)")
+        title = "Share of photos located within each distance"
+        ax.set_title(title + (f" (part {part} of {len(groups)})" if suffix else ""),
+                     loc="left", fontsize=16, color=_INK, pad=14)
+        ax.legend(frameon=False, ncol=min(n, 4), loc="upper left", bbox_to_anchor=(0, -0.13))
+        fig.tight_layout(rect=(0, 0.04 if skipped else 0, 1, 1))
+        _footnote(fig, skipped)
+        fig.savefig(out_dir / f"accuracy_by_threshold{suffix}.png", facecolor=_SURFACE)
+        plt.close(fig)
+
+        # 4. Calibration: does a stated confidence match how often it is right?
+        bins = [(0.0, 0.2), (0.2, 0.4), (0.4, 0.6), (0.6, 0.8), (0.8, 1.01)]
+        fig, ax = plt.subplots(figsize=(8, 7.4))
+        _style(ax)
+        ax.xaxis.grid(True, color=_GRID)
+        ax.plot([0, 100], [0, 100], color=_MUTED, linewidth=1.5, linestyle="--", label="Perfect calibration")
+        for s in group:
+            m = s["model"]
+            mine = [r for r in rows if r["model"] == m]
+            xs, ys = [], []
+            for lo, hi in bins:
+                inside = [r for r in mine if lo <= _conf_25(r) < hi]
+                if len(inside) < 3:  # too few photos to plot a rate
+                    continue
+                ok = [(_num(r["error_km"]) if _num(r["error_km"]) is not None else float("inf")) <= CORRECT_KM
+                      for r in inside]
+                xs.append(100 * statistics.mean(_conf_25(r) for r in inside))
+                ys.append(100 * sum(ok) / len(ok))
+            if xs:
+                ax.plot(xs, ys, color=color[m], linewidth=2, marker="o", markersize=8,
+                        markeredgecolor=_SURFACE, markeredgewidth=2, label=m)
+        ax.set_xlim(0, 100)
+        ax.set_ylim(0, 100)
+        ax.set_xlabel(f"Stated chance of being within {CORRECT_KM} km (%)")
+        ax.set_ylabel(f"Actually within {CORRECT_KM} km (%)")
+        ax.set_title("Confidence calibration" + (f" (part {part} of {len(groups)})" if suffix else ""),
+                     loc="left", fontsize=16, color=_INK, pad=14)
+        ax.legend(frameon=False, loc="upper left", fontsize=11)
+        fig.tight_layout(rect=(0, 0.04 if skipped else 0, 1, 1))
+        _footnote(fig, skipped)
+        fig.savefig(out_dir / f"calibration{suffix}.png", facecolor=_SURFACE)
+        plt.close(fig)
 
     # 2. Median error per model (single measure -> one hue, sorted).
     med = sorted((s for s in summary if s["median_error_km"] is not None), key=lambda s: s["median_error_km"])
     if med:
-        fig, ax = plt.subplots(figsize=(10, 0.7 * len(med) + 1.8))
+        fig, ax = plt.subplots(figsize=(10, 0.7 * len(med) + 2.1))
         _style(ax)
         ax.yaxis.grid(False)
         ax.xaxis.grid(True, color=_GRID)
@@ -344,67 +404,43 @@ def charts(summary: list[dict[str, Any]], rows: list[dict[str, Any]], out_dir: P
         ax.set_xlabel("Median distance from the true location (km), lower is better")
         ax.set_title("Median location error by model", loc="left", fontsize=16, color=_INK, pad=14)
         ax.set_xlim(0, max(vals) * 1.25 or 1)
-        fig.tight_layout()
+        fig.tight_layout(rect=(0, 0.05 if skipped else 0, 1, 1))
+        _footnote(fig, skipped)
         fig.savefig(out_dir / "median_error.png", facecolor=_SURFACE)
         plt.close(fig)
 
     # 3. Confidence on right vs wrong answers: a trustworthy score is high
-    # when right and low when wrong. Readable even with few photos.
+    # when right and low when wrong. Horizontal bars keep long model names
+    # readable however many models there are.
     sep = [s for s in summary if s["confidence_when_correct"] is not None]
     if sep:
-        fig, ax = plt.subplots(figsize=(12, 6.2))
+        fig, ax = plt.subplots(figsize=(11, 1.0 * len(sep) + 2.4))
         _style(ax)
-        xs = list(range(len(sep)))
-        w = 0.38
+        ax.yaxis.grid(False)
+        ax.xaxis.grid(True, color=_GRID)
+        ys = list(range(len(sep)))
+        h = 0.36
         right = [100 * (s["confidence_when_correct"] or 0) for s in sep]
         wrong = [100 * (s["confidence_when_wrong"] or 0) for s in sep]
-        ax.bar([x - w / 2 for x in xs], right, w * 0.92, color=_SERIES[0], label=f"Answer within {CORRECT_KM} km")
-        ax.bar([x + w / 2 for x in xs], wrong, w * 0.92, color=_SERIES[1], label=f"Answer more than {CORRECT_KM} km off")
-        for x, (r_, w_, s_) in enumerate(zip(right, wrong, sep)):
-            ax.text(x - w / 2, r_ + 1.2, f"{r_:.0f}%", ha="center", fontsize=10, color=_INK)
+        ax.barh([y - h / 2 for y in ys], right, h * 0.92, color=_SERIES[0], label=f"Answer within {CORRECT_KM} km")
+        ax.barh([y + h / 2 for y in ys], wrong, h * 0.92, color=_SERIES[1], label=f"Answer more than {CORRECT_KM} km off")
+        for y, (r_, w_, s_) in enumerate(zip(right, wrong, sep)):
+            ax.text(r_ + 0.8, y - h / 2, f"{r_:.0f}%", va="center", fontsize=10, color=_INK)
             if s_["confidence_when_wrong"] is not None:
-                ax.text(x + w / 2, w_ + 1.2, f"{w_:.0f}%", ha="center", fontsize=10, color=_INK)
+                ax.text(w_ + 0.8, y + h / 2, f"{w_:.0f}%", va="center", fontsize=10, color=_INK)
             else:
-                ax.text(x + w / 2, 1.2, "no misses", ha="center", fontsize=9, color=_MUTED)
-        ax.set_xticks(xs, [s["model"] for s in sep], fontsize=11)
-        ax.set_ylim(0, 105)
-        ax.set_ylabel("Average stated confidence (%)")
+                ax.text(0.8, y + h / 2, "no misses", va="center", fontsize=9, color=_MUTED)
+        ax.set_yticks(ys, [s["model"] for s in sep], fontsize=11)
+        ax.invert_yaxis()
+        ax.set_xlim(0, 105)
+        ax.set_xlabel("Average stated confidence (%)")
         ax.set_title("Confidence when right vs. when wrong (bigger gap = more trustworthy)",
                      loc="left", fontsize=16, color=_INK, pad=14)
-        ax.legend(frameon=False, ncol=2, loc="upper left", bbox_to_anchor=(0, -0.1))
-        fig.tight_layout()
+        ax.legend(frameon=False, ncol=2, loc="upper left", bbox_to_anchor=(0, -0.05 - 0.35 / len(sep)), fontsize=11)
+        fig.tight_layout(rect=(0, 0.04 if skipped else 0, 1, 1))
+        _footnote(fig, skipped)
         fig.savefig(out_dir / "confidence_right_vs_wrong.png", facecolor=_SURFACE)
         plt.close(fig)
-
-    # 4. Calibration: does a stated confidence match how often it is right?
-    bins = [(0.0, 0.2), (0.2, 0.4), (0.4, 0.6), (0.6, 0.8), (0.8, 1.01)]
-    fig, ax = plt.subplots(figsize=(8, 7))
-    _style(ax)
-    ax.xaxis.grid(True, color=_GRID)
-    ax.plot([0, 100], [0, 100], color=_MUTED, linewidth=1.5, linestyle="--", label="Perfect calibration")
-    for m in models:
-        mine = [r for r in rows if r["model"] == m]
-        xs, ys, ns = [], [], []
-        for lo, hi in bins:
-            inside = [r for r in mine if lo <= _conf_25(r) < hi]
-            if len(inside) < 3:  # too few photos to plot a rate
-                continue
-            ok = [((_num(r["error_km"]) or float("inf")) <= CORRECT_KM) for r in inside]
-            xs.append(100 * statistics.mean(_conf_25(r) for r in inside))
-            ys.append(100 * sum(ok) / len(ok))
-            ns.append(len(inside))
-        if xs:
-            ax.plot(xs, ys, color=color[m], linewidth=2, marker="o", markersize=8,
-                    markeredgecolor=_SURFACE, markeredgewidth=2, label=m)
-    ax.set_xlim(0, 100)
-    ax.set_ylim(0, 100)
-    ax.set_xlabel(f"Stated chance of being within {CORRECT_KM} km (%)")
-    ax.set_ylabel(f"Actually within {CORRECT_KM} km (%)")
-    ax.set_title("Confidence calibration", loc="left", fontsize=16, color=_INK, pad=14)
-    ax.legend(frameon=False, loc="upper left", fontsize=11)
-    fig.tight_layout()
-    fig.savefig(out_dir / "calibration.png", facecolor=_SURFACE)
-    plt.close(fig)
 
 
 def report(out_dir: Path) -> None:

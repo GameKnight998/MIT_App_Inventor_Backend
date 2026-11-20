@@ -27,6 +27,7 @@ from __future__ import annotations
 import os
 from typing import Any, Optional
 
+from utils.locationhint import prompt_text as hint_prompt_text
 from utils.visionclient import call_vision_json
 
 SCENE_ROUTING_ENABLED = os.getenv("SCENE_ROUTING_ENABLED", "1") not in (
@@ -472,12 +473,15 @@ def classify_scene(image_path: str) -> Optional[str]:
 
 
 def analyze_image(
-    image_path: str, scene_type: Optional[str] = None
+    image_path: str,
+    scene_type: Optional[str] = None,
+    location_hint: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Run the vision model on the image and return structured clues + candidates.
 
     `scene_type` skips the routing call when the caller already knows the scene
-    (e.g. every frame of one video shares a type).
+    (e.g. every frame of one video shares a type). `location_hint` is a resolved
+    user hint (see `utils.locationhint`) that narrows the search area.
     """
     if scene_type is None and SCENE_ROUTING_ENABLED:
         scene_type = classify_scene(image_path)
@@ -487,11 +491,12 @@ def analyze_image(
     if addendum:
         system = f"{system}\n\nSCENE-SPECIFIC FOCUS ({scene_type}):\n{addendum}"
 
-    parsed, note = call_vision_json(
-        image_path,
-        system,
-        "Analyze this image for geolocation clues and rank candidate locations.",
-    )
+    user_text = "Analyze this image for geolocation clues and rank candidate locations."
+    hint_text = hint_prompt_text(location_hint)
+    if hint_text:
+        user_text = f"{user_text}\n\n{hint_text}"
+
+    parsed, note = call_vision_json(image_path, system, user_text)
     if parsed is None:
         return _empty_analysis(note)
 

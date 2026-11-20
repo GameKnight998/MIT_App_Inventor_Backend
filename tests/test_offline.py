@@ -1022,6 +1022,7 @@ def _t23():
         "synthetic_detection_enabled",
         "scene_routing_enabled",
         "photon_enabled",
+        "location_hint_enabled",
         "defined_radius_km",
     ):
         assert key in health, f"health must report {key}"
@@ -1105,7 +1106,7 @@ def _t25():
         O.refine_street_level,
     )
     try:
-        main.analyze_image = lambda path, scene_type=None: dict(fake_vision)
+        main.analyze_image = lambda path, scene_type=None, location_hint=None: dict(fake_vision)
         O.verify_location = lambda lat, lon, expected, radius=None, bands=None: {
             "status": "verified", "note": "ok (stub)", "expected": expected,
             "confirmed": list(expected), "missing": [], "context": [],
@@ -1141,6 +1142,64 @@ def _t25():
             O.enrich_location,
             O.refine_street_level,
         ) = saved
+
+
+@check("a location hint resolves to an area and pulls candidates inside it")
+def _t25b():
+    import utils.locationhint as H
+
+    original = (H.forward_geocode_candidates, H._nominatim_search)
+    calls: list[str] = []
+
+    def fake_geocode(query, limit=3):
+        calls.append(query)
+        table = {
+            "seattle": {"name": "Seattle", "latitude": 47.6062, "longitude": -122.3321,
+                        "display_name": "Seattle, Washington, United States",
+                        "country": "United States", "osm_type": "city"},
+            "arizona": {"name": "Arizona", "latitude": 34.2, "longitude": -111.6,
+                        "display_name": "Arizona, United States",
+                        "country": "United States", "osm_type": "state"},
+            "sahara": {"name": "Saharanpur", "latitude": 29.97, "longitude": 77.55,
+                       "display_name": "Saharanpur, India", "osm_type": "city"},
+        }
+        hit = table.get(query.lower())
+        return [hit] if hit else []
+
+    H.forward_geocode_candidates = fake_geocode
+    H._nominatim_search = lambda params: []
+    try:
+        assert H.resolve_location_hint("   ") is None
+        seattle = H.resolve_location_hint("Seattle")
+        assert seattle["resolved"] and seattle["radius_km"] == 40.0, seattle
+
+        # Descriptor words are dropped for geocoding but the text is kept.
+        desert = H.resolve_location_hint("arizona desert")
+        assert desert["resolved"] and desert["text"] == "arizona desert", desert
+        assert calls[-1] == "arizona", calls
+        assert "arizona desert" in H.prompt_text(desert)
+
+        unknown = H.resolve_location_hint("Narnia")
+        assert unknown["resolved"] is False and H.prompt_text(unknown)
+        # A fuzzy fallback hit with a different name is not the user's place.
+        assert H.resolve_location_hint("Sahara")["resolved"] is False
+
+        cands = [
+            {"name": "Portland", "latitude": 45.52, "longitude": -122.68, "confidence": 0.7},
+            {"name": "Pike Place", "latitude": 47.609, "longitude": -122.342, "confidence": 0.4},
+        ]
+        ordered, inside = H.constrain_candidates(cands, seattle)
+        assert inside and ordered[0]["name"] == "Pike Place", ordered
+        assert ordered[1]["outside_hint"] and ordered[1]["confidence"] < 0.7
+
+        ordered, inside = H.constrain_candidates(cands[:1], seattle)
+        assert not inside and ordered[0]["from_hint"], ordered
+
+        report = H.hint_report(seattle, 47.609, -122.342)
+        assert report["result_inside"] is True and report["distance_km"] < 2
+        assert H.hint_report(seattle, 45.52, -122.68)["result_inside"] is False
+    finally:
+        H.forward_geocode_candidates, H._nominatim_search = original
 
 
 def _geotagged_jpeg(lat=(47, 50, 30.0), lon=(120, 1, 12.0), size=(320, 240)) -> bytes:

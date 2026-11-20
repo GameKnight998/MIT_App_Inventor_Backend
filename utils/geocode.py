@@ -128,7 +128,17 @@ def _parse_result(item: dict[str, Any]) -> Optional[dict[str, Any]]:
         "category": item.get("category") or item.get("class"),
         "osm_type": item.get("type"),
         "addresstype": item.get("addresstype"),
+        "bbox": _parse_bbox(item.get("boundingbox")),
     }
+
+
+def _parse_bbox(raw: Any) -> Optional[list[float]]:
+    """Nominatim boundingbox [south, north, west, east] as floats, or None."""
+    try:
+        south, north, west, east = (float(v) for v in raw)
+    except (TypeError, ValueError):
+        return None
+    return [south, north, west, east]
 
 
 def _parse_open_meteo(item: dict[str, Any]) -> Optional[dict[str, Any]]:
@@ -158,6 +168,11 @@ def _parse_open_meteo(item: dict[str, Any]) -> Optional[dict[str, Any]]:
         "FLLS": "waterfall",
         "PASS": "saddle",
         "HLL": "hill",
+        "PPLC": "city",
+        "ADM1": "state",
+        "ADM2": "county",
+        "PCLI": "country",
+        "DSRT": "desert",
     }.get(code, code.lower() or None)
     admin = item.get("admin1") or item.get("admin2")
     return {
@@ -176,6 +191,7 @@ def _parse_open_meteo(item: dict[str, Any]) -> Optional[dict[str, Any]]:
         "category": "natural" if code in {"MT", "MTS", "VLC", "HLL", "LK"} else "place",
         "osm_type": osm_type,
         "addresstype": osm_type,
+        "population": item.get("population"),
         "provider": "open-meteo",
     }
 

@@ -15,6 +15,7 @@ const els = {
   analyzeBtn: document.getElementById('analyzeBtn'),
   resetBtn: document.getElementById('resetBtn'),
   modeHint: document.getElementById('modeHint'),
+  locationHint: document.getElementById('locationHint'),
   progress: document.getElementById('progress'),
   progressText: document.getElementById('progressText'),
   error: document.getElementById('error'),
@@ -139,6 +140,8 @@ async function analyze() {
   const body = new FormData();
   if (many) files.forEach((f, i) => body.append(`image${i}`, f, f.name));
   else body.append('image', files[0], files[0].name);
+  const hint = els.locationHint.value.trim();
+  if (hint) body.append('location_hint', hint);
 
   els.analyzeBtn.disabled = true;
   show(els.progress, true);
@@ -279,6 +282,12 @@ function renderSingle(d) {
     badges.push(badge(`Authenticity: ${d.authenticity.replace(/_/g, ' ')}`, 'bad'));
   }
   if (d.street_level && d.street_level.refined) badges.push(badge('Street-level match', 'good'));
+  const lh = d.location_hint;
+  if (lh) {
+    if (!lh.resolved) badges.push(badge(`Hint not found on map: ${lh.text}`, 'warn'));
+    else if (lh.result_inside) badges.push(badge(`Inside hint: ${lh.text}`, 'good'));
+    else badges.push(badge(`Outside hint: ${lh.text}`, 'warn'));
+  }
   if (d.defined_radius) {
     badges.push(
       badge(

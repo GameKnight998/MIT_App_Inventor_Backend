@@ -36,6 +36,7 @@ from utils.landmarks import (
     prefetch_named_lookups,
     verify_named_and_water,
 )
+from utils.locationhint import constrain_candidates, hint_report
 from utils.solar import sun_consistency
 from utils.streetlevel import refine_street_level
 from utils.verify import VERIFY_RADIUS_M, detect_expected_features, verify_location
@@ -788,6 +789,7 @@ def determine_location(
     forensics: Optional[dict[str, Any]] = None,
     *,
     image_path: Optional[str] = None,
+    location_hint: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Fuse all evidence into a location, then attach forensics, clustered
     alternatives and an auditable reasoning trace.
@@ -796,11 +798,21 @@ def determine_location(
     the image again once a region is known. Omitting it simply skips refinement,
     which is what the offline eval harness does.
 
+    `location_hint` is a resolved user hint (`utils.locationhint`): candidates
+    inside it are tried first, and the result reports whether it respects it.
+
     The core fusion logic lives in `_determine_core`; this wrapper enriches the
     result with the cross-cutting fields (forensics, clusters, trace) so those
     are computed once regardless of which evidence path produced the answer.
     """
+    any_inside = True
+    if location_hint:
+        constrained, any_inside = constrain_candidates(_candidates(vision), location_hint)
+        vision = {**(vision or {}), "candidates": constrained, "_location_hint": location_hint}
+
     result = _determine_core(metadata, vision, image_path=image_path, forensics=forensics)
+    if location_hint:
+        _apply_location_hint(result, location_hint, any_inside)
     result["forensics"] = forensics or {}
     result["alternative_clusters"] = _cluster_candidates(vision)
     _warn_if_synthetic(result, forensics)
@@ -816,6 +828,39 @@ def determine_location(
         result, metadata, vision, forensics
     )
     return result
+
+
+def _apply_location_hint(
+    result: dict[str, Any], hint: dict[str, Any], any_inside: bool
+) -> None:
+    """Report the user's hint against the final pin and warn on disagreement."""
+    report = hint_report(hint, result.get("latitude"), result.get("longitude"), any_inside)
+    result["location_hint"] = report
+    if not hint.get("resolved"):
+        result["evidence"].append(
+            f"Location hint '{hint['text']}' could not be found on the map; it "
+            "was passed to the image analysis as text only."
+        )
+        return
+    result["evidence"].append(
+        f"Search narrowed to the user's hint '{hint['text']}' "
+        f"({hint['name']}, ~{hint['radius_km']:.0f} km radius)."
+    )
+    if report and report["result_inside"] is False:
+        note = (
+            f"The result is {report['distance_km']:.0f} km from the location hint "
+            f"'{hint['text']}', outside the area it describes."
+        )
+        result["evidence"].append(note)
+        if not result.get("warning"):
+            result["warning"] = note
+    elif not any_inside:
+        note = (
+            f"No image clue pointed inside '{hint['text']}', so the pin is the "
+            "centre of that area; the photo may have been taken elsewhere."
+        )
+        result["evidence"].append(note)
+        result["warning"] = note
 
 
 def _determine_core(
@@ -1446,14 +1491,23 @@ def _apply_street_refinement(
     if status not in _REFINE_STATUSES:
         return
 
-    city_hint = result.get("region") or result.get("country")
+    city_hint = result.get("location_name") or result.get("region") or result.get("country")
+    radius_km = None
+    user_hint = (vision or {}).get("_location_hint") or {}
+    if user_hint.get("resolved") and user_hint.get("radius_km"):
+        # A city-sized hint is the best locality suffix for street geocoding,
+        # and the refine radius need not exceed the area the user named.
+        if float(user_hint["radius_km"]) <= 60:
+            city_hint = user_hint["text"]
+        radius_km = max(3.0, min(25.0, float(user_hint["radius_km"]) * 1.25))
     street = refine_street_level(
         result["latitude"],
         result["longitude"],
         vision,
         image_path=image_path,
         place_label=result.get("address") or result.get("location_name"),
-        city_hint=result.get("location_name") or city_hint,
+        city_hint=city_hint,
+        radius_km=radius_km,
     )
     result["street_level"] = street
     for line in street.get("evidence", []):

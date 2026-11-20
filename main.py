@@ -32,6 +32,11 @@ endpoints accept the image in whichever way App Inventor can actually send it:
   1. multipart/form-data field named "image" (browsers, Postman, curl -F)
   2. the raw image bytes as the request body (Web.PostFile)
   3. a base64 string (Web.PostText, or JSON {"image_base64": "..."})
+
+Optional location hint ("seattle", "arizona desert") narrows the search instead
+of searching the whole world. Send it as `?location_hint=...` (easiest from App
+Inventor: append it to the Url), an `X-Location-Hint` header, a multipart field
+`location_hint`, or a JSON field `location_hint`.
 """
 
 from __future__ import annotations
@@ -58,6 +63,7 @@ from utils.cache import parallel_map
 from utils.clustering import cluster_multi_image_candidates
 from utils.exif import extract_exif
 from utils.forensics import assess_forensics
+from utils.locationhint import resolve_location_hint
 from utils.osint import DEFINED_RADIUS_KM, apply_vehicle_signal, determine_location
 from utils.preprocess import enhance_image, enhancement_available
 from utils.response import build_response, error_response
@@ -181,6 +187,7 @@ def health() -> dict[str, object]:
         "synthetic_detection_enabled": synthetic.SYNTHETIC_ENABLED,
         "scene_routing_enabled": SCENE_ROUTING_ENABLED,
         "photon_enabled": geocode.PHOTON_ENABLED,
+        "location_hint_enabled": True,
         "defined_radius_km": DEFINED_RADIUS_KM,
     }
 
@@ -195,6 +202,33 @@ def _decode_base64(text: str) -> Optional[bytes]:
         return base64.b64decode(text, validate=False)
     except (binascii.Error, ValueError):
         return None
+
+
+_HINT_KEYS = ("location_hint", "hint")
+
+
+def _stash_body_hint(request: Request, fields: Any) -> None:
+    """Remember a hint sent inside a form/JSON body (read once by the extractor)."""
+    try:
+        for key in _HINT_KEYS:
+            value = fields.get(key)
+            if isinstance(value, str) and value.strip():
+                request.state.location_hint = value
+                return
+    except AttributeError:
+        return
+
+
+def _location_hint_text(request: Request) -> Optional[str]:
+    """Hint from the query string, header, or body (in that order)."""
+    for key in _HINT_KEYS:
+        value = request.query_params.get(key)
+        if value and value.strip():
+            return value
+    header = request.headers.get("x-location-hint")
+    if header and header.strip():
+        return header
+    return getattr(request.state, "location_hint", None)
 
 
 async def _extract_image_bytes(
@@ -217,6 +251,7 @@ async def _extract_image_bytes(
             form = await request.form()
         except Exception:
             return None, None
+        _stash_body_hint(request, form)
         for value in form.values():
             if hasattr(value, "read"):  # it's an UploadFile
                 return await value.read(), getattr(value, "filename", None)
@@ -232,6 +267,7 @@ async def _extract_image_bytes(
 
         try:
             data = json.loads(body)
+            _stash_body_hint(request, data)
             b64 = data.get("image_base64") or data.get("image")
             if b64:
                 return _decode_base64(b64), data.get("filename")
@@ -273,6 +309,7 @@ async def _extract_media_list(
             form = await request.form()
         except Exception:
             return []
+        _stash_body_hint(request, form)
         for value in form.values():
             if hasattr(value, "read"):
                 data = await value.read()
@@ -288,6 +325,8 @@ async def _extract_media_list(
             payload = json.loads(body)
         except (json.JSONDecodeError, ValueError):
             return []
+        if isinstance(payload, dict):
+            _stash_body_hint(request, payload)
         entries = payload.get("images") if isinstance(payload, dict) else None
         if isinstance(entries, list):
             for entry in entries:
@@ -325,6 +364,7 @@ def _analyze_image_bytes(
     contents: Optional[bytes],
     original_name: Optional[str],
     content_type: str = "(none)",
+    location_hint: Optional[str] = None,
 ) -> tuple[int, dict[str, Any]]:
     """Run the full single-image OSINT pipeline. Returns (status_code, payload).
 
@@ -383,13 +423,18 @@ def _analyze_image_bytes(
         if quality.get("enhanced"):
             enhanced_path = vision_path
 
-        vision = analyze_image(vision_path)
+        hint = resolve_location_hint(location_hint)
+        vision = analyze_image(vision_path, location_hint=hint)
 
         # Vehicle identification is an independent vision call, so run it
         # alongside the location pipeline instead of after it.
         jobs = [
             lambda: determine_location(
-                metadata, vision, forensics, image_path=vision_path
+                metadata,
+                vision,
+                forensics,
+                image_path=vision_path,
+                location_hint=hint,
             )
         ]
         wants_vehicle = should_identify(vision)
@@ -432,12 +477,14 @@ async def analyze(request: Request) -> JSONResponse:
     """Receive an image (any supported format), run the OSINT pipeline."""
     content_type = request.headers.get("content-type") or "(none)"
     contents, original_name = await _extract_image_bytes(request)
+    hint = _location_hint_text(request)
     print(
         f"[/analyze] content-type={content_type!r} "
-        f"bytes={len(contents) if contents else 0} filename={original_name!r}"
+        f"bytes={len(contents) if contents else 0} filename={original_name!r} "
+        f"hint={hint!r}"
     )
     status, payload = await run_in_threadpool(
-        _analyze_image_bytes, contents, original_name, content_type
+        _analyze_image_bytes, contents, original_name, content_type, hint
     )
     return JSONResponse(status_code=status, content=payload)
 
@@ -725,9 +772,11 @@ async def analyze_case(request: Request) -> JSONResponse:
                 ),
             )
 
+        hint = _location_hint_text(request)
+
         def run(entry: tuple[bytes, Optional[str]]) -> dict[str, Any]:
             data, name = entry
-            _status, payload = _analyze_image_bytes(data, name)
+            _status, payload = _analyze_image_bytes(data, name, location_hint=hint)
             return payload
 
         payloads = await run_in_threadpool(

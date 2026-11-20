@@ -166,6 +166,26 @@ main {
 
 .hint { color: var(--muted); font-size: 13px; }
 
+.hint-field {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.hint-field em { font-style: normal; opacity: 0.75; }
+.hint-field input {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  padding: 10px 12px;
+}
+.hint-field input:focus { outline: none; border-color: var(--info); }
+
 /* --------------------------------------------------------------- progress */
 .progress {
   margin-top: 16px;

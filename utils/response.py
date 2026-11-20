@@ -174,6 +174,9 @@ def build_response(
         "landmark_check": (location.get("verification") or {}).get("named"),
         # Street-level refinement: the exact-spot pass and what it matched.
         "street_level": location.get("street_level"),
+        # The user's "taken somewhere around ..." hint, what it resolved to,
+        # and whether the pin sits inside it (null when no hint was sent).
+        "location_hint": location.get("location_hint"),
         # Whether the image is a genuine photograph at all. "synthetic" means the
         # depicted place may not exist, so confidence is capped and warned about.
         "authenticity": (location.get("forensics", forensics or {}) or {}).get(
@@ -238,6 +241,7 @@ def error_response(message: str, *, filename: str | None = None) -> dict[str, An
         "climate_check": None,
         "landmark_check": None,
         "street_level": None,
+        "location_hint": None,
         "authenticity": "unknown",
         "vehicle": None,
         "vehicle_check": None,

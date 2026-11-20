@@ -139,6 +139,27 @@ def _group_candidates(samples: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return merged
 
 
+_COUNTRY_ALIASES = {
+    "usa": "united states", "us": "united states", "u s": "united states",
+    "united states of america": "united states", "uk": "united kingdom",
+    "great britain": "united kingdom", "england": "united kingdom",
+}
+
+
+def _norm_country(name: Optional[str]) -> str:
+    n = _norm_name(name)
+    return _COUNTRY_ALIASES.get(n, n)
+
+
+def _country_agreement(samples: list[dict[str, Any]], top: Optional[dict[str, Any]]) -> Optional[float]:
+    """Share of samples whose top pick is in the same country as the winner."""
+    target = _norm_country((top or {}).get("country"))
+    if not target:
+        return None
+    firsts = [(s.get("candidates") or [{}])[0] for s in samples]
+    return round(sum(_norm_country(f.get("country")) == target for f in firsts) / len(samples), 3)
+
+
 def merge_samples(samples: list[dict[str, Any]]) -> dict[str, Any]:
     """Merge N vision analyses of the same image into one consensus analysis."""
     usable = [s for s in samples if s and s.get("available")]
@@ -181,5 +202,6 @@ def merge_samples(samples: list[dict[str, Any]]) -> dict[str, Any]:
         "samples": len(usable),
         "top_agreement": top["top_votes"] if top is not None else 0.0,
         "groups": len(candidates),
+        "country_agreement": _country_agreement(usable, top),
     }
     return base

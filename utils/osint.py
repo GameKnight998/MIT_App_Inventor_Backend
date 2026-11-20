@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import re
 from typing import Any, Optional
 
 from utils.cache import parallel_map
@@ -31,6 +32,7 @@ from utils.geocode import (
     reverse_geocode,
 )
 from utils.geoenv import annual_climate, climate_consistency, elevation_m
+from utils.landmarks import _BROAD_REGION as _BROAD_REGION_RE
 from utils.landmarks import extract_named_features, verify_named_and_water
 from utils.solar import sun_consistency
 from utils.verify import VERIFY_RADIUS_M, detect_expected_features, verify_location
@@ -107,6 +109,12 @@ _DEFAULT_WEIGHTS: dict[str, float] = {
     # Share of independent vision samples whose top answer agreed with the
     # chosen location (see utils/consensus.py). Scaled to [-1, 1].
     "agreement": 1.5,
+    # The answer is a whole city/region/state and nothing in the photo's text
+    # names it (e.g. "Seattle" guessed from Washington plates alone). Runs
+    # agreeing on an obvious default is not evidence of a precise location.
+    "vague_answer": -1.5,
+    # Text in the photo (a sign, business name, plate frame) names the answer.
+    "text_support": 0.6,
 }
 FUSION_WEIGHTS_PATH = os.getenv(
     "FUSION_WEIGHTS_PATH",
@@ -167,7 +175,81 @@ def fusion_features(sig: dict[str, Any]) -> dict[str, float]:
     agreement = sig.get("agreement")
     if agreement is not None:
         feats["agreement"] = 2 * _clamp(float(agreement)) - 1
+    if sig.get("vague_answer"):
+        feats["vague_answer"] = 1.0
+    if sig.get("text_support"):
+        feats["text_support"] = 1.0
     return feats
+
+
+# Place types that cover a whole settlement or larger (tens of km across).
+_BROAD_TYPES = {
+    "city", "town", "municipality", "county", "state", "state_district",
+    "region", "province", "country", "administrative", "continent",
+}
+_BROAD_WORDS = {
+    "area", "metropolitan", "metro", "region", "county", "state", "greater", "province",
+    "northwestern", "northeastern", "southwestern", "southeastern", "eastside", "westside",
+}
+_CORE_DROP = _BROAD_WORDS | {"the", "of", "western", "eastern", "northern", "southern", "central"}
+
+
+def _core_name(name: str) -> str:
+    """'Seattle Metropolitan Area, Washington' -> 'seattle'."""
+    first = (name or "").split(",")[0].lower()
+    return " ".join(w for w in re.findall(r"[a-z]+", first) if w not in _CORE_DROP)
+
+
+def _answer_specificity(
+    name: Optional[str], vision: Optional[dict[str, Any]], named: dict[str, Any]
+) -> dict[str, Any]:
+    """How specific the chosen answer is, and whether the photo's text backs it.
+
+    Returns {"broad": bool, "text_support": bool, "precise": bool}. "broad"
+    means the answer is a whole city or larger; "precise" means something
+    pins it to a spot (a named landmark the AI recognised was found nearby).
+    """
+    name = name or ""
+    words = set(re.findall(r"[a-z]+", name.split(",")[0].lower()))
+    broad = bool(words & _BROAD_WORDS) or bool(_BROAD_REGION_RE.search(name))
+    if not broad and name:
+        hits = forward_geocode_candidates(name, 1)
+        kind = ((hits[0].get("addresstype") or hits[0].get("osm_type") or "") if hits else "").lower()
+        broad = kind in _BROAD_TYPES
+
+    core = _core_name(name)
+    text = " ".join(
+        str(t) for key in ("ocr_text", "signage", "named_landmarks") for t in ((vision or {}).get(key) or [])
+    ).lower()
+    text_support = bool(core) and re.search(rf"\b{re.escape(core)}\b", text) is not None
+
+    precise = named.get("landmark_status") == "matched"
+    return {"broad": broad, "text_support": text_support, "precise": precise}
+
+
+def _confidence_by_distance(
+    p_city: float, spec: dict[str, Any], country_agreement: Optional[float]
+) -> dict[str, float]:
+    """Spread one city-level probability over street / city / country levels.
+
+    Heuristic until eval/calibrate.py has enough labelled photos:
+    street level needs something that pins the spot; country level also
+    gains when the independent samples agree on the country.
+    """
+    if spec.get("precise"):
+        street_factor = 0.85
+    elif not spec.get("broad"):
+        street_factor = 0.45
+    else:
+        street_factor = 0.05
+    p_country = p_city
+    if country_agreement is not None:
+        p_country = max(p_city, 1 - (1 - p_city) * (1 - 0.85 * _clamp(country_agreement)))
+    return {
+        "1km": round(_clamp(p_city * street_factor), 3),
+        "25km": round(_clamp(p_city), 3),
+        "750km": round(_clamp(p_country), 3),
+    }
 
 
 def _fuse_confidence(
@@ -648,7 +730,22 @@ def _determine_core(
         signals["place_status"] = named.get("place_status")
         signals["landmark_named"] = named.get("landmark_status")
         signals["water_named"] = named.get("water_status")
+        spec = _answer_specificity(result.get("location_name"), vision, named)
+        signals["text_support"] = spec["text_support"]
+        signals["vague_answer"] = spec["broad"] and not (spec["text_support"] or spec["precise"])
+        # Headline: how far to trust this exact pin (vague answers marked down).
         result["confidence"] = _fuse_confidence(signals)
+        # A vague answer can still be right at city level, so that estimate
+        # leaves the vagueness penalty out.
+        p_city = _fuse_confidence({**signals, "vague_answer": False})
+        result["confidence_by_distance"] = _confidence_by_distance(
+            p_city, spec, ((vision or {}).get("consensus") or {}).get("country_agreement")
+        )
+        if signals["vague_answer"]:
+            evidence.append(
+                "Answer is a whole city or region and no text in the photo names it, "
+                "so confidence in this exact spot is reduced."
+            )
         # Kept for debugging and for eval/calibrate.py, which fits the weights.
         result["confidence_signals"] = signals
         return result

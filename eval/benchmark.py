@@ -57,7 +57,7 @@ CORRECT_KM = 25
 FIELDS = [
     "file", "category", "model", "true_lat", "true_lon", "true_country", "true_place",
     "pred_place", "pred_country", "pred_lat", "pred_lon", "error_km", "country_match",
-    "confidence", "ai_top_place", "ai_top_error_km", "ai_raw_confidence",
+    "confidence", "conf_1km", "conf_25km", "conf_750km", "ai_top_place", "ai_top_error_km", "ai_raw_confidence",
     "agreement", "samples", "map_check", "seconds", "error",
 ]
 
@@ -147,6 +147,9 @@ def run_one(photo: dict[str, Any], model: str) -> dict[str, Any]:
         error_km=_err(loc.get("latitude"), loc.get("longitude"), photo["lat"], photo["lon"]),
         country_match=_country_match(loc.get("country"), photo.get("country", "")),
         confidence=round(float(loc.get("confidence") or 0.0), 3),
+        conf_1km=(loc.get("confidence_by_distance") or {}).get("1km"),
+        conf_25km=(loc.get("confidence_by_distance") or {}).get("25km"),
+        conf_750km=(loc.get("confidence_by_distance") or {}).get("750km"),
         # The AI's own top answer before map checks: shows what the pipeline adds.
         ai_top_place=top.get("name"),
         ai_top_error_km=_err(top.get("latitude"), top.get("longitude"), photo["lat"], photo["lon"]),

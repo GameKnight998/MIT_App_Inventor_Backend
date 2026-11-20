@@ -125,6 +125,21 @@ class FusionTests(unittest.TestCase):
         for name in feats:
             self.assertIn(name, _DEFAULT_WEIGHTS, name)
 
+    def test_vague_answer_lowers_confidence(self):
+        self.assertLess(
+            _fuse_confidence({**self.base, "agreement": 1.0, "vague_answer": True}),
+            _fuse_confidence({**self.base, "agreement": 1.0}) - 0.2,
+        )
+
+    def test_confidence_by_distance_orders_levels(self):
+        from utils.osint import _confidence_by_distance
+
+        broad = _confidence_by_distance(0.8, {"broad": True, "precise": False}, 1.0)
+        self.assertLess(broad["1km"], broad["25km"])
+        self.assertLessEqual(broad["25km"], broad["750km"])
+        precise = _confidence_by_distance(0.8, {"broad": False, "precise": True}, 1.0)
+        self.assertGreater(precise["1km"], broad["1km"] * 10)
+
     def test_calibrated_weights_override_defaults(self):
         w = dict(_DEFAULT_WEIGHTS, bias=2.0)
         self.assertGreater(_fuse_confidence(self.base, w), _fuse_confidence(self.base))

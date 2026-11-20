@@ -99,6 +99,9 @@ def build_response(
         ),
         "map_url": _map_url(lat, lon),
         "confidence": round(float(location.get("confidence", 0.0)), 3),
+        # Estimated chance the answer is within 1 km / 25 km / 750 km of the
+        # true spot (null for EXIF GPS and fallback answers).
+        "confidence_by_distance": location.get("confidence_by_distance"),
         # Friendly, underscore-free source label for display.
         "source": _source_label(source_code),
         "summary": _build_summary(name, country, lat, lon),

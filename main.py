@@ -151,6 +151,7 @@ $("go").onclick = async () => {
         <div class="big">${esc(d.location_name)}</div>
         <div class="muted">${esc(d.region)}, ${esc(d.country)} &middot; ${esc(d.coordinates)}</div>
         <div class="bar"><div style="width:${pct}%"></div></div>
+        ${d.confidence_by_distance ? `<div class="muted">Chance it is within 1 km: ${Math.round(d.confidence_by_distance["1km"]*100)}% &middot; 25 km: ${Math.round(d.confidence_by_distance["25km"]*100)}% &middot; 750 km: ${Math.round(d.confidence_by_distance["750km"]*100)}%</div>` : ""}
         <div>Confidence <b>${pct}%</b> &middot; map check: ${esc(d.verified)}${cons.samples > 1 ? ` &middot; AI runs agreeing: ${Math.round((cons.top_agreement||0)*cons.samples)} of ${cons.samples}` : ""}</div>
         ${d.warning ? `<p class="muted">${esc(d.warning)}</p>` : ""}
         ${d.map_url ? `<p><a href="${esc(d.map_url)}" target="_blank" rel="noopener">Open in map</a></p>` : ""}

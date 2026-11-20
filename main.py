@@ -31,6 +31,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
+from starlette.concurrency import run_in_threadpool
 from PIL import Image
 
 from utils.cache import parallel_map
@@ -172,6 +173,12 @@ def test_page() -> str:
     return _TEST_PAGE
 
 
+@app.get("/compare", response_class=HTMLResponse)
+def compare_page() -> str:
+    """Browser page: run one photo through several models side by side."""
+    return (BASE_DIR / "pages" / "compare.html").read_text(encoding="utf-8")
+
+
 @app.get("/health")
 def health() -> dict[str, object]:
     return {
@@ -264,6 +271,58 @@ def _requested_model(request: Request) -> Optional[str]:
     return model if model in ALLOWED_VISION_MODELS else None
 
 
+@app.get("/models")
+def models() -> dict[str, object]:
+    """Models the /compare page may offer, and whether each has an API key."""
+    from utils.providers import missing_key, provider_for
+    from utils.vision import VISION_MODEL
+
+    names = sorted(ALLOWED_VISION_MODELS | {VISION_MODEL})
+    return {
+        "default": VISION_MODEL,
+        "models": [
+            {"name": m, "provider": provider_for(m), "missing_key": missing_key(m)}
+            for m in names
+        ],
+    }
+
+
+@app.get("/geocode")
+def geocode(q: str = "") -> JSONResponse:
+    """Look up a place name (used by /compare for the true location)."""
+    from utils.geocode import forward_geocode
+
+    # Try the whole text, then just the part before the first comma:
+    # Nominatim often misses "Mather Point, Grand Canyon" but finds "Mather Point".
+    hit = None
+    for query in dict.fromkeys([q.strip(), q.split(",")[0].strip()]):
+        if query:
+            hit = forward_geocode(query)
+            if hit:
+                break
+    if not hit:
+        return JSONResponse(status_code=404, content={"error": f"Could not find '{q}'."})
+    return JSONResponse(
+        content={k: hit.get(k) for k in ("latitude", "longitude", "display_name")}
+    )
+
+
+def _run_pipeline(path: str, fmt: Optional[str], name: str, ignore_gps: bool, model: Optional[str]) -> dict:
+    """The blocking analysis work, run in a worker thread by /analyze."""
+    metadata = extract_exif(path)
+    if ignore_gps:
+        # Testing aid: locate from the pixels alone, as for a stripped photo.
+        metadata = {**metadata, "gps": None}
+    forensics = assess_forensics(path, fmt, metadata)
+    vision = analyze_image(path, model=model)
+    location = determine_location(metadata, vision, forensics)
+    payload = build_response(
+        filename=name, metadata=metadata, vision=vision, location=location, forensics=forensics
+    )
+    payload["model"] = vision.get("model") or model
+    return payload
+
+
 @app.post("/analyze")
 async def analyze(request: Request) -> JSONResponse:
     """Receive an image (any supported format), run the OSINT pipeline."""
@@ -317,19 +376,16 @@ async def analyze(request: Request) -> JSONResponse:
         )
 
     try:
-        metadata = extract_exif(str(saved_path))
-        if request.query_params.get("ignore_gps") in ("1", "true", "yes"):
-            # Testing aid: locate from the pixels alone, as for a stripped photo.
-            metadata = {**metadata, "gps": None}
-        forensics = assess_forensics(str(saved_path), fmt, metadata)
-        vision = analyze_image(str(saved_path), model=_requested_model(request))
-        location = determine_location(metadata, vision, forensics)
-        payload = build_response(
-            filename=original_name or saved_name,
-            metadata=metadata,
-            vision=vision,
-            location=location,
-            forensics=forensics,
+        # The pipeline blocks on network calls for many seconds; running it in a
+        # worker thread lets several requests (e.g. /compare's one-per-model)
+        # proceed at the same time instead of queueing.
+        payload = await run_in_threadpool(
+            _run_pipeline,
+            str(saved_path),
+            fmt,
+            original_name or saved_name,
+            request.query_params.get("ignore_gps") in ("1", "true", "yes"),
+            _requested_model(request),
         )
         return JSONResponse(status_code=200, content=payload)
     except Exception as exc:

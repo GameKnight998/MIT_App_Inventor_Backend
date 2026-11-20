@@ -203,9 +203,25 @@ def _is_water_hit(hit: dict[str, Any]) -> bool:
     return any(w in name for w in ("lake", "reservoir", "bay", "sea", "river"))
 
 
-def _geocode_one(query: str) -> Optional[dict[str, Any]]:
-    hits = forward_geocode_candidates(query, limit=3)
-    return hits[0] if hits else None
+def _nearest_hit(
+    query: str, latitude: float, longitude: float
+) -> tuple[Optional[dict[str, Any]], Optional[float]]:
+    """The geocoder match for `query` closest to (latitude, longitude).
+
+    Names are ambiguous: "Grand Canyon South Rim" returns a cliff 150 km west
+    of the village as well as the village viewpoints. The question is "is
+    there a place with this name near here?", so the nearest match answers
+    it, not whichever one the geocoder happens to rank first.
+    """
+    best: Optional[dict[str, Any]] = None
+    best_dist: Optional[float] = None
+    for hit in forward_geocode_candidates(query, limit=3):
+        if hit.get("latitude") is None or hit.get("longitude") is None:
+            continue
+        dist = _haversine_km(latitude, longitude, hit["latitude"], hit["longitude"])
+        if best_dist is None or dist < best_dist:
+            best, best_dist = hit, dist
+    return best, best_dist
 
 
 def _empty_named() -> dict[str, Any]:
@@ -237,11 +253,8 @@ def verify_named_and_water(
 
     # 1. Does the candidate's own name actually live near these coordinates?
     if place_name and _looks_like_named_feature(place_name):
-        geo = _geocode_one(place_name)
-        if geo and geo.get("latitude") is not None:
-            dist = _haversine_km(
-                latitude, longitude, geo["latitude"], geo["longitude"]
-            )
+        geo, dist = _nearest_hit(place_name, latitude, longitude)
+        if geo is not None and dist is not None:
             report["place_distance_km"] = round(dist, 1)
             kind = (geo.get("osm_type") or geo.get("addresstype") or "").lower()
             specific = kind in _SPECIFIC_TYPES or _looks_like_named_feature(place_name)
@@ -261,10 +274,9 @@ def verify_named_and_water(
     landmarks = extract_named_features(vision)
     matched: list[dict[str, Any]] = []
     for name in landmarks:
-        geo = _geocode_one(name)
-        if not geo or geo.get("latitude") is None:
+        geo, dist = _nearest_hit(name, latitude, longitude)
+        if geo is None or dist is None:
             continue
-        dist = _haversine_km(latitude, longitude, geo["latitude"], geo["longitude"])
         if dist <= LANDMARK_MATCH_KM:
             matched.append(
                 {

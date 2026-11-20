@@ -140,6 +140,26 @@ class FusionTests(unittest.TestCase):
         precise = _confidence_by_distance(0.8, {"broad": False, "precise": True}, 1.0)
         self.assertGreater(precise["1km"], broad["1km"] * 10)
 
+    def test_answer_without_coordinates_is_capped(self):
+        from utils.osint import NAME_ONLY_CAP, determine_location
+
+        vision = {
+            "available": True,
+            "candidates": [{"name": "Suburban area, Midwest", "region": "Unknown",
+                            "country": "United States", "confidence": 0.9}],
+        }
+        import utils.osint as O
+
+        old = O.forward_geocode_candidates
+        O.forward_geocode_candidates = lambda q, limit=3: []
+        try:
+            loc = determine_location({}, vision)
+        finally:
+            O.forward_geocode_candidates = old
+        self.assertLessEqual(loc["confidence"], NAME_ONLY_CAP)
+        self.assertIsNone(loc["region"])
+        self.assertEqual(loc["confidence_by_distance"]["1km"], 0.0)
+
     def test_calibrated_weights_override_defaults(self):
         w = dict(_DEFAULT_WEIGHTS, bias=2.0)
         self.assertGreater(_fuse_confidence(self.base, w), _fuse_confidence(self.base))

@@ -187,6 +187,8 @@ _BROAD_TYPES = {
     "city", "town", "municipality", "county", "state", "state_district",
     "region", "province", "country", "administrative", "continent",
 }
+# Highest confidence for an answer that has no coordinates (never map-checked).
+NAME_ONLY_CAP = float(os.getenv("NAME_ONLY_CAP", "0.25"))
 # A named landmark within this distance of the answer pins it to a spot.
 PRECISE_LANDMARK_KM = float(os.getenv("PRECISE_LANDMARK_KM", "2"))
 _BROAD_WORDS = {
@@ -766,16 +768,28 @@ def _determine_core(
     # 3. Name-only fallback (geocoding produced no coordinates to verify).
     name_only = selection["name_only"]
     if name_only is not None:
+        # No coordinates means nothing could be checked on a map, and names
+        # like "Suburban area, Midwest" are too vague to geocode in the first
+        # place. Cap the confidence instead of trusting the AI's own number.
+        conf = min(float(name_only.get("confidence", 0.0) or 0.0), NAME_ONLY_CAP)
+        region = name_only.get("region")
+        if isinstance(region, str) and region.strip().lower() in ("unknown", "n/a", "none", ""):
+            region = None
         result.update(
             {
                 "location_name": name_only.get("name"),
                 "country": name_only.get("country"),
-                "region": name_only.get("region"),
-                "confidence": name_only.get("confidence", 0.0),
+                "region": region,
+                "confidence": round(conf, 3),
+                "confidence_by_distance": {
+                    "1km": 0.0,
+                    "25km": round(conf * 0.5, 3),
+                    "750km": round(conf, 3),
+                },
                 "source": "vision_place_name",
             }
         )
-        evidence.append(f"Best guess (unverified): {name_only.get('name')}.")
+        evidence.append(f"Best guess (unverified, no map location): {name_only.get('name')}.")
         _append_clue_evidence(result, metadata, vision)
         return result
 

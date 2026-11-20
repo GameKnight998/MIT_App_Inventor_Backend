@@ -31,3 +31,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Local benchmark photos and labels (not for the repo)
+benchmark-kit/

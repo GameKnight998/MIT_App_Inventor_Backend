@@ -209,6 +209,17 @@ def _read_results(out_dir: Path) -> list[dict[str, Any]]:
     return list(latest.values())
 
 
+def _conf_25(r: dict[str, Any]) -> float:
+    """Confidence that the answer is within CORRECT_KM.
+
+    The improved pipeline's headline confidence means "this exact spot", so
+    compare like with like using its within-25 km estimate when present.
+    The original pipeline has only one number, which is used as is.
+    """
+    v = _num(r.get("conf_25km"))
+    return v if v is not None else (_num(r.get("confidence")) or 0.0)
+
+
 def _rate(values: list[bool]) -> Optional[float]:
     return round(sum(values) / len(values), 3) if values else None
 
@@ -223,7 +234,7 @@ def summarize(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         dist = [e if e is not None else float("inf") for e in errs]
         ai_errs = [_num(r["ai_top_error_km"]) for r in mine]
         ai_dist = [e if e is not None else float("inf") for e in ai_errs]
-        conf = [_num(r["confidence"]) or 0.0 for r in mine]
+        conf = [_conf_25(r) for r in mine]
         correct = [d <= CORRECT_KM for d in dist]
         row: dict[str, Any] = {"model": model, "photos": len(mine), "failed": sum(1 for r in mine if r.get("error"))}
         for t in THRESHOLDS_KM:
@@ -337,7 +348,35 @@ def charts(summary: list[dict[str, Any]], rows: list[dict[str, Any]], out_dir: P
         fig.savefig(out_dir / "median_error.png", facecolor=_SURFACE)
         plt.close(fig)
 
-    # 3. Calibration: does a stated confidence match how often it is right?
+    # 3. Confidence on right vs wrong answers: a trustworthy score is high
+    # when right and low when wrong. Readable even with few photos.
+    sep = [s for s in summary if s["confidence_when_correct"] is not None]
+    if sep:
+        fig, ax = plt.subplots(figsize=(12, 6.2))
+        _style(ax)
+        xs = list(range(len(sep)))
+        w = 0.38
+        right = [100 * (s["confidence_when_correct"] or 0) for s in sep]
+        wrong = [100 * (s["confidence_when_wrong"] or 0) for s in sep]
+        ax.bar([x - w / 2 for x in xs], right, w * 0.92, color=_SERIES[0], label=f"Answer within {CORRECT_KM} km")
+        ax.bar([x + w / 2 for x in xs], wrong, w * 0.92, color=_SERIES[1], label=f"Answer more than {CORRECT_KM} km off")
+        for x, (r_, w_, s_) in enumerate(zip(right, wrong, sep)):
+            ax.text(x - w / 2, r_ + 1.2, f"{r_:.0f}%", ha="center", fontsize=10, color=_INK)
+            if s_["confidence_when_wrong"] is not None:
+                ax.text(x + w / 2, w_ + 1.2, f"{w_:.0f}%", ha="center", fontsize=10, color=_INK)
+            else:
+                ax.text(x + w / 2, 1.2, "no misses", ha="center", fontsize=9, color=_MUTED)
+        ax.set_xticks(xs, [s["model"] for s in sep], fontsize=11)
+        ax.set_ylim(0, 105)
+        ax.set_ylabel("Average stated confidence (%)")
+        ax.set_title("Confidence when right vs. when wrong (bigger gap = more trustworthy)",
+                     loc="left", fontsize=16, color=_INK, pad=14)
+        ax.legend(frameon=False, ncol=2, loc="upper left", bbox_to_anchor=(0, -0.1))
+        fig.tight_layout()
+        fig.savefig(out_dir / "confidence_right_vs_wrong.png", facecolor=_SURFACE)
+        plt.close(fig)
+
+    # 4. Calibration: does a stated confidence match how often it is right?
     bins = [(0.0, 0.2), (0.2, 0.4), (0.4, 0.6), (0.6, 0.8), (0.8, 1.01)]
     fig, ax = plt.subplots(figsize=(8, 7))
     _style(ax)
@@ -347,11 +386,11 @@ def charts(summary: list[dict[str, Any]], rows: list[dict[str, Any]], out_dir: P
         mine = [r for r in rows if r["model"] == m]
         xs, ys, ns = [], [], []
         for lo, hi in bins:
-            inside = [r for r in mine if lo <= (_num(r["confidence"]) or 0.0) < hi]
+            inside = [r for r in mine if lo <= _conf_25(r) < hi]
             if len(inside) < 3:  # too few photos to plot a rate
                 continue
             ok = [((_num(r["error_km"]) or float("inf")) <= CORRECT_KM) for r in inside]
-            xs.append(100 * statistics.mean(_num(r["confidence"]) or 0.0 for r in inside))
+            xs.append(100 * statistics.mean(_conf_25(r) for r in inside))
             ys.append(100 * sum(ok) / len(ok))
             ns.append(len(inside))
         if xs:
@@ -359,7 +398,7 @@ def charts(summary: list[dict[str, Any]], rows: list[dict[str, Any]], out_dir: P
                     markeredgecolor=_SURFACE, markeredgewidth=2, label=m)
     ax.set_xlim(0, 100)
     ax.set_ylim(0, 100)
-    ax.set_xlabel("Stated confidence (%)")
+    ax.set_xlabel(f"Stated chance of being within {CORRECT_KM} km (%)")
     ax.set_ylabel(f"Actually within {CORRECT_KM} km (%)")
     ax.set_title("Confidence calibration", loc="left", fontsize=16, color=_INK, pad=14)
     ax.legend(frameon=False, loc="upper left", fontsize=11)

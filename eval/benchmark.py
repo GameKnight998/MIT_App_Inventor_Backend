@@ -41,8 +41,13 @@ from pathlib import Path
 from typing import Any, Optional
 
 ROOT = Path(__file__).resolve().parent.parent
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+# BENCH_CODE_DIR runs another checkout of the pipeline (e.g. the original
+# version) so before/after results come from the same harness and photos.
+import os  # noqa: E402
+
+CODE_DIR = Path(os.getenv("BENCH_CODE_DIR") or ROOT).resolve()
+if str(CODE_DIR) not in sys.path:
+    sys.path.insert(0, str(CODE_DIR))
 
 THRESHOLDS_KM = (1, 25, 200, 750, 2500)
 THRESHOLD_LABELS = ("Street\n1 km", "City\n25 km", "Region\n200 km", "Country\n750 km", "Continent\n2,500 km")
@@ -118,7 +123,13 @@ def run_one(photo: dict[str, Any], model: str) -> dict[str, Any]:
         path = str(photo["path"])
         metadata = {**extract_exif(path), "gps": None}  # judge the pixels, not EXIF
         forensics = assess_forensics(path, None, metadata)
-        vision = analyze_image(path, model=model)
+        try:
+            vision = analyze_image(path, model=model)
+        except TypeError:  # older pipeline without per-call model choice
+            import utils.vision as vision_module
+
+            vision_module.VISION_MODEL = model
+            vision = analyze_image(path)
         if not vision.get("available"):
             raise RuntimeError(vision.get("note") or "vision unavailable")
         loc = determine_location(metadata, vision, forensics)
@@ -149,7 +160,7 @@ def run_one(photo: dict[str, Any], model: str) -> dict[str, Any]:
     return out
 
 
-def run(manifest: Path, models: list[str], out_dir: Path) -> None:
+def run(manifest: Path, models: list[str], out_dir: Path, label: str = "") -> None:
     photos = load_manifest(manifest)
     out_dir.mkdir(parents=True, exist_ok=True)
     results_path = out_dir / "results.csv"
@@ -168,9 +179,10 @@ def run(manifest: Path, models: list[str], out_dir: Path) -> None:
         for photo in photos:
             for model in models:
                 i += 1
-                if (photo["file"], model) in done:
+                if (photo["file"], model + label) in done:
                     continue
                 row = run_one(photo, model)
+                row["model"] = model + label
                 writer.writerow(row)
                 f.flush()
                 status = row.get("error") or (
@@ -381,12 +393,13 @@ def main(argv: Optional[list[str]] = None) -> int:
     r = sub.add_parser("run", help="Run photos through models, then report.")
     r.add_argument("--manifest", type=Path, required=True)
     r.add_argument("--models", required=True, help="Comma-separated model names.")
+    r.add_argument("--label", default="", help="Suffix for the model column, e.g. ' (original)'.")
     r.add_argument("--out", type=Path, default=Path("benchmark_results"))
     rep = sub.add_parser("report", help="Rebuild summaries and charts from results.csv.")
     rep.add_argument("--out", type=Path, default=Path("benchmark_results"))
     args = parser.parse_args(argv)
     if args.cmd == "run":
-        run(args.manifest, [m.strip() for m in args.models.split(",") if m.strip()], args.out)
+        run(args.manifest, [m.strip() for m in args.models.split(",") if m.strip()], args.out, args.label)
     else:
         report(args.out)
     return 0

@@ -87,6 +87,24 @@ def _short_name(address: dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _bbox_extent_km(bbox: Any) -> Optional[float]:
+    """Diagonal of a Nominatim bounding box [south, north, west, east], in km.
+
+    Tells a single viewpoint (well under 1 km) from a national park or city
+    (tens to hundreds of km) that shares the same name and centre point.
+    """
+    try:
+        south, north, west, east = (float(v) for v in bbox)
+    except (TypeError, ValueError):
+        return None
+    r = 6371.0
+    p1, p2 = math.radians(south), math.radians(north)
+    dphi = p2 - p1
+    dlmb = math.radians(east - west)
+    a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlmb / 2) ** 2
+    return round(2 * r * math.asin(min(1.0, math.sqrt(a))), 2)
+
+
 def _parse_result(item: dict[str, Any]) -> Optional[dict[str, Any]]:
     try:
         lat = round(float(item["lat"]), 6)
@@ -107,6 +125,8 @@ def _parse_result(item: dict[str, Any]) -> Optional[dict[str, Any]]:
         "category": item.get("category") or item.get("class"),
         "osm_type": item.get("type"),
         "addresstype": item.get("addresstype"),
+        # How big the place is, so a park or city is not mistaken for a spot.
+        "extent_km": _bbox_extent_km(item.get("boundingbox")),
     }
 
 

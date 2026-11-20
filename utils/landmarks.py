@@ -284,6 +284,8 @@ def verify_named_and_water(
                     "distance_km": round(dist, 1),
                     "latitude": geo["latitude"],
                     "longitude": geo["longitude"],
+                    "extent_km": geo.get("extent_km"),
+                    "kind": (geo.get("addresstype") or geo.get("osm_type") or "").lower(),
                 }
             )
     if matched:

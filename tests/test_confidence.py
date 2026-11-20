@@ -160,6 +160,63 @@ class FusionTests(unittest.TestCase):
         self.assertIsNone(loc["region"])
         self.assertEqual(loc["confidence_by_distance"]["1km"], 0.0)
 
+    def test_large_places_are_vague_and_do_not_pin_the_spot(self):
+        import utils.osint as O
+
+        park = {"addresstype": "national_park", "osm_type": "protected_area", "extent_km": 140.0}
+        viewpoint = {"addresstype": "tourism", "osm_type": "viewpoint", "extent_km": 0.1}
+        old = O.forward_geocode_candidates
+        try:
+            O.forward_geocode_candidates = lambda q, limit=3: [park]
+            spec = O._answer_specificity(
+                "Grand Canyon National Park", {}, {"matched_landmarks": [
+                    {"name": "Grand Canyon", "distance_km": 0.0, "extent_km": 140.0}]})
+            self.assertTrue(spec["broad"])
+            self.assertFalse(spec["precise"])
+
+            O.forward_geocode_candidates = lambda q, limit=3: [viewpoint]
+            spec = O._answer_specificity(
+                "Mather Point", {}, {"matched_landmarks": [
+                    {"name": "Mather Point", "distance_km": 0.1, "extent_km": 0.1}]})
+            self.assertFalse(spec["broad"])
+            self.assertTrue(spec["precise"])
+        finally:
+            O.forward_geocode_candidates = old
+
+    def test_point_mapped_canyon_is_still_large(self):
+        import utils.osint as O
+
+        canyon = {"addresstype": "valley", "osm_type": "valley", "extent_km": 0.01}
+        old = O.forward_geocode_candidates
+        try:
+            O.forward_geocode_candidates = lambda q, limit=3: [canyon]
+            spec = O._answer_specificity("Grand Canyon", {}, {"matched_landmarks": [
+                {"name": "Grand Canyon", "distance_km": 0.0, "extent_km": 0.01, "kind": "valley"}]})
+        finally:
+            O.forward_geocode_candidates = old
+        self.assertTrue(spec["broad"])
+        self.assertFalse(spec["precise"])
+
+    def test_recognised_landmark_is_not_text_support(self):
+        import utils.osint as O
+
+        old = O.forward_geocode_candidates
+        try:
+            O.forward_geocode_candidates = lambda q, limit=3: [{"addresstype": "city", "osm_type": "administrative"}]
+            seen = O._answer_specificity("Bellevue", {"named_landmarks": ["Bellevue"]}, {})
+            read = O._answer_specificity("Bellevue", {"signage": ["Toyota of Bellevue"]}, {})
+        finally:
+            O.forward_geocode_candidates = old
+        self.assertFalse(seen["text_support"])
+        self.assertTrue(read["text_support"])
+
+    def test_bounding_box_extent(self):
+        from utils.geocode import _bbox_extent_km
+
+        self.assertAlmostEqual(_bbox_extent_km(["36.0", "36.0", "-112.0", "-112.0"]), 0.0)
+        self.assertGreater(_bbox_extent_km(["35.5", "36.5", "-113.5", "-111.5"]), 100)
+        self.assertIsNone(_bbox_extent_km(None))
+
     def test_calibrated_weights_override_defaults(self):
         w = dict(_DEFAULT_WEIGHTS, bias=2.0)
         self.assertGreater(_fuse_confidence(self.base, w), _fuse_confidence(self.base))

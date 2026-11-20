@@ -189,6 +189,32 @@ _BROAD_TYPES = {
 }
 # Highest confidence for an answer that has no coordinates (never map-checked).
 NAME_ONLY_CAP = float(os.getenv("NAME_ONLY_CAP", "0.25"))
+# An answer whose place is wider than this (a national park, a county) is as
+# vague as a whole city, whatever its type.
+BROAD_EXTENT_KM = float(os.getenv("BROAD_EXTENT_KM", "10"))
+# A landmark this size or smaller can pin the spot; a bigger one (a park, a
+# lake, a canyon) cannot, even when its centre sits right on the answer.
+PRECISE_MAX_EXTENT_KM = float(os.getenv("PRECISE_MAX_EXTENT_KM", "3"))
+# Feature types that always cover a large area, even when the map stores them
+# as a single point ("Grand Canyon" is a point of type "valley").
+_LARGE_FEATURE_TYPES = {
+    "valley", "canyon", "gorge", "national_park", "nature_reserve", "protected_area",
+    "park_boundary", "mountain_range", "range", "ridge", "plateau", "massif", "desert",
+    "forest", "wood", "lake", "reservoir", "sea", "ocean", "bay", "strait", "river",
+    "island", "archipelago", "peninsula", "glacier",
+}
+
+
+def _is_large_place(hit: dict[str, Any]) -> bool:
+    kinds = {
+        (hit.get("addresstype") or "").lower(),
+        (hit.get("osm_type") or "").lower(),
+        (hit.get("kind") or "").lower(),
+    }
+    extent = hit.get("extent_km")
+    return bool(kinds & _LARGE_FEATURE_TYPES) or (extent is not None and float(extent) > BROAD_EXTENT_KM)
+
+
 # A named landmark within this distance of the answer pins it to a spot.
 PRECISE_LANDMARK_KM = float(os.getenv("PRECISE_LANDMARK_KM", "2"))
 _BROAD_WORDS = {
@@ -224,19 +250,29 @@ def _answer_specificity(
             # Montmartre are other boundary kinds and stay specific.
             addresstype = (hits[0].get("addresstype") or "").lower()
             osm_type = (hits[0].get("osm_type") or "").lower()
-            broad = addresstype in _BROAD_TYPES or osm_type == "administrative"
+            broad = (
+                addresstype in _BROAD_TYPES
+                or osm_type == "administrative"
+                or _is_large_place(hits[0])
+            )
 
     core = _core_name(name)
     text = " ".join(
-        str(t) for key in ("ocr_text", "signage", "named_landmarks") for t in ((vision or {}).get(key) or [])
+        # Only words actually read in the photo. The AI's own list of
+        # recognised landmarks would make "Grand Canyon" support itself.
+        str(t) for key in ("ocr_text", "signage") for t in ((vision or {}).get(key) or [])
     ).lower()
     text_support = bool(core) and re.search(rf"\b{re.escape(core)}\b", text) is not None
 
     # A recognised landmark pins the spot only when the answer is right next
     # to it. Seeing the Eiffel Tower on the skyline (4 km from "Paris" city
     # centre) says the city, not where the photographer stood.
+    # A big landmark (a national park, a canyon) can sit "0 km" from an answer
+    # at its centre while saying nothing about where the photographer stood.
     precise = any(
         float(m.get("distance_km") or 1e9) <= PRECISE_LANDMARK_KM
+        and not _is_large_place(m)
+        and (m.get("extent_km") is None or float(m["extent_km"]) <= PRECISE_MAX_EXTENT_KM)
         for m in named.get("matched_landmarks") or []
     )
     return {"broad": broad, "text_support": text_support, "precise": precise}

@@ -119,12 +119,12 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 
 
 def _looks_like_named_feature(name: str) -> bool:
-    lower = f" {name.lower()} "
-    if _BROAD_REGION.search(name) and not any(
-        w in lower for w in (" lake ", " river ", " mount ", " bay ")
-    ):
+    # Whole words only: a substring test made "Seattle" a sea and "Parkland"
+    # a park, so city names were treated as natural features.
+    words = set(re.findall(r"[a-z]+", name.lower()))
+    if _BROAD_REGION.search(name) and not words & {"lake", "river", "mount", "bay"}:
         return False
-    return any(w in lower for w in _FEATURE_WORDS)
+    return any(w.strip(". ") in words for w in _FEATURE_WORDS)
 
 
 _GENERIC_START = re.compile(r"^(a|an|the|some|several|two|three|many|large|small|old|modern)\b", re.I)
@@ -174,9 +174,12 @@ def extract_named_features(vision: Optional[dict[str, Any]]) -> list[str]:
         for item in vision.get("landmarks") or []:
             if not _looks_generic(item):
                 add(item)
-    for cand in vision.get("candidates") or []:
-        if isinstance(cand, dict) and _looks_like_named_feature(str(cand.get("name") or "")):
-            add(cand.get("name"))
+        # Older answers: also check candidate names that are named features.
+        # Skipped for the new field because checking the AI's own answer
+        # against its own coordinates always "matches" and proves nothing.
+        for cand in vision.get("candidates") or []:
+            if isinstance(cand, dict) and _looks_like_named_feature(str(cand.get("name") or "")):
+                add(cand.get("name"))
     return names[:6]
 
 

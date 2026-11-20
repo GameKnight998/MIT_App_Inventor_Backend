@@ -92,7 +92,9 @@ _DEFAULT_WEIGHTS: dict[str, float] = {
     "solar:inconsistent": -2.0,
     "climate:consistent": 0.5,
     "climate:weak_mismatch": -0.4,
-    "place:matched": 1.2,
+    # The chosen name sits near its own coordinates: a consistency check, not
+    # evidence about the photo, so a match earns nothing (a miss still costs).
+    "place:matched": 0.0,
     "place:missed": -0.9,
     "landmark:matched": 1.2,
     "landmark:missed": -0.9,

@@ -83,6 +83,18 @@ class LandmarkFilterTests(unittest.TestCase):
         vision = {"landmarks": ["a clock tower", "Big Ben"], "named_landmarks": ["Big Ben"]}
         self.assertEqual(extract_named_features(vision), ["Big Ben"])
 
+    def test_city_names_are_not_natural_features(self):
+        from utils.landmarks import _looks_like_named_feature
+
+        for name in ("Seattle", "Parkland", "Baytown", "Seaside Heights Mall"):
+            self.assertFalse(_looks_like_named_feature(name), name)
+        for name in ("Lake Chelan", "Mt. Rainier", "Golden Gate Bridge"):
+            self.assertTrue(_looks_like_named_feature(name), name)
+
+    def test_candidate_names_are_not_checked_against_themselves(self):
+        vision = {"named_landmarks": [], "candidates": [{"name": "Lake Chelan"}]}
+        self.assertEqual(extract_named_features(vision), [])
+
     def test_legacy_landmarks_drop_generic_entries(self):
         vision = {"landmarks": ["a clock tower", "Big Ben"]}
         self.assertEqual(extract_named_features(vision), ["Big Ben"])

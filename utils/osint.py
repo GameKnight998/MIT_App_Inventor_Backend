@@ -187,6 +187,8 @@ _BROAD_TYPES = {
     "city", "town", "municipality", "county", "state", "state_district",
     "region", "province", "country", "administrative", "continent",
 }
+# A named landmark within this distance of the answer pins it to a spot.
+PRECISE_LANDMARK_KM = float(os.getenv("PRECISE_LANDMARK_KM", "2"))
 _BROAD_WORDS = {
     "area", "metropolitan", "metro", "region", "county", "state", "greater", "province",
     "northwestern", "northeastern", "southwestern", "southeastern", "eastside", "westside",
@@ -214,8 +216,13 @@ def _answer_specificity(
     broad = bool(words & _BROAD_WORDS) or bool(_BROAD_REGION_RE.search(name))
     if not broad and name:
         hits = forward_geocode_candidates(name, 1)
-        kind = ((hits[0].get("addresstype") or hits[0].get("osm_type") or "") if hits else "").lower()
-        broad = kind in _BROAD_TYPES
+        if hits:
+            # Nominatim may label a city "suburb"; its administrative boundary
+            # type is the reliable sign. Districts like Old Montreal or
+            # Montmartre are other boundary kinds and stay specific.
+            addresstype = (hits[0].get("addresstype") or "").lower()
+            osm_type = (hits[0].get("osm_type") or "").lower()
+            broad = addresstype in _BROAD_TYPES or osm_type == "administrative"
 
     core = _core_name(name)
     text = " ".join(
@@ -223,7 +230,13 @@ def _answer_specificity(
     ).lower()
     text_support = bool(core) and re.search(rf"\b{re.escape(core)}\b", text) is not None
 
-    precise = named.get("landmark_status") == "matched"
+    # A recognised landmark pins the spot only when the answer is right next
+    # to it. Seeing the Eiffel Tower on the skyline (4 km from "Paris" city
+    # centre) says the city, not where the photographer stood.
+    precise = any(
+        float(m.get("distance_km") or 1e9) <= PRECISE_LANDMARK_KM
+        for m in named.get("matched_landmarks") or []
+    )
     return {"broad": broad, "text_support": text_support, "precise": precise}
 
 

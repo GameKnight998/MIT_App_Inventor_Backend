@@ -341,7 +341,8 @@ def _encode_tiles(image_path: str) -> list[str]:
     return [_to_jpeg_b64(img.crop(box), TILE_MAX_SIDE) for box in boxes]
 
 
-def _user_content(image_path: str) -> list[dict[str, Any]]:
+def _user_prompt(image_path: str) -> tuple[str, list[str]]:
+    """The user text and the base64 JPEG images (full photo, then any crops)."""
     tiles = _encode_tiles(image_path)
     text = "Analyze this image for geolocation clues and rank candidate locations."
     if tiles:
@@ -350,67 +351,31 @@ def _user_content(image_path: str) -> list[dict[str, Any]]:
             "top-left, top-right, bottom-left and bottom-right quadrants, to help "
             "you read small text."
         )
-    content: list[dict[str, Any]] = [{"type": "text", "text": text}]
-    for b64 in [_encode_image(image_path), *tiles]:
-        content.append(
-            {
-                "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{b64}", "detail": "high"},
-            }
-        )
-    return content
+    return text, [_encode_image(image_path), *tiles]
 
 
-def _request_samples(client: Any, messages: list[dict[str, Any]], n: int) -> list[str]:
-    """Return n raw JSON answers from the model.
+def analyze_image_samples(
+    image_path: str, samples: Optional[int] = None, model: Optional[str] = None
+) -> list[dict[str, Any]]:
+    """Run the vision model and return one parsed analysis per sample.
 
-    Tries one request with `n` choices first (input tokens are billed once).
-    Models that reject `n` or `temperature` (some reasoning models) fall back
-    to separate requests with default sampling.
+    `model` overrides VISION_MODEL; its name picks the provider (see
+    utils/providers.py), so OpenAI, Claude and Gemini models all work.
     """
-    base = {
-        "model": VISION_MODEL,
-        "response_format": {"type": "json_object"},
-        "messages": messages,
-    }
-    temperature = VISION_SAMPLE_TEMPERATURE if n > 1 else VISION_TEMPERATURE
-    try:
-        resp = client.chat.completions.create(**base, temperature=temperature, n=n)
-        return [c.message.content or "{}" for c in resp.choices]
-    except Exception as exc:
-        msg = str(exc).lower()
-        if "temperature" not in msg and "'n'" not in msg and "parameter" not in msg:
-            raise
-    from utils.cache import parallel_map
+    from utils.providers import missing_key, request_samples
 
-    def one(_: int) -> str:
-        resp = client.chat.completions.create(**base)
-        return resp.choices[0].message.content or "{}"
-
-    return parallel_map(one, list(range(n)))
-
-
-def analyze_image_samples(image_path: str, samples: Optional[int] = None) -> list[dict[str, Any]]:
-    """Run the vision model and return one parsed analysis per sample."""
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        return [_empty_analysis("OPENAI_API_KEY not set; vision analysis skipped.")]
-
-    try:
-        from openai import OpenAI
-    except ImportError:
-        return [_empty_analysis("openai package not installed; vision skipped.")]
+    model = model or VISION_MODEL
+    key = missing_key(model)
+    if key:
+        return [_empty_analysis(f"{key} not set; vision analysis skipped for {model}.")]
 
     n = max(1, samples or VISION_SAMPLES)
+    temperature = VISION_SAMPLE_TEMPERATURE if n > 1 else VISION_TEMPERATURE
     try:
-        client = OpenAI(api_key=api_key)
-        messages = [
-            {"role": "system", "content": _SYSTEM_PROMPT},
-            {"role": "user", "content": _user_content(image_path)},
-        ]
-        raw_answers = _request_samples(client, messages, n)
+        text, images = _user_prompt(image_path)
+        raw_answers = request_samples(model, _SYSTEM_PROMPT, text, images, n, temperature)
     except Exception as exc:
-        return [_empty_analysis(f"Vision call failed: {exc}")]
+        return [_empty_analysis(f"Vision call failed ({model}): {exc}")]
 
     out: list[dict[str, Any]] = []
     for raw in raw_answers:
@@ -419,15 +384,17 @@ def analyze_image_samples(image_path: str, samples: Optional[int] = None) -> lis
         except (TypeError, ValueError):
             continue
         if isinstance(parsed, dict):
-            out.append(_parse_analysis(parsed))
-    return out or [_empty_analysis("Vision model returned no parseable JSON.")]
+            analysis = _parse_analysis(parsed)
+            analysis["model"] = model
+            out.append(analysis)
+    return out or [_empty_analysis(f"{model} returned no parseable JSON.")]
 
 
-def analyze_image(image_path: str) -> dict[str, Any]:
+def analyze_image(image_path: str, model: Optional[str] = None) -> dict[str, Any]:
     """Run the vision model (several samples) and return the consensus analysis."""
     from utils.consensus import merge_samples
 
-    return merge_samples(analyze_image_samples(image_path))
+    return merge_samples(analyze_image_samples(image_path, model=model))
 
 
 def _parse_analysis(parsed: dict[str, Any]) -> dict[str, Any]:

@@ -251,6 +251,18 @@ async def _extract_image_bytes(
     return body, None
 
 
+# Models a client may pick per request with ?model=... (comma-separated).
+# Empty by default so a public deployment can't be steered onto costly models.
+ALLOWED_VISION_MODELS = {
+    m.strip() for m in os.getenv("ALLOWED_VISION_MODELS", "").split(",") if m.strip()
+}
+
+
+def _requested_model(request: Request) -> Optional[str]:
+    model = (request.query_params.get("model") or "").strip()
+    return model if model in ALLOWED_VISION_MODELS else None
+
+
 @app.post("/analyze")
 async def analyze(request: Request) -> JSONResponse:
     """Receive an image (any supported format), run the OSINT pipeline."""
@@ -309,7 +321,7 @@ async def analyze(request: Request) -> JSONResponse:
             # Testing aid: locate from the pixels alone, as for a stripped photo.
             metadata = {**metadata, "gps": None}
         forensics = assess_forensics(str(saved_path), fmt, metadata)
-        vision = analyze_image(str(saved_path))
+        vision = analyze_image(str(saved_path), model=_requested_model(request))
         location = determine_location(metadata, vision, forensics)
         payload = build_response(
             filename=original_name or saved_name,

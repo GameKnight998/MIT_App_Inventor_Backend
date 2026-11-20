@@ -14,6 +14,11 @@ services:
       # Set the real key in the Render dashboard (sync: false keeps it secret).
       - key: OPENAI_API_KEY
         sync: false
+      # Needed only when VISION_MODEL is a gemini-* or claude-* model.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
       - key: VISION_MODEL
         value: gpt-4o
       # Independent AI answers per photo; their agreement feeds the confidence

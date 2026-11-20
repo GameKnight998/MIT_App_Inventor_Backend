@@ -7,7 +7,8 @@ run resumes where it stopped.
 
 The headline metric is the standard one in photo-geolocation research: the
 share of photos placed within 1 km (street), 25 km (city), 200 km (region),
-750 km (country) and 2,500 km (continent) of the truth.
+750 km (country) and 2,500 km (continent) of the truth, plus 5 km (district)
+and 10 km (town), which tell a neighbouring city apart from the right one.
 
 Manifest (CSV, one row per photo):
     file,latitude,longitude,country,place,category
@@ -49,8 +50,10 @@ CODE_DIR = Path(os.getenv("BENCH_CODE_DIR") or ROOT).resolve()
 if str(CODE_DIR) not in sys.path:
     sys.path.insert(0, str(CODE_DIR))
 
-THRESHOLDS_KM = (1, 25, 200, 750, 2500)
-THRESHOLD_LABELS = ("Street\n1 km", "City\n25 km", "Region\n200 km", "Country\n750 km", "Continent\n2,500 km")
+# 5 and 10 km separate "the right town" from "the nearest big city": when every
+# photo comes from one suburb, 25 km cannot tell Bellevue from Seattle.
+THRESHOLDS_KM = (1, 5, 10, 25, 200, 750, 2500)
+THRESHOLD_LABELS = ("Street\n1 km", "District\n5 km", "Town\n10 km", "City\n25 km", "Region\n200 km", "Country\n750 km", "Continent\n2,500 km")
 # An answer counts as "correct" for calibration when within this distance.
 CORRECT_KM = 25
 
@@ -333,7 +336,7 @@ def charts(summary: list[dict[str, Any]], rows: list[dict[str, Any]], out_dir: P
         n = len(group)
 
         # 1. Accuracy at distance thresholds (grouped bars).
-        fig, ax = plt.subplots(figsize=(12, 6.6))
+        fig, ax = plt.subplots(figsize=(15, 6.6))
         _style(ax)
         width = 0.8 / max(n, 1)
         for i, s in enumerate(group):
@@ -453,13 +456,13 @@ def report(out_dir: Path) -> None:
     _write_csv(out_dir / "summary_by_category.csv", by_category(rows))
     charts(summary, rows, out_dir)
 
-    print(f"\n{'model':<22} {'n':>3} {'1km':>5} {'25km':>5} {'200km':>6} {'750km':>6} {'2500km':>7} "
-          f"{'median km':>10} {'conf ok/wrong':>14} {'sec':>5}")
+    pct = lambda v: "-" if v is None else f"{100 * v:.0f}%"
+    head = "".join(f"{str(t) + 'km':>7}" for t in THRESHOLDS_KM)
+    print(f"\n{'model':<22} {'n':>3}{head} {'median km':>10} {'conf ok/wrong':>14} {'sec':>5}")
     for s in summary:
-        pct = lambda v: "-" if v is None else f"{100 * v:.0f}%"
+        accs = "".join(f"{pct(s[f'acc_{t}km']):>7}" for t in THRESHOLDS_KM)
         cw = f"{s['confidence_when_correct'] or 0:.2f}/{s['confidence_when_wrong'] or 0:.2f}"
-        print(f"{s['model']:<22} {s['photos']:>3} {pct(s['acc_1km']):>5} {pct(s['acc_25km']):>5} "
-              f"{pct(s['acc_200km']):>6} {pct(s['acc_750km']):>6} {pct(s['acc_2500km']):>7} "
+        print(f"{s['model']:<22} {s['photos']:>3}{accs} "
               f"{s['median_error_km'] if s['median_error_km'] is not None else '-':>10} {cw:>14} "
               f"{s['median_seconds'] or '-':>5}")
     print(f"\nWrote summaries and charts to {out_dir}")

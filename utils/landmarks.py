@@ -127,6 +127,23 @@ def _looks_like_named_feature(name: str) -> bool:
     return any(w in lower for w in _FEATURE_WORDS)
 
 
+_GENERIC_START = re.compile(r"^(a|an|the|some|several|two|three|many|large|small|old|modern)\b", re.I)
+
+
+def _looks_generic(text: Any) -> bool:
+    """True for descriptions like 'a gothic clock tower' or 'river bridge'.
+
+    A proper name has at least one capitalised word and does not open with an
+    article or quantity.
+    """
+    if not isinstance(text, str):
+        return True
+    t = text.strip()
+    if not t or _GENERIC_START.match(t):
+        return True
+    return not any(word[:1].isupper() for word in t.split())
+
+
 def extract_named_features(vision: Optional[dict[str, Any]]) -> list[str]:
     """Unique landmark / named-feature strings from vision, first-seen order."""
     if not vision:
@@ -146,8 +163,17 @@ def extract_named_features(vision: Optional[dict[str, Any]]) -> list[str]:
         seen.add(key)
         names.append(text)
 
-    for item in vision.get("landmarks") or []:
-        add(item)
+    # Prefer the model's proper-noun list. Free-text `landmarks` often holds
+    # descriptions ("a clock tower") that geocode to some unrelated place far
+    # away and wrongly count as a missed landmark. Older answers without the
+    # field fall back to `landmarks`, minus anything that reads as generic.
+    if isinstance(vision.get("named_landmarks"), list):
+        for item in vision["named_landmarks"]:
+            add(item)
+    else:
+        for item in vision.get("landmarks") or []:
+            if not _looks_generic(item):
+                add(item)
     for cand in vision.get("candidates") or []:
         if isinstance(cand, dict) and _looks_like_named_feature(str(cand.get("name") or "")):
             add(cand.get("name"))

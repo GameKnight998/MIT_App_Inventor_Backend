@@ -136,6 +136,8 @@ def build_response(
         "details": {
             "source_code": source_code,
             "verification": location.get("verification"),
+            # Inputs to the confidence score, for debugging and calibration.
+            "confidence_signals": location.get("confidence_signals"),
             "exif": metadata,
             "vision": vision,
             "evidence": location.get("evidence", []),

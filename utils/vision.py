@@ -15,7 +15,7 @@ import base64
 import io
 import json
 import os
-from typing import Any
+from typing import Any, Optional
 
 VISION_MODEL = os.getenv("VISION_MODEL", "gpt-6.1-terra")
 
@@ -63,6 +63,7 @@ _SYSTEM_PROMPT = (
     '  "ocr_text": [string],\n'
     '  "languages": [string],\n'
     '  "landmarks": [string],\n'
+    '  "named_landmarks": [string],\n'
     '  "flags": [string],\n'
     '  "signage": [string],\n'
     '  "vehicles_plates": [string],\n'
@@ -100,6 +101,14 @@ _SYSTEM_PROMPT = (
     '  "confidence": number\n'
     "}\n"
     "Rules:\n"
+    "- `landmarks` may describe notable structures in words (e.g. 'gothic clock "
+    "tower'). `named_landmarks` must contain ONLY proper names of specific, "
+    "identifiable places you can actually recognise or read (e.g. 'Space Needle', "
+    "'Lake Chelan', 'Golden Gate Bridge'). Never put generic descriptions in "
+    "`named_landmarks`; leave it empty if nothing can be named. These names are "
+    "looked up on a map, so a wrong or generic entry counts against the answer.\n"
+    "- When extra zoomed-in crops of the photo are attached, use them to read "
+    "small text, signs and plates. Describe the scene from the full photo.\n"
     "- Fill the fields in the order shown. Write `reasoning` BEFORE `candidates`: "
     "weigh the clues step by step (what each one rules in or out, and where they "
     "agree or conflict), then derive the candidates from that reasoning.\n"
@@ -134,6 +143,7 @@ def _empty_analysis(note: str) -> dict[str, Any]:
         "ocr_text": [],
         "languages": [],
         "landmarks": [],
+        "named_landmarks": [],
         "flags": [],
         "signage": [],
         "vehicles_plates": [],
@@ -171,6 +181,18 @@ def _empty_analysis(note: str) -> dict[str, Any]:
         "confidence": 0.0,
     }
 
+
+# Independent answers requested per image. Agreement between them is used as a
+# confidence signal (see utils/consensus.py). 1 disables sampling.
+VISION_SAMPLES = max(1, int(os.getenv("VISION_SAMPLES", "3")))
+VISION_TEMPERATURE = float(os.getenv("VISION_TEMPERATURE", "0.2"))
+# Samples need some diversity, or agreement says nothing.
+VISION_SAMPLE_TEMPERATURE = float(os.getenv("VISION_SAMPLE_TEMPERATURE", "0.8"))
+# Zoomed-in quadrant crops help the model read small signs and plates. Only
+# added for photos large enough that the API's downscaling loses that detail.
+VISION_TILES = os.getenv("VISION_TILES", "1") not in ("0", "false", "False")
+TILE_MIN_SIDE = int(os.getenv("VISION_TILE_MIN_SIDE", "1600"))
+TILE_MAX_SIDE = int(os.getenv("VISION_TILE_MAX_SIDE", "1024"))
 
 # Longest side sent to the model. High-detail vision input is downscaled to
 # about this size by the API anyway, so larger uploads only add latency.
@@ -286,51 +308,130 @@ def _normalize_candidate(raw: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def analyze_image(image_path: str) -> dict[str, Any]:
-    """Run the vision model on the image and return structured clues + candidates."""
+def _to_jpeg_b64(img: Any, max_side: int) -> str:
+    img = img.copy()
+    img.thumbnail((max_side, max_side))
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=90)
+    return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+
+def _encode_tiles(image_path: str) -> list[str]:
+    """Four overlapping quadrant crops of a large photo, as base64 JPEG."""
+    if not VISION_TILES:
+        return []
+    try:
+        from PIL import Image, ImageOps
+
+        with Image.open(image_path) as raw:
+            img = ImageOps.exif_transpose(raw).convert("RGB")
+    except Exception:
+        return []
+    w, h = img.size
+    if max(w, h) < TILE_MIN_SIDE:
+        return []
+    # 10% overlap so text on a quadrant boundary is whole in at least one crop.
+    half_w, half_h = int(w * 0.55), int(h * 0.55)
+    boxes = (
+        (0, 0, half_w, half_h),
+        (w - half_w, 0, w, half_h),
+        (0, h - half_h, half_w, h),
+        (w - half_w, h - half_h, w, h),
+    )
+    return [_to_jpeg_b64(img.crop(box), TILE_MAX_SIDE) for box in boxes]
+
+
+def _user_content(image_path: str) -> list[dict[str, Any]]:
+    tiles = _encode_tiles(image_path)
+    text = "Analyze this image for geolocation clues and rank candidate locations."
+    if tiles:
+        text += (
+            " Image 1 is the full photo. Images 2-5 are zoomed-in crops of its "
+            "top-left, top-right, bottom-left and bottom-right quadrants, to help "
+            "you read small text."
+        )
+    content: list[dict[str, Any]] = [{"type": "text", "text": text}]
+    for b64 in [_encode_image(image_path), *tiles]:
+        content.append(
+            {
+                "type": "image_url",
+                "image_url": {"url": f"data:image/jpeg;base64,{b64}", "detail": "high"},
+            }
+        )
+    return content
+
+
+def _request_samples(client: Any, messages: list[dict[str, Any]], n: int) -> list[str]:
+    """Return n raw JSON answers from the model.
+
+    Tries one request with `n` choices first (input tokens are billed once).
+    Models that reject `n` or `temperature` (some reasoning models) fall back
+    to separate requests with default sampling.
+    """
+    base = {
+        "model": VISION_MODEL,
+        "response_format": {"type": "json_object"},
+        "messages": messages,
+    }
+    temperature = VISION_SAMPLE_TEMPERATURE if n > 1 else VISION_TEMPERATURE
+    try:
+        resp = client.chat.completions.create(**base, temperature=temperature, n=n)
+        return [c.message.content or "{}" for c in resp.choices]
+    except Exception as exc:
+        msg = str(exc).lower()
+        if "temperature" not in msg and "'n'" not in msg and "parameter" not in msg:
+            raise
+    from utils.cache import parallel_map
+
+    def one(_: int) -> str:
+        resp = client.chat.completions.create(**base)
+        return resp.choices[0].message.content or "{}"
+
+    return parallel_map(one, list(range(n)))
+
+
+def analyze_image_samples(image_path: str, samples: Optional[int] = None) -> list[dict[str, Any]]:
+    """Run the vision model and return one parsed analysis per sample."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        return _empty_analysis("OPENAI_API_KEY not set; vision analysis skipped.")
+        return [_empty_analysis("OPENAI_API_KEY not set; vision analysis skipped.")]
 
     try:
         from openai import OpenAI
     except ImportError:
-        return _empty_analysis("openai package not installed; vision skipped.")
+        return [_empty_analysis("openai package not installed; vision skipped.")]
 
+    n = max(1, samples or VISION_SAMPLES)
     try:
         client = OpenAI(api_key=api_key)
-        b64 = _encode_image(image_path)
-
-        response = client.chat.completions.create(
-            model=VISION_MODEL,
-            temperature=0.2,
-            response_format={"type": "json_object"},
-            messages=[
-                {"role": "system", "content": _SYSTEM_PROMPT},
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "Analyze this image for geolocation clues and rank candidate locations.",
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{b64}",
-                                "detail": "high",
-                            },
-                        },
-                    ],
-                },
-            ],
-        )
-
-        content = response.choices[0].message.content or "{}"
-        parsed = json.loads(content)
+        messages = [
+            {"role": "system", "content": _SYSTEM_PROMPT},
+            {"role": "user", "content": _user_content(image_path)},
+        ]
+        raw_answers = _request_samples(client, messages, n)
     except Exception as exc:
-        return _empty_analysis(f"Vision call failed: {exc}")
+        return [_empty_analysis(f"Vision call failed: {exc}")]
 
+    out: list[dict[str, Any]] = []
+    for raw in raw_answers:
+        try:
+            parsed = json.loads(raw)
+        except (TypeError, ValueError):
+            continue
+        if isinstance(parsed, dict):
+            out.append(_parse_analysis(parsed))
+    return out or [_empty_analysis("Vision model returned no parseable JSON.")]
+
+
+def analyze_image(image_path: str) -> dict[str, Any]:
+    """Run the vision model (several samples) and return the consensus analysis."""
+    from utils.consensus import merge_samples
+
+    return merge_samples(analyze_image_samples(image_path))
+
+
+def _parse_analysis(parsed: dict[str, Any]) -> dict[str, Any]:
+    """Normalise one raw model answer into the analysis shape."""
     analysis = _empty_analysis("ok")
     analysis["available"] = True
     analysis["note"] = "ok"
@@ -339,6 +440,7 @@ def analyze_image(image_path: str) -> dict[str, Any]:
         "ocr_text",
         "languages",
         "landmarks",
+        "named_landmarks",
         "flags",
         "signage",
         "vehicles_plates",

@@ -16,6 +16,13 @@ services:
         sync: false
       - key: VISION_MODEL
         value: gpt-4o
+      # Independent AI answers per photo; their agreement feeds the confidence
+      # score. Each extra sample adds output tokens only (input is billed once).
+      - key: VISION_SAMPLES
+        value: "3"
+      # Zoomed-in crops of large photos so small signs and plates are legible.
+      - key: VISION_TILES
+        value: "1"
       - key: GEOCODING_ENABLED
         value: "1"
       - key: GEOCODER_USER_AGENT

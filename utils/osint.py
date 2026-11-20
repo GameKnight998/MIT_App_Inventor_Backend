@@ -18,6 +18,7 @@ reduced when the final choice still doesn't fully match.
 
 from __future__ import annotations
 
+import json
 import math
 import os
 from typing import Any, Optional
@@ -75,56 +76,106 @@ def _logit(p: float) -> float:
 
 
 # Log-odds contributions per independent evidence signal. These de-anchor the
-# final confidence from the AI's self-reported number: instead of trusting the
-# model and multiplying penalties, each signal casts an additive vote and we
-# squash the sum back into [0, 1]. Weights are heuristic (documented, tunable)
-# and are the natural thing to calibrate once a labelled eval set exists.
-_FUSION_PRIOR = 0.2
-_VERIFY_LOGIT = {
-    "verified": 1.8,
-    "partial": 0.3,
-    "mismatch": -1.6,
-    "unavailable": 0.0,
-    "skipped": 0.0,
+# final confidence from the AI's self-reported number: each signal casts an
+# additive vote and the sum is squashed back into [0, 1].
+#
+# The defaults are hand-set. `eval/calibrate.py` fits them to labelled photos
+# and writes utils/fusion_weights.json, which overrides any key given here.
+_DEFAULT_WEIGHTS: dict[str, float] = {
+    "bias": _logit(0.2),
+    "ai_conf": 1.3,
+    "verify:verified": 1.8,
+    "verify:partial": 0.3,
+    "verify:mismatch": -1.6,
+    "solar:consistent": 0.6,
+    "solar:weak_mismatch": -0.4,
+    "solar:inconsistent": -2.0,
+    "climate:consistent": 0.5,
+    "climate:weak_mismatch": -0.4,
+    "place:matched": 1.2,
+    "place:missed": -0.9,
+    "landmark:matched": 1.2,
+    "landmark:missed": -0.9,
+    "water:matched": 0.7,
+    "water:missed": -0.8,
+    "clue_bonus": 3.0,
+    "landmark_corroborated": 1.0,
+    "ambiguity": -0.8,
+    "precision": 0.3,
+    # Share of independent vision samples whose top answer agreed with the
+    # chosen location (see utils/consensus.py). Scaled to [-1, 1].
+    "agreement": 1.5,
 }
-_SOLAR_LOGIT = {"consistent": 0.6, "weak_mismatch": -0.4, "inconsistent": -2.0}
-_CLIMATE_LOGIT = {"consistent": 0.5, "weak_mismatch": -0.4}
-_NAMED_LOGIT = {"matched": 1.2, "missed": -0.9, "unknown": 0.0}
-_WATER_NAMED_LOGIT = {"matched": 0.7, "missed": -0.8, "unknown": 0.0}
+FUSION_WEIGHTS_PATH = os.getenv(
+    "FUSION_WEIGHTS_PATH",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "fusion_weights.json"),
+)
 
 
-def _fuse_confidence(sig: dict[str, Any]) -> float:
-    """Combine independent evidence signals into a single confidence in [0, 1].
+def load_fusion_weights(path: Optional[str] = None) -> dict[str, float]:
+    """Defaults, overridden by a calibrated weights file when one exists."""
+    weights = dict(_DEFAULT_WEIGHTS)
+    try:
+        with open(path or FUSION_WEIGHTS_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        for key, value in (data.get("weights") or {}).items():
+            if key in weights:
+                weights[key] = float(value)
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+    return weights
 
-    Each signal shifts the log-odds up or down; the AI's own confidence is just
-    one voter (bounded weight) rather than the anchor everything scales off.
-    """
-    log_odds = _logit(_FUSION_PRIOR)
+
+_FUSION_WEIGHTS = load_fusion_weights()
+
+
+def fusion_features(sig: dict[str, Any]) -> dict[str, float]:
+    """Turn raw signals into the numeric features the weights multiply."""
+    feats: dict[str, float] = {}
 
     ai = sig.get("ai_conf")
     if ai is not None:
-        log_odds += 1.3 * (2 * _clamp(float(ai)) - 1)
+        feats["ai_conf"] = 2 * _clamp(float(ai)) - 1
 
-    log_odds += _VERIFY_LOGIT.get(sig.get("verify_status"), 0.0)
-    log_odds += _SOLAR_LOGIT.get(sig.get("solar_status"), 0.0)
-    log_odds += _CLIMATE_LOGIT.get(sig.get("climate_status"), 0.0)
-    log_odds += _NAMED_LOGIT.get(sig.get("place_status"), 0.0)
-    log_odds += _NAMED_LOGIT.get(sig.get("landmark_named"), 0.0)
-    log_odds += _WATER_NAMED_LOGIT.get(sig.get("water_named"), 0.0)
-    log_odds += 3.0 * min(float(sig.get("clue_bonus", 0.0) or 0.0), 0.25)
+    for prefix, key in (
+        ("verify", "verify_status"),
+        ("solar", "solar_status"),
+        ("climate", "climate_status"),
+        ("place", "place_status"),
+        ("landmark", "landmark_named"),
+        ("water", "water_named"),
+    ):
+        status = sig.get(key)
+        if status:
+            feats[f"{prefix}:{status}"] = 1.0
 
+    feats["clue_bonus"] = min(float(sig.get("clue_bonus", 0.0) or 0.0), 0.25)
     if sig.get("landmark_corroborated"):
-        log_odds += 1.0
+        feats["landmark_corroborated"] = 1.0
 
     gap = sig.get("ambiguity_gap")
     if gap is not None:
-        # Near-tie between top candidates -> penalty up to -0.8.
-        log_odds += -0.8 * (1 - min(float(gap) / 0.2, 1.0))
+        # 1 for a near-tie between the top candidates, 0 for a clear favourite.
+        feats["ambiguity"] = 1 - min(float(gap) / 0.2, 1.0)
 
     precision = sig.get("precision_m")
     if precision is not None and precision <= NARROW_MIN_RADIUS_M * 2:
-        log_odds += 0.3
+        feats["precision"] = 1.0
 
+    agreement = sig.get("agreement")
+    if agreement is not None:
+        feats["agreement"] = 2 * _clamp(float(agreement)) - 1
+    return feats
+
+
+def _fuse_confidence(
+    sig: dict[str, Any], weights: Optional[dict[str, float]] = None
+) -> float:
+    """Combine independent evidence signals into a single confidence in [0, 1]."""
+    w = weights or _FUSION_WEIGHTS
+    log_odds = w["bias"]
+    for name, value in fusion_features(sig).items():
+        log_odds += w.get(name, 0.0) * value
     return round(_clamp(_sigmoid(log_odds)), 3)
 
 
@@ -222,6 +273,7 @@ def _hypotheses_for_candidate(
                 "address": None,
                 "base": _clamp(cconf + bonus),
                 "cand_conf": cconf,
+                "support": cand.get("top_votes"),
                 "source": "vision_coordinates",
             }
         )
@@ -241,6 +293,7 @@ def _hypotheses_for_candidate(
                     "address": g.get("display_name"),
                     "base": _clamp(cconf * 0.9 + bonus),
                     "cand_conf": cconf,
+                    "support": cand.get("top_votes"),
                     "source": "vision_geocoded",
                 }
             )
@@ -532,6 +585,7 @@ def _determine_core(
         # fusion at the end of this branch (see _fuse_confidence).
         result["_signals"] = {
             "ai_conf": chosen.get("cand_conf"),
+            "agreement": chosen.get("support"),
             "clue_bonus": bonus,
             "ambiguity_gap": gap,
             "verify_status": status,
@@ -593,6 +647,8 @@ def _determine_core(
         signals["landmark_named"] = named.get("landmark_status")
         signals["water_named"] = named.get("water_status")
         result["confidence"] = _fuse_confidence(signals)
+        # Kept for debugging and for eval/calibrate.py, which fits the weights.
+        result["confidence_signals"] = signals
         return result
 
     # 3. Name-only fallback (geocoding produced no coordinates to verify).

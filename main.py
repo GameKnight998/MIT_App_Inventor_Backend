@@ -30,7 +30,7 @@ from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from PIL import Image
 
 from utils.cache import parallel_map
@@ -98,6 +98,77 @@ app.add_middleware(
 @app.get("/")
 def root() -> dict[str, str]:
     return {"status": "ok", "message": "Image Locator backend is running."}
+
+
+_TEST_PAGE = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image Locator test</title>
+<style>
+  :root { color-scheme: light dark; --fg:#1d1d1f; --bg:#fafaf8; --muted:#6b6b6b; --line:#ddd; --card:#fff; }
+  @media (prefers-color-scheme: dark) { :root { --fg:#eee; --bg:#161616; --muted:#9a9a9a; --line:#333; --card:#1f1f1f; } }
+  body { font: 15px/1.5 system-ui, sans-serif; color: var(--fg); background: var(--bg); max-width: 760px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; } p.sub { color: var(--muted); margin: 0 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  img { max-width: 100%; border-radius: 8px; margin-top: 12px; }
+  .big { font-size: 22px; font-weight: 600; } .muted { color: var(--muted); }
+  .bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; margin: 6px 0 2px; }
+  .bar > div { height: 100%; background: #3a7bd5; }
+  ul { padding-left: 20px; margin: 6px 0; } details { margin-top: 8px; }
+  pre { white-space: pre-wrap; word-break: break-word; font-size: 12px; }
+  button { font: inherit; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--line); cursor: pointer; }
+</style></head><body>
+<h1>Image Locator test</h1>
+<p class="sub">Upload a photo to run the full pipeline. It usually takes 20&ndash;60 seconds.</p>
+<div class="card">
+  <input type="file" id="file" accept="image/*">
+  <label><input type="checkbox" id="strip" checked> Ignore GPS in the photo (test the AI, not the metadata)</label><br><br>
+  <button id="go">Locate</button> <span id="status" class="muted"></span>
+  <img id="preview" hidden alt="">
+</div>
+<div id="out"></div>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+$("file").onchange = () => { const f = $("file").files[0]; if (f) { $("preview").src = URL.createObjectURL(f); $("preview").hidden = false; } };
+$("go").onclick = async () => {
+  const f = $("file").files[0]; if (!f) { $("status").textContent = "Choose a photo first."; return; }
+  $("go").disabled = true; $("status").textContent = "Analysing..."; $("out").innerHTML = "";
+  const t0 = Date.now();
+  try {
+    const fd = new FormData(); fd.append("image", f);
+    const r = await fetch("analyze" + ($("strip").checked ? "?ignore_gps=1" : ""), { method: "POST", body: fd });
+    const d = await r.json();
+    $("status").textContent = `Done in ${((Date.now() - t0) / 1000).toFixed(0)} s`;
+    if (!d.success) { $("out").innerHTML = `<div class="card">Error: ${esc(d.error || JSON.stringify(d))}</div>`; return; }
+    const pct = Math.round((d.confidence || 0) * 100);
+    const cons = (d.details && d.details.vision && d.details.vision.consensus) || {};
+    const sig = (d.details && d.details.confidence_signals) || {};
+    const alts = (d.alternatives || []).map(a => `<li>${esc(a.name)}${a.country ? ", " + esc(a.country) : ""} <span class="muted">(${Math.round((a.confidence||0)*100)}%)</span></li>`).join("");
+    const trace = (d.reasoning_trace || []).map(s => `<li><b>${esc(s.stage)}:</b> ${s.details.map(esc).join(" ")}</li>`).join("");
+    $("out").innerHTML = `
+      <div class="card">
+        <div class="big">${esc(d.location_name)}</div>
+        <div class="muted">${esc(d.region)}, ${esc(d.country)} &middot; ${esc(d.coordinates)}</div>
+        <div class="bar"><div style="width:${pct}%"></div></div>
+        <div>Confidence <b>${pct}%</b> &middot; map check: ${esc(d.verified)}${cons.samples > 1 ? ` &middot; AI runs agreeing: ${Math.round((cons.top_agreement||0)*cons.samples)} of ${cons.samples}` : ""}</div>
+        ${d.warning ? `<p class="muted">${esc(d.warning)}</p>` : ""}
+        ${d.map_url ? `<p><a href="${esc(d.map_url)}" target="_blank" rel="noopener">Open in map</a></p>` : ""}
+        ${alts ? `<div>Alternatives:</div><ul>${alts}</ul>` : ""}
+        <details><summary>How it got there</summary><ul>${trace}</ul></details>
+        <details><summary>Confidence inputs</summary><pre>${esc(JSON.stringify(sig, null, 2))}</pre></details>
+        <details><summary>Full response</summary><pre>${esc(JSON.stringify(d, null, 2))}</pre></details>
+      </div>`;
+  } catch (e) { $("status").textContent = "Request failed: " + e; }
+  finally { $("go").disabled = false; }
+};
+</script></body></html>"""
+
+
+@app.get("/test", response_class=HTMLResponse)
+def test_page() -> str:
+    """Browser page for uploading a photo and reading the result."""
+    return _TEST_PAGE
 
 
 @app.get("/health")
@@ -234,6 +305,9 @@ async def analyze(request: Request) -> JSONResponse:
 
     try:
         metadata = extract_exif(str(saved_path))
+        if request.query_params.get("ignore_gps") in ("1", "true", "yes"):
+            # Testing aid: locate from the pixels alone, as for a stripped photo.
+            metadata = {**metadata, "gps": None}
         forensics = assess_forensics(str(saved_path), fmt, metadata)
         vision = analyze_image(str(saved_path))
         location = determine_location(metadata, vision, forensics)

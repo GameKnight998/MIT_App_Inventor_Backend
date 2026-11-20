@@ -119,6 +119,7 @@ def score_case(pred: dict[str, Any], expected: dict[str, Any]) -> dict[str, Any]
         "brier": brier,
         "location_name": pred.get("location_name"),
         "named": (pred.get("verification") or {}).get("named"),
+        "signals": pred.get("confidence_signals"),
     }
 
 
@@ -199,20 +200,41 @@ def install_offline_stubs(gazetteer: dict[str, Any], water_near: dict[str, Any])
     L.search_nearby = fake_search
 
 
-def run_eval(live: bool = False) -> dict[str, Any]:
+def _case_inputs(case: dict[str, Any], use_photos: bool) -> tuple[dict, dict, Any]:
+    """Fixture inputs, or real EXIF + live vision when the case has a photo."""
+    image_path = case.get("image_path")
+    if use_photos and image_path:
+        from utils.exif import extract_exif
+        from utils.forensics import assess_forensics
+        from utils.vision import analyze_image
+
+        path = Path(image_path)
+        if not path.is_absolute():
+            path = LABELS_PATH.parent / path
+        metadata = extract_exif(str(path))
+        if case.get("strip_gps", True):
+            # Test the visual pipeline, not the GPS shortcut.
+            metadata = {**metadata, "gps": None}
+        forensics = assess_forensics(str(path), None, metadata)
+        return metadata, analyze_image(str(path)), forensics
+    return case.get("metadata") or {}, case.get("vision") or {}, case.get("forensics")
+
+
+def run_eval(
+    live: bool = False, use_photos: bool = False, labels_path: Optional[Path] = None
+) -> dict[str, Any]:
     from utils.osint import determine_location
 
-    data = json.loads(LABELS_PATH.read_text(encoding="utf-8"))
+    data = json.loads((labels_path or LABELS_PATH).read_text(encoding="utf-8"))
     if not live:
         install_offline_stubs(data.get("gazetteer") or {}, data.get("water_near") or {})
 
     rows: list[dict[str, Any]] = []
     for case in data.get("cases") or []:
-        pred = determine_location(
-            case.get("metadata") or {},
-            case.get("vision") or {},
-            forensics=case.get("forensics"),
-        )
+        if use_photos and not case.get("image_path"):
+            continue
+        metadata, vision, forensics = _case_inputs(case, use_photos)
+        pred = determine_location(metadata, vision, forensics=forensics)
         scored = score_case(pred, case.get("expected") or {})
         scored["id"] = case["id"]
         scored["description"] = case.get("description", "")
@@ -286,9 +308,18 @@ def main() -> int:
         action="store_true",
         help="Use real Nominatim/Overpass (still uses fixture vision, no OpenAI).",
     )
+    parser.add_argument(
+        "--photos",
+        action="store_true",
+        help="Only cases with image_path: run real EXIF + live OpenAI vision "
+        "(implies --live). GPS is stripped unless the case sets strip_gps: false.",
+    )
+    parser.add_argument("--labels", type=Path, help="Labels file (default eval/labels.json).")
     parser.add_argument("--json", action="store_true", help="Print JSON instead of a table.")
     args = parser.parse_args()
-    summary = run_eval(live=args.live)
+    summary = run_eval(
+        live=args.live or args.photos, use_photos=args.photos, labels_path=args.labels
+    )
     if args.json:
         # Drop bulky named blocks from JSON default print? Keep them; useful.
         print(json.dumps(summary, indent=2, default=str))

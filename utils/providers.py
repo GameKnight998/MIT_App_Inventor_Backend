@@ -16,6 +16,7 @@ import base64
 import json
 import os
 import re
+import threading
 from typing import Any, Optional
 
 # Claude models that support the server-side refusal fallback. A safety
@@ -33,6 +34,43 @@ CLAUDE_EFFORT = os.getenv("CLAUDE_EFFORT", "high")
 
 class ProviderError(RuntimeError):
     pass
+
+
+# --- Token usage ------------------------------------------------------------
+# Every model call adds what it used here, refused calls included (a refusal
+# can still bill the input). Callers that want a per-photo figure reset it
+# before the photo and read it after; sample calls run in threads, hence the lock.
+_USAGE_LOCK = threading.Lock()
+_USAGE: dict[str, int] = {}
+
+
+def usage_reset() -> None:
+    with _USAGE_LOCK:
+        _USAGE.clear()
+
+
+def usage_snapshot() -> dict[str, int]:
+    with _USAGE_LOCK:
+        return dict(_USAGE)
+
+
+def _add_usage(input_tokens: Any = 0, output_tokens: Any = 0,
+               cache_read_tokens: Any = 0, cache_write_tokens: Any = 0) -> None:
+    with _USAGE_LOCK:
+        for key, value in (("input_tokens", input_tokens), ("output_tokens", output_tokens),
+                           ("cache_read_tokens", cache_read_tokens),
+                           ("cache_write_tokens", cache_write_tokens)):
+            _USAGE[key] = _USAGE.get(key, 0) + int(value or 0)
+        _USAGE["api_calls"] = _USAGE.get("api_calls", 0) + 1
+
+
+def _openai_usage(resp: Any) -> None:
+    u = getattr(resp, "usage", None)
+    if u is None:
+        return
+    cached = getattr(getattr(u, "prompt_tokens_details", None), "cached_tokens", 0) or 0
+    # prompt_tokens includes cached tokens; completion_tokens includes reasoning.
+    _add_usage(int(u.prompt_tokens or 0) - cached, u.completion_tokens, cached, 0)
 
 
 def provider_for(model: str) -> str:
@@ -92,15 +130,19 @@ def _openai(model: str, system: str, text: str, images: list[str], n: int, tempe
     try:
         # One request with n choices: input tokens are billed once.
         resp = client.chat.completions.create(**base, temperature=temperature, n=n)
+        _openai_usage(resp)
         return [c.message.content or "{}" for c in resp.choices]
     except Exception as exc:
         msg = str(exc).lower()
         if "temperature" not in msg and "'n'" not in msg and "parameter" not in msg:
             raise
     # Some reasoning models reject n / temperature: separate default requests.
-    return _parallel(
-        lambda _: client.chat.completions.create(**base).choices[0].message.content or "{}", n
-    )
+    def one(_: int) -> str:
+        resp = client.chat.completions.create(**base)
+        _openai_usage(resp)
+        return resp.choices[0].message.content or "{}"
+
+    return _parallel(one, n)
 
 
 # --- Anthropic --------------------------------------------------------------
@@ -130,6 +172,10 @@ def _anthropic(model: str, system: str, text: str, images: list[str], n: int) ->
             )
         else:
             resp = client.messages.create(**params)
+        u = resp.usage
+        # output_tokens includes thinking, which is billed as output.
+        _add_usage(u.input_tokens, u.output_tokens,
+                   getattr(u, "cache_read_input_tokens", 0), getattr(u, "cache_creation_input_tokens", 0))
         if resp.stop_reason == "refusal":
             raise ProviderError(f"{model} declined the request (refusal).")
         reply = "".join(b.text for b in resp.content if b.type == "text")
@@ -160,6 +206,13 @@ def _gemini(model: str, system: str, text: str, images: list[str], n: int, tempe
 
     def one(_: int) -> str:
         resp = client.models.generate_content(model=model, contents=parts, config=config)
+        u = getattr(resp, "usage_metadata", None)
+        if u is not None:
+            cached = getattr(u, "cached_content_token_count", 0) or 0
+            # Thinking tokens are billed as output but counted separately.
+            _add_usage((getattr(u, "prompt_token_count", 0) or 0) - cached,
+                       (getattr(u, "candidates_token_count", 0) or 0) + (getattr(u, "thoughts_token_count", 0) or 0),
+                       cached, 0)
         return extract_json(resp.text or "{}")
 
     return _parallel(one, n)

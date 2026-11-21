@@ -99,8 +99,10 @@ def _short(value: Any, limit: int = 12) -> Any:
 class _Run:
     """The evidence gathered so far for one photo, and the tool implementations."""
 
-    def __init__(self, image_path: str, fmt: Optional[str], ignore_gps: bool, model: str):
+    def __init__(self, image_path: str, fmt: Optional[str], ignore_gps: bool, model: str,
+                 notes: Optional[str] = None):
         self.image_path, self.fmt, self.ignore_gps, self.model = image_path, fmt, ignore_gps, model
+        self.notes = notes
         self.metadata: Optional[dict[str, Any]] = None
         self.forensics: Optional[dict[str, Any]] = None
         self.samples: list[dict[str, Any]] = []
@@ -143,7 +145,7 @@ class _Run:
         from utils.consensus import merge_samples
         from utils.vision import analyze_image_samples
 
-        new = analyze_image_samples(self.image_path, model=self.model, focus=focus)
+        new = analyze_image_samples(self.image_path, model=self.model, focus=focus, notes=self.notes)
         usable = [s for s in new if s.get("available")]
         if not usable:
             return {"error": (new[0].get("note") if new else "no answer")}
@@ -160,6 +162,7 @@ class _Run:
             "architecture": v.get("architecture"),
             "scene": [k for k, on in (v.get("scene") or {}).items() if on],
             "reasoning": (v.get("reasoning") or "")[:600],
+            "places_in_notes": _short(v.get("note_places"), 5),
         }
 
     def list_places(self) -> dict[str, Any]:
@@ -290,13 +293,14 @@ def _thumbnail(image_path: str) -> Optional[str]:
 
 
 def run_agent(image_path: str, fmt: Optional[str], ignore_gps: bool = False,
-              model: Optional[str] = None, client: Any = None) -> dict[str, Any]:
+              model: Optional[str] = None, client: Any = None,
+              notes: Optional[str] = None) -> dict[str, Any]:
     """Run the agent and return (metadata, vision, location, agent_report) as a dict."""
     from utils.providers import provider_for
     from utils.vision import VISION_MODEL
 
     model = model or os.getenv("AGENT_MODEL") or VISION_MODEL
-    run = _Run(image_path, fmt, ignore_gps, model)
+    run = _Run(image_path, fmt, ignore_gps, model, notes)
     steps: list[dict[str, Any]] = []
     brief = ""
     note = "ok"
@@ -310,7 +314,10 @@ def run_agent(image_path: str, fmt: Optional[str], ignore_gps: bool = False,
         client = client or _openai_client()
         user: list[dict[str, Any]] = [{"type": "input_text", "text":
             "Find where this photo was taken. Use your tools; a small preview is attached "
-            "so you can plan, but rely on read_scene for the clues."}]
+            "so you can plan, but rely on read_scene for the clues."
+            + (" The investigator added notes; read_scene shows them to every look and "
+               "returns the places they name, and rank_and_score checks the answer against "
+               "those places. The notes are unverified." if notes else "")}]
         thumb = _thumbnail(image_path)
         if thumb:
             user.append({"type": "input_image", "detail": "low",

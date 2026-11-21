@@ -55,8 +55,11 @@ class AgentTest(unittest.TestCase):
         Image.new("RGB", (64, 48), "white").save(self.tmp.name)
         self.vision_calls = []
 
-        def fake_samples(path, samples=None, model=None, focus=None):
+        self.vision_notes = []
+
+        def fake_samples(path, samples=None, model=None, focus=None, notes=None):
             self.vision_calls.append(focus)
+            self.vision_notes.append(notes)
             return [_look("Bellevue Downtown Park", 47.6125, -122.2045)] * 3
 
         def fake_determine(metadata, vision, forensics=None):
@@ -123,6 +126,18 @@ class AgentTest(unittest.TestCase):
         self.assertEqual(len(self.vision_calls), 2)
         self.assertIn("limit", out["agent"]["steps"][2]["summary"])
         self.assertIn("limit", out["agent"]["steps"][4]["summary"])
+
+    def test_notes_reach_every_look(self):
+        client = FakeClient([
+            _reply([_call(1, "read_scene"), _call(2, "read_scene", {"focus": "the ridge"})]),
+            _reply([_call(3, "rank_and_score")]),
+            _reply(content="ok"),
+        ])
+        agent.run_agent(self.tmp.name, "JPEG", ignore_gps=True, model="gpt-test", client=client,
+                        notes="He mentioned Mt Charleston.")
+        self.assertEqual(self.vision_notes, ["He mentioned Mt Charleston."] * 2)
+        first_user_text = client.sent[0]["input"][0]["content"][0]["text"]
+        self.assertIn("unverified", first_user_text)
 
     def test_non_openai_model_uses_fixed_order(self):
         out = agent.run_agent(self.tmp.name, "JPEG", ignore_gps=True, model="claude-sonnet-5-5")

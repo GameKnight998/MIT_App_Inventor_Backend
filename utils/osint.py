@@ -115,7 +115,15 @@ _DEFAULT_WEIGHTS: dict[str, float] = {
     "vague_answer": -1.5,
     # Text in the photo (a sign, business name, plate frame) names the answer.
     "text_support": 0.6,
+    # The answer lies near a place the investigator's notes name (e.g. "he
+    # mentioned Mt Charleston"). Unverified, so worth less than the photo's own
+    # text; a note that matches nothing adds nothing and costs nothing.
+    "note_support": 0.8,
 }
+# How close the answer must be to a place named in the notes to count as
+# supported by them. Notes often name a landmark seen from the spot, not the
+# spot itself, so this is generous.
+NOTE_SUPPORT_KM = float(os.getenv("NOTE_SUPPORT_KM", "60"))
 FUSION_WEIGHTS_PATH = os.getenv(
     "FUSION_WEIGHTS_PATH",
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "fusion_weights.json"),
@@ -179,7 +187,30 @@ def fusion_features(sig: dict[str, Any]) -> dict[str, float]:
         feats["vague_answer"] = 1.0
     if sig.get("text_support"):
         feats["text_support"] = 1.0
+    if sig.get("note_support"):
+        feats["note_support"] = 1.0
     return feats
+
+
+def _note_support(result: dict[str, Any], vision: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
+    """The nearest place named in the investigator notes, if the answer is close.
+
+    Looks up at most 3 places the vision model extracted from the notes
+    (`note_places`) and returns the nearest one within NOTE_SUPPORT_KM of the
+    answer, or None.
+    """
+    names = [n for n in ((vision or {}).get("note_places") or []) if isinstance(n, str) and n.strip()]
+    if not names or not _has_coords(result):
+        return None
+    best: Optional[dict[str, Any]] = None
+    for name in list(dict.fromkeys(names))[:3]:
+        hit = forward_geocode(name.strip())
+        if not hit:
+            continue
+        dist = _haversine_km(result["latitude"], result["longitude"], hit["latitude"], hit["longitude"])
+        if dist <= NOTE_SUPPORT_KM and (best is None or dist < best["distance_km"]):
+            best = {"name": name.strip(), "distance_km": round(dist, 1)}
+    return best
 
 
 # Place types that cover a whole settlement or larger (tens of km across).
@@ -838,6 +869,14 @@ def _determine_core(
         spec = _answer_specificity(result.get("location_name"), vision, named)
         signals["text_support"] = spec["text_support"]
         signals["vague_answer"] = spec["broad"] and not (spec["text_support"] or spec["precise"])
+        note_hit = _note_support(result, vision)
+        signals["note_support"] = bool(note_hit)
+        if note_hit:
+            result["note_support"] = note_hit
+            evidence.append(
+                f"Investigator notes mention {note_hit['name']}, "
+                f"{note_hit['distance_km']:.0f} km from this answer."
+            )
         # Headline: how far to trust this exact pin (vague answers marked down).
         result["confidence"] = _fuse_confidence(signals)
         # A vague answer can still be right at city level, so that estimate

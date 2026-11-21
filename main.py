@@ -124,7 +124,9 @@ _TEST_PAGE = """<!doctype html>
 <div class="card">
   <input type="file" id="file" accept="image/*">
   <label><input type="checkbox" id="strip" checked> Ignore GPS in the photo (test the AI, not the metadata)</label><br>
-  <label><input type="checkbox" id="agent"> Agent mode (the AI calls the five stages as tools)</label><br><br>
+  <label><input type="checkbox" id="agent"> Agent mode (the AI calls the five stages as tools)</label><br>
+  <label>What do you already know? <span class="muted">(optional; sent to the AI as unverified notes)</span><br>
+  <textarea id="clues" rows="3" maxlength="3000" style="width:100%" placeholder="e.g. In the video he mentions Mt Charleston"></textarea></label><br><br>
   <button id="go">Locate</button> <span id="status" class="muted"></span>
   <img id="preview" hidden alt="">
 </div>
@@ -139,6 +141,7 @@ $("go").onclick = async () => {
   const t0 = Date.now();
   try {
     const fd = new FormData(); fd.append("image", f);
+    if ($("clues").value.trim()) fd.append("clues", $("clues").value.trim());
     const q = [$("strip").checked ? "ignore_gps=1" : "", $("agent").checked ? "mode=agent" : ""].filter(Boolean).join("&");
     const r = await fetch("analyze" + (q ? "?" + q : ""), { method: "POST", body: fd });
     const d = await r.json();
@@ -320,11 +323,32 @@ def _requested_mode(request: Request) -> str:
     return mode if mode in ("fixed", "agent") else "fixed"
 
 
-def _run_agent_pipeline(path: str, fmt: Optional[str], name: str, ignore_gps: bool, model: Optional[str]) -> dict:
+async def _requested_clues(request: Request) -> Optional[str]:
+    """Optional investigator notes: a `clues` form field or JSON key.
+
+    Never read from the URL, so notes don't end up in server logs. They are
+    sent to the vision model, so the client decides what it forwards.
+    """
+    content_type = (request.headers.get("content-type") or "").lower()
+    value = None
+    try:
+        if "multipart/form-data" in content_type:
+            value = (await request.form()).get("clues")
+        elif "application/json" in content_type:
+            import json
+
+            value = json.loads(await request.body()).get("clues")
+    except Exception:
+        return None
+    return value.strip()[:3000] if isinstance(value, str) and value.strip() else None
+
+
+def _run_agent_pipeline(path: str, fmt: Optional[str], name: str, ignore_gps: bool,
+                        model: Optional[str], notes: Optional[str] = None) -> dict:
     """Agent mode: the AI model calls the five stages as tools."""
     from utils.agent import run_agent
 
-    out = run_agent(path, fmt, ignore_gps=ignore_gps, model=model)
+    out = run_agent(path, fmt, ignore_gps=ignore_gps, model=model, notes=notes)
     payload = build_response(
         filename=name, metadata=out["metadata"], vision=out["vision"],
         location=out["location"], forensics=out["forensics"],
@@ -335,14 +359,15 @@ def _run_agent_pipeline(path: str, fmt: Optional[str], name: str, ignore_gps: bo
     return payload
 
 
-def _run_pipeline(path: str, fmt: Optional[str], name: str, ignore_gps: bool, model: Optional[str]) -> dict:
+def _run_pipeline(path: str, fmt: Optional[str], name: str, ignore_gps: bool,
+                  model: Optional[str], notes: Optional[str] = None) -> dict:
     """The blocking analysis work, run in a worker thread by /analyze."""
     metadata = extract_exif(path)
     if ignore_gps:
         # Testing aid: locate from the pixels alone, as for a stripped photo.
         metadata = {**metadata, "gps": None}
     forensics = assess_forensics(path, fmt, metadata)
-    vision = analyze_image(path, model=model)
+    vision = analyze_image(path, model=model, notes=notes)
     location = determine_location(metadata, vision, forensics)
     payload = build_response(
         filename=name, metadata=metadata, vision=vision, location=location, forensics=forensics
@@ -415,6 +440,7 @@ async def analyze(request: Request) -> JSONResponse:
             original_name or saved_name,
             request.query_params.get("ignore_gps") in ("1", "true", "yes"),
             _requested_model(request),
+            await _requested_clues(request),
         )
         return JSONResponse(status_code=200, content=payload)
     except Exception as exc:

@@ -27,6 +27,7 @@ from typing import Any, Optional
 AGREE_KM = float(os.getenv("CONSENSUS_AGREE_KM", "75"))
 
 _LIST_KEYS = (
+    "note_places",
     "ocr_text",
     "languages",
     "landmarks",

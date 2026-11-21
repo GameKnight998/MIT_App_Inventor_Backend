@@ -40,7 +40,7 @@ class VideoFuseTests(unittest.TestCase):
         frames = [frame("A", 10.0, 10.0, 1.0), frame("B", 40.0, 40.0, 0.2)]
         merged = merge_frame_visions(frames)
         self.assertEqual(merged["candidates"][0]["name"], "A")
-        self.assertAlmostEqual(merged["candidates"][0]["top_votes"], 0.5)
+        self.assertAlmostEqual(merged["candidates"][0]["top_votes"], 0.833, places=3)  # 1.0 of 1.2 total weight
 
     def test_distinctive_frames_count_for_more(self):
         # Two generic ridge frames vs one frame with a narrow-range species.
@@ -58,6 +58,11 @@ class VideoFuseTests(unittest.TestCase):
         a = next(c for c in merged["candidates"] if c["name"] == "A")
         self.assertGreater(a["top_votes"], 0.5)   # its own vote plus part of B's
         self.assertLess(a["top_votes"], 1.0)      # but not all of B's
+
+    def test_full_agreement_is_full_support_whatever_the_clue_strength(self):
+        frames = [frame("Ridge", 36.27, -115.69, 1.0, strength=0.3) for _ in range(4)]
+        merged = merge_frame_visions(frames)
+        self.assertAlmostEqual(merged["candidates"][0]["top_votes"], 1.0)
 
 
 if __name__ == "__main__":

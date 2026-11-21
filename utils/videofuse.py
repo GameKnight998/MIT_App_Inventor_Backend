@@ -246,7 +246,10 @@ def _add_frame_support(merged: list[dict[str, Any]], frames: list[dict[str, Any]
             if strength is not None:
                 weight *= MIN_CLUE_WEIGHT + (1 - MIN_CLUE_WEIGHT) * _clamp(strength)
             tops.append((cands[0], weight))
-    n = max(len(frames), 1)
+    # Normalise by the total vote weight, not the frame count: otherwise
+    # down-weighting generic frames would also cap the support of a region
+    # every frame agrees on (all frames at clue 0.4 -> at most 0.55).
+    n = sum(weight for _, weight in tops) or 1.0
     for cand in merged:
         votes = 0.0
         for top, weight in tops:

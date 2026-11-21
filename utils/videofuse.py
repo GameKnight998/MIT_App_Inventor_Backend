@@ -17,6 +17,9 @@ pipeline (verification, climate, solar, log-linear fusion) consumes it unchanged
 
 from __future__ import annotations
 
+import math
+import os
+
 from typing import Any, Optional
 
 from utils.vision import _empty_analysis
@@ -191,8 +194,53 @@ def _merge_candidates(frames: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "frames_agreeing": g["_frames"],
             }
         )
-    merged.sort(key=lambda c: c["confidence"], reverse=True)
+    _add_frame_support(merged, frames)
+    merged.sort(key=lambda c: (c["top_votes"], c["confidence"]), reverse=True)
     return merged
+
+
+# Frames whose top answers lie this close count as pointing at one search
+# region (e.g. Chloride Cliff and Cerro Gordo, 90 km apart, are both "the
+# Death Valley area"), so near-misses reinforce each other instead of competing.
+REGION_KM = float(os.getenv("VIDEO_REGION_KM", "150"))
+
+
+def _km(a: dict[str, Any], b: dict[str, Any]) -> Optional[float]:
+    try:
+        lat1, lon1, lat2, lon2 = (math.radians(float(v)) for v in
+                                  (a["latitude"], a["longitude"], b["latitude"], b["longitude"]))
+    except (KeyError, TypeError, ValueError):
+        return None
+    h = math.sin((lat2 - lat1) / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2
+    return 2 * 6371.0 * math.asin(math.sqrt(h))
+
+
+def _add_frame_support(merged: list[dict[str, Any]], frames: list[dict[str, Any]]) -> None:
+    """Set each candidate's `top_votes`: the share of frames backing its region.
+
+    Every frame votes for its own top answer, weighted by how many of that
+    frame's looks agreed on it (its own `top_votes`), so a frame whose looks
+    scattered counts for less than one whose looks all agreed. The vote counts
+    for every candidate within REGION_KM of that answer (or with the same name
+    when coordinates are missing). This mirrors per-photo consensus, which the
+    confidence score already reads as `top_votes`, and replaces ranking by the
+    model's self-reported confidence, which says ~0.6 whether right or wrong.
+    """
+    tops = []
+    for fr in frames:
+        cands = fr.get("candidates") or []
+        if cands:
+            weight = cands[0].get("top_votes")
+            tops.append((cands[0], 1.0 if weight is None else _clamp(weight)))
+    n = max(len(frames), 1)
+    for cand in merged:
+        votes = 0.0
+        for top, weight in tops:
+            dist = _km(cand, top)
+            same_name = (top.get("name") or "").strip().lower() == (cand.get("name") or "").strip().lower()
+            if same_name or (dist is not None and dist <= REGION_KM):
+                votes += weight
+        cand["top_votes"] = round(votes / n, 3)
 
 
 def merge_frame_visions(frame_visions: list[dict[str, Any]]) -> dict[str, Any]:
@@ -230,6 +278,11 @@ def merge_frame_visions(frame_visions: list[dict[str, Any]]) -> dict[str, Any]:
             "longitude": top.get("longitude"),
         }
         result["confidence"] = top["confidence"]
+        result["consensus"] = {
+            "samples": len(usable),
+            "top_agreement": top["top_votes"],
+            "groups": len(candidates),
+        }
 
     reasons = [v.get("reasoning") for v in usable if v.get("reasoning")]
     if reasons:

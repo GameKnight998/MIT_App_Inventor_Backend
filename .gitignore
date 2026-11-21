@@ -34,3 +34,4 @@ Thumbs.db
 
 # Local benchmark photos and labels (not for the repo)
 benchmark-kit/
+.cache/

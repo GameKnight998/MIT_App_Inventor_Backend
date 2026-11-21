@@ -21,15 +21,15 @@ import requests
 
 from utils.cache import cache_get, cache_set
 
-# Several public Overpass mirrors; we try them in order so a single mirror being
-# down (or unreachable from the host) doesn't disable verification entirely.
+# Public Overpass mirrors with worldwide data, tried in order so one mirror being
+# busy or down doesn't disable verification. Left out on purpose:
+# overpass.osm.ch holds Swiss data only, so it answers "nothing here" for the
+# rest of the world and would cross out correct answers; overpass.openstreetmap.fr
+# serves approved users only; maps.mail.ru often takes 20 s or more.
 _DEFAULT_OVERPASS = (
     "https://overpass-api.de/api/interpreter,"
     "https://overpass.kumi.systems/api/interpreter,"
-    "https://overpass.private.coffee/api/interpreter,"
-    "https://overpass.osm.ch/api/interpreter,"
-    "https://overpass.openstreetmap.fr/api/interpreter,"
-    "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+    "https://overpass.private.coffee/api/interpreter"
 )
 OVERPASS_ENDPOINTS = [
     u.strip() for u in os.getenv("OVERPASS_URL", _DEFAULT_OVERPASS).split(",") if u.strip()
@@ -45,6 +45,19 @@ OVERPASS_TOTAL_BUDGET = float(os.getenv("OVERPASS_TOTAL_BUDGET", "25"))
 # candidates in one request return "unavailable" instantly instead of each
 # re-probing every dead mirror.
 OVERPASS_COOLDOWN = float(os.getenv("OVERPASS_COOLDOWN", "120"))
+# Mirrors rate-limit anonymous clients; a descriptive User-Agent is required.
+OVERPASS_USER_AGENT = os.getenv(
+    "OVERPASS_USER_AGENT", "Whereabouts-geolocation/1.0 (student research project)"
+)
+# Successful map answers are also kept on disk, so reruns (benchmarks, the same
+# photo again) don't depend on the public mirrors at all. Empty disables it.
+VERIFY_DISK_CACHE = os.getenv(
+    "VERIFY_DISK_CACHE",
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".cache", "overpass.json"),
+)
+# Terrain relief (highest minus lowest ground within the radius) that counts as
+# mountains when the map service is down and elevation data is used instead.
+MOUNTAIN_RELIEF_M = float(os.getenv("MOUNTAIN_RELIEF_M", "250"))
 # Beyond this distance a "confirmed" feature is treated as only approximate.
 PRECISION_M = int(os.getenv("VERIFY_PRECISION_M", "800"))
 
@@ -218,9 +231,11 @@ def _unavailable(note: str, expected: list[str]) -> dict[str, Any]:
 def _query_overpass(query: str) -> tuple[Optional[list[dict[str, Any]]], str]:
     """Try each Overpass mirror in turn. Returns (elements, note).
 
-    Stops at the first mirror that answers. Bounded by a per-call time budget
-    and a short circuit-breaker cooldown so a total outage degrades quickly
-    instead of stalling every candidate in the retry loop.
+    Stops at the first mirror that answers. Busy mirrors (HTTP 429/504, reset
+    connections, slow reads) are common, so after a full failed pass we wait
+    briefly and try once more, all within OVERPASS_TOTAL_BUDGET. A short
+    circuit-breaker cooldown then stops a real outage from stalling every
+    candidate in the same request.
     """
     global _circuit_open_until
 
@@ -230,28 +245,147 @@ def _query_overpass(query: str) -> tuple[Optional[list[dict[str, Any]]], str]:
 
     start = now
     last_error = "no endpoints configured"
-    headers = {"User-Agent": os.getenv("GEOCODER_USER_AGENT", "ImageLocatorBackend/1.0")}
-    for url in OVERPASS_ENDPOINTS:
-        if time.monotonic() - start > OVERPASS_TOTAL_BUDGET:
-            last_error = f"time budget {OVERPASS_TOTAL_BUDGET:.0f}s exceeded ({last_error})"
-            break
-        try:
-            resp = requests.post(
-                url,
-                data={"data": query},
-                headers=headers,
-                timeout=(OVERPASS_CONNECT_TIMEOUT, VERIFY_TIMEOUT + 5),
-            )
-            resp.raise_for_status()
-            return resp.json().get("elements", []), f"ok via {url}"
-        except Exception as exc:
-            last_error = f"{url}: {exc}"
-            continue
+    headers = {"User-Agent": OVERPASS_USER_AGENT}
+    for attempt in range(2):
+        if attempt:
+            if time.monotonic() - start > OVERPASS_TOTAL_BUDGET - 8:
+                break
+            time.sleep(2.0)
+        for url in OVERPASS_ENDPOINTS:
+            remaining = OVERPASS_TOTAL_BUDGET - (time.monotonic() - start)
+            if remaining <= 1:
+                last_error = f"time budget {OVERPASS_TOTAL_BUDGET:.0f}s exceeded ({last_error})"
+                break
+            try:
+                resp = requests.post(
+                    url,
+                    data={"data": query},
+                    headers=headers,
+                    timeout=(OVERPASS_CONNECT_TIMEOUT, min(VERIFY_TIMEOUT + 5, remaining)),
+                )
+                resp.raise_for_status()
+                return resp.json().get("elements", []), f"ok via {url}"
+            except Exception as exc:
+                last_error = f"{url}: {exc}"
+                continue
 
     # Every mirror failed (or we ran out of time): open the breaker so the rest
     # of this request doesn't re-probe the same dead endpoints.
     _circuit_open_until = time.monotonic() + OVERPASS_COOLDOWN
     return None, f"all Overpass mirrors failed ({last_error})"
+
+
+# Overpass filters per category the photo can require. Only the categories the
+# photo needs are asked for, plus a capped handful of context features, so
+# a check near a city no longer pulls hundreds of buildings and land-use areas.
+_CATEGORY_FILTERS: dict[str, list[str]] = {
+    "water": ['nwr["natural"~"^(water|bay|wetland)$"]', 'nwr["waterway"]'],
+    "coast": ['nwr["natural"~"^(coastline|beach|bay)$"]'],
+    "mountain": ['nwr["natural"~"^(peak|volcano|ridge|glacier)$"]'],
+    "forest": ['nwr["natural"="wood"]', 'nwr["landuse"="forest"]'],
+}
+_CONTEXT_FILTERS = [
+    'nwr["railway"~"^(rail|light_rail|subway|tram|station)$"]',
+    'nwr["aeroway"="aerodrome"]',
+    'nwr["leisure"="park"]',
+    'nwr["landuse"~"^(farmland|orchard|vineyard|meadow|residential|commercial|industrial|retail)$"]',
+]
+
+
+def _build_query(latitude: float, longitude: float, radius: int, expected: list[str]) -> str:
+    around = f"(around:{radius},{latitude},{longitude});"
+    needed = list(expected) + (["coast"] if "water" in expected else [])  # coastline counts as water
+    parts = []
+    for cat in dict.fromkeys(needed):
+        parts += [f + around for f in _CATEGORY_FILTERS.get(cat, [])]
+    ctx = "".join(f + around for f in _CONTEXT_FILTERS)
+    return (
+        f"[out:json][timeout:{int(VERIFY_TIMEOUT)}];"
+        f"({''.join(parts)})->.need;.need out tags center 60;"
+        f"({ctx})->.ctx;.ctx out tags center 15;"
+    )
+
+
+_disk: Optional[dict[str, Any]] = None
+
+
+def _disk_key(key: tuple) -> str:
+    return "|".join(str(k) for k in key)
+
+
+def _disk_get(key: tuple) -> Optional[dict[str, Any]]:
+    global _disk
+    if not VERIFY_DISK_CACHE:
+        return None
+    if _disk is None:
+        try:
+            import json
+
+            with open(VERIFY_DISK_CACHE, encoding="utf-8") as f:
+                _disk = json.load(f)
+        except Exception:
+            _disk = {}
+    return _disk.get(_disk_key(key))
+
+
+def _disk_set(key: tuple, report: dict[str, Any]) -> None:
+    global _disk
+    if not VERIFY_DISK_CACHE:
+        return
+    try:
+        import json
+
+        if _disk is None:
+            _disk_get(key)
+        _disk[_disk_key(key)] = report
+        os.makedirs(os.path.dirname(VERIFY_DISK_CACHE), exist_ok=True)
+        tmp = VERIFY_DISK_CACHE + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(_disk, f)
+        os.replace(tmp, VERIFY_DISK_CACHE)
+    except Exception:
+        pass  # the disk cache is an optimisation only
+
+
+def _elevation_fallback(
+    latitude: float, longitude: float, expected: list[str], radius: int, why: str
+) -> Optional[dict[str, Any]]:
+    """Check a mountain expectation from terrain data when Overpass is down.
+
+    Samples ground elevation at the point and on a ring at the search radius;
+    relief of MOUNTAIN_RELIEF_M or more counts as mountains. Other categories
+    can't be judged this way and are left out of the score (not counted as
+    missing). Returns None when nothing could be checked.
+    """
+    if "mountain" not in expected:
+        return None
+    from utils.geoenv import elevations
+
+    dlat = radius / 111_000.0
+    dlon = radius / (111_000.0 * max(0.2, math.cos(math.radians(latitude))))
+    ring = [(latitude + dlat * math.sin(a), longitude + dlon * math.cos(a))
+            for a in (i * math.pi / 4 for i in range(8))]
+    vals = [v for v in elevations([(latitude, longitude)] + ring) if v is not None]
+    if len(vals) < 5:
+        return None
+    relief = max(vals) - min(vals)
+    mountains = relief >= MOUNTAIN_RELIEF_M
+    report = _report(
+        "verified" if mountains and expected == ["mountain"] else ("partial" if mountains else "mismatch"),
+        f"Map service unreachable ({why}); terrain checked with elevation data instead: "
+        f"{relief:.0f} m of relief within {radius / 1000:.1f} km.",
+        expected,
+    )
+    report["confirmed"] = ["mountain"] if mountains else []
+    report["missing"] = [] if mountains else ["mountain"]
+    # Categories elevation can't judge are unchecked, not missing.
+    report["unchecked"] = [c for c in expected if c != "mountain"]
+    report["match_score"] = 1.0 if mountains else 0.0
+    report["radius_m"] = radius
+    report["source"] = "elevation"
+    if mountains and report["unchecked"]:
+        report["status"] = "partial"
+    return report
 
 
 def verify_location(
@@ -283,24 +417,20 @@ def verify_location(
     if cached_report is not None:
         return cached_report
 
-    query = (
-        f"[out:json][timeout:{int(VERIFY_TIMEOUT)}];"
-        f'(nwr["natural"~"^(water|bay|wetland|coastline|beach|peak|volcano|ridge|glacier|wood)$"]'
-        f"(around:{r},{latitude},{longitude});"
-        f'nwr["waterway"](around:{r},{latitude},{longitude});'
-        f'nwr["landuse"~"^(forest|farmland|orchard|vineyard|meadow|residential|commercial|industrial|retail)$"]'
-        f"(around:{r},{latitude},{longitude});"
-        f'nwr["railway"~"^(rail|light_rail|subway|tram|station)$"](around:{r},{latitude},{longitude});'
-        f'nwr["aeroway"="aerodrome"](around:{r},{latitude},{longitude});'
-        f'nwr["leisure"="park"](around:{r},{latitude},{longitude}););'
-        f"out tags center 200;"
-    )
+    disk_hit = _disk_get(cache_key)
+    if disk_hit is not None:
+        cache_set(cache_key, disk_hit)
+        return disk_hit
+
+    query = _build_query(latitude, longitude, r, expected)
 
     elements, note = _query_overpass(query)
     if elements is None:
         # Distinct from "skipped": we DID want to verify but couldn't reach the
-        # map service, so the caller knows the result is simply unverified.
-        return _unavailable(note, expected)
+        # map service. Use elevation data for what it can judge (mountains);
+        # otherwise the result is simply unverified.
+        fallback = _elevation_fallback(latitude, longitude, expected, r, note)
+        return fallback if fallback is not None else _unavailable(note, expected)
 
     # Overpass' around filter guarantees each returned feature is within the
     # radius, so presence = "nearby". We only measure precise distance from
@@ -369,4 +499,5 @@ def verify_location(
         "radius_m": r,
     }
     cache_set(cache_key, report)
+    _disk_set(cache_key, report)
     return report

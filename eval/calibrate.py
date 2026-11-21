@@ -12,6 +12,8 @@ a small labelled set only nudges them instead of overfitting. Write the result
 to utils/fusion_weights.json, which the pipeline loads at startup.
 
 Usage:
+  python eval/calibrate.py --from-benchmark results/results.csv --model gpt-4o
+                                              # fit from a benchmark run (no new AI calls)
   python eval/calibrate.py --photos           # real photos + live vision
   python eval/calibrate.py --photos --write   # also save utils/fusion_weights.json
   python eval/calibrate.py                    # offline fixtures (smoke test)
@@ -77,6 +79,27 @@ def _brier(rows: list[tuple[dict[str, Any], float]], weights: dict[str, float]) 
     return round(sum(errs) / len(errs), 4) if errs else float("nan")
 
 
+def _benchmark_rows(path: Path, model: Optional[str], radius_km: float) -> list[tuple[dict[str, Any], float]]:
+    """(signals, 1 if within radius else 0) for each answered photo in a benchmark run."""
+    import csv
+
+    rows = []
+    with path.open(newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if model and r.get("model") != model:
+                continue
+            if r.get("error") or not r.get("signals") or not r.get("error_km"):
+                continue
+            try:
+                sig = json.loads(r["signals"])
+                err = float(r["error_km"])
+            except (ValueError, TypeError):
+                continue
+            if sig:
+                rows.append((sig, 1.0 if err <= radius_km else 0.0))
+    return rows
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Fit confidence-fusion weights.")
     parser.add_argument("--photos", action="store_true", help="Use real photos + live vision.")
@@ -84,18 +107,28 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--labels", type=Path, help="Labels file (default eval/labels.json).")
     parser.add_argument("--strength", type=float, default=1.0, help="Pull toward current weights.")
     parser.add_argument("--write", action="store_true", help="Save utils/fusion_weights.json.")
+    parser.add_argument("--from-benchmark", type=Path,
+                        help="results.csv from eval/benchmark.py: fit from its saved signals.")
+    parser.add_argument("--model", help="With --from-benchmark: use only this model's rows.")
+    parser.add_argument("--radius-km", type=float, default=25.0,
+                        help="With --from-benchmark: an answer this close counts as right.")
     args = parser.parse_args(argv)
 
-    summary = run_eval(
-        live=args.live or args.photos, use_photos=args.photos, labels_path=args.labels
-    )
     rows: list[tuple[dict[str, Any], float]] = []
-    for case in summary["cases"]:
-        if case.get("signals") is None or case.get("within_radius") is None:
-            continue  # GPS / name-only / unknown answers have no fused score
-        rows.append((case["signals"], 1.0 if case["within_radius"] else 0.0))
+    if args.from_benchmark:
+        rows = _benchmark_rows(args.from_benchmark, args.model, args.radius_km)
+        total = len(rows)
+    else:
+        summary = run_eval(
+            live=args.live or args.photos, use_photos=args.photos, labels_path=args.labels
+        )
+        for case in summary["cases"]:
+            if case.get("signals") is None or case.get("within_radius") is None:
+                continue  # GPS / name-only / unknown answers have no fused score
+            rows.append((case["signals"], 1.0 if case["within_radius"] else 0.0))
+        total = summary["n"]
 
-    print(f"Cases with fused confidence: {len(rows)} of {summary['n']}")
+    print(f"Cases with fused confidence: {len(rows)} of {total}")
     if len(rows) < 2:
         print("Not enough labelled cases to fit. Add photos to the labels file.")
         return 1

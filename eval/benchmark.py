@@ -50,6 +50,7 @@ tokens but no cost. summary_by_model.csv adds total and per-photo cost.
 from __future__ import annotations
 
 import argparse
+import json
 import csv
 import math
 import statistics
@@ -78,7 +79,7 @@ FIELDS = [
     "file", "category", "model", "true_lat", "true_lon", "true_country", "true_place",
     "pred_place", "pred_country", "pred_lat", "pred_lon", "error_km", "country_match",
     "confidence", "conf_1km", "conf_25km", "conf_750km", "ai_top_place", "ai_top_error_km", "ai_raw_confidence",
-    "agreement", "samples", "map_check", "agent_steps", "seconds", "error",
+    "agreement", "samples", "map_check", "agent_steps", "seconds", "error", "signals",
     "input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens", "api_calls",
     "cost_usd", "vision_samples", "claude_effort",
 ]
@@ -246,6 +247,9 @@ def run_one(photo: dict[str, Any], model: str) -> dict[str, Any]:
         samples=consensus.get("samples"),
         map_check=(loc.get("verification") or {}).get("status"),
         agent_steps=" > ".join(st["tool"] for st in agent.get("steps", [])),
+        # The confidence inputs, so eval/calibrate.py can fit the weights from
+        # this run without analysing the photos again.
+        signals=json.dumps(loc.get("confidence_signals") or {}, default=str),
         seconds=round(time.monotonic() - start, 1),
         error="",
         **_usage(),

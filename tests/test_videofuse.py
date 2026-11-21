@@ -14,8 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from utils.videofuse import merge_frame_visions  # noqa: E402
 
 
-def frame(name, lat, lon, votes, conf=0.6):
-    return {"available": True, "scene": {}, "candidates": [
+def frame(name, lat, lon, votes, conf=0.6, strength=None):
+    return {"available": True, "scene": {}, "clue_strength": strength, "candidates": [
         {"name": name, "latitude": lat, "longitude": lon, "confidence": conf, "top_votes": votes}]}
 
 
@@ -31,14 +31,33 @@ class VideoFuseTests(unittest.TestCase):
             frame("Big Bend National Park", 29.25, -103.25, 0.5, conf=0.9),
         ]
         merged = merge_frame_visions(frames)
-        self.assertNotEqual(merged["candidates"][0]["name"], "Big Bend National Park")
-        self.assertGreater(merged["consensus"]["top_agreement"], 0.5)
+        top = merged["candidates"][0]
+        big_bend = next(c for c in merged["candidates"] if c["name"] == "Big Bend National Park")
+        self.assertNotEqual(top["name"], "Big Bend National Park")
+        self.assertGreater(top["top_votes"], big_bend["top_votes"])
 
     def test_support_is_weighted_by_agreement_within_each_frame(self):
         frames = [frame("A", 10.0, 10.0, 1.0), frame("B", 40.0, 40.0, 0.2)]
         merged = merge_frame_visions(frames)
         self.assertEqual(merged["candidates"][0]["name"], "A")
         self.assertAlmostEqual(merged["candidates"][0]["top_votes"], 0.5)
+
+    def test_distinctive_frames_count_for_more(self):
+        # Two generic ridge frames vs one frame with a narrow-range species.
+        frames = [
+            frame("Generic Range", 40.0, -117.0, 1.0, strength=0.1),
+            frame("Generic Range", 40.0, -117.0, 1.0, strength=0.1),
+            frame("Tortoise Slope", 36.1, -115.4, 1.0, strength=0.7),
+        ]
+        merged = merge_frame_visions(frames)
+        self.assertEqual(merged["candidates"][0]["name"], "Tortoise Slope")
+
+    def test_votes_fade_with_distance(self):
+        frames = [frame("A", 36.0, -115.0, 1.0), frame("B", 36.5, -115.0, 1.0)]  # ~56 km apart
+        merged = merge_frame_visions(frames)
+        a = next(c for c in merged["candidates"] if c["name"] == "A")
+        self.assertGreater(a["top_votes"], 0.5)   # its own vote plus part of B's
+        self.assertLess(a["top_votes"], 1.0)      # but not all of B's
 
 
 if __name__ == "__main__":

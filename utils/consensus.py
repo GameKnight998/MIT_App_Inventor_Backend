@@ -199,6 +199,9 @@ def merge_samples(samples: list[dict[str, Any]]) -> dict[str, Any]:
         }
         base["confidence"] = top["confidence"]
 
+    strengths = sorted(s["clue_strength"] for s in usable if s.get("clue_strength") is not None)
+    if strengths:
+        base["clue_strength"] = strengths[len(strengths) // 2]  # median look
     base["consensus"] = {
         "samples": len(usable),
         "top_agreement": top["top_votes"] if top is not None else 0.0,

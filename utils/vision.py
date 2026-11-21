@@ -102,7 +102,8 @@ _SYSTEM_PROMPT = (
     '"latitude": number|null, "longitude": number|null, '
     '"confidence": number, "why": string}\n'
     "  ],\n"
-    '  "confidence": number\n'
+    '  "confidence": number,\n'
+    '  "clue_strength": number\n'
     "}\n"
     "Rules:\n"
     "- `landmarks` may describe notable structures in words (e.g. 'gothic clock "
@@ -131,6 +132,12 @@ _SYSTEM_PROMPT = (
     "(e.g. 'toward the camera', 'to the left/north-east'), whether shadows are "
     "short or long, and whether the sun looks low, medium or high. Leave fields "
     "null/false if not visible. Do NOT infer these from the guessed location.\n"
+    "- `clue_strength` (0.0-1.0) rates how narrowly the visible clues limit "
+    "WHERE this could be, regardless of which place you picked: 1.0 = readable "
+    "text or a unique named landmark that pins one place; 0.7 = a plant, animal or "
+    "rock with a small known range (e.g. desert tortoise, Joshua tree, bristlecone "
+    "pine) or a distinctive skyline; 0.4 = a regional landscape type (e.g. Great "
+    "Basin sagebrush hills); 0.1 = generic scenery found on several continents.\n"
     "- Provide up to 3 candidates. Each confidence and the top-level confidence "
     "are 0.0-1.0. Do not invent text you cannot actually read."
 )
@@ -505,4 +512,6 @@ def _parse_analysis(parsed: dict[str, Any]) -> dict[str, Any]:
             ]
 
     analysis["confidence"] = _clamp(parsed.get("confidence", 0.0))
+    if parsed.get("clue_strength") is not None:
+        analysis["clue_strength"] = _clamp(parsed.get("clue_strength"))
     return analysis

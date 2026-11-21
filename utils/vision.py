@@ -345,10 +345,13 @@ def _encode_tiles(image_path: str) -> list[str]:
     return [_to_jpeg_b64(img.crop(box), TILE_MAX_SIDE) for box in boxes]
 
 
-def _user_prompt(image_path: str) -> tuple[str, list[str]]:
+def _user_prompt(image_path: str, focus: Optional[str] = None) -> tuple[str, list[str]]:
     """The user text and the base64 JPEG images (full photo, then any crops)."""
     tiles = _encode_tiles(image_path)
     text = "Analyze this image for geolocation clues and rank candidate locations."
+    if focus:
+        # Set by the agent (utils/agent.py) for a second, targeted look.
+        text += f" Pay special attention to: {focus.strip()[:300]}"
     if tiles:
         text += (
             " Image 1 is the full photo. Images 2-5 are zoomed-in crops of its "
@@ -359,7 +362,10 @@ def _user_prompt(image_path: str) -> tuple[str, list[str]]:
 
 
 def analyze_image_samples(
-    image_path: str, samples: Optional[int] = None, model: Optional[str] = None
+    image_path: str,
+    samples: Optional[int] = None,
+    model: Optional[str] = None,
+    focus: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     """Run the vision model and return one parsed analysis per sample.
 
@@ -376,7 +382,7 @@ def analyze_image_samples(
     n = max(1, samples or VISION_SAMPLES)
     temperature = VISION_SAMPLE_TEMPERATURE if n > 1 else VISION_TEMPERATURE
     try:
-        text, images = _user_prompt(image_path)
+        text, images = _user_prompt(image_path, focus)
         raw_answers = request_samples(model, _SYSTEM_PROMPT, text, images, n, temperature)
     except Exception as exc:
         return [_empty_analysis(f"Vision call failed ({model}): {exc}")]

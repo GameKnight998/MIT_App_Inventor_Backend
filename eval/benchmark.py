@@ -78,7 +78,7 @@ FIELDS = [
     "file", "category", "model", "true_lat", "true_lon", "true_country", "true_place",
     "pred_place", "pred_country", "pred_lat", "pred_lon", "error_km", "country_match",
     "confidence", "conf_1km", "conf_25km", "conf_750km", "ai_top_place", "ai_top_error_km", "ai_raw_confidence",
-    "agreement", "samples", "map_check", "seconds", "error",
+    "agreement", "samples", "map_check", "agent_steps", "seconds", "error",
     "input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens", "api_calls",
     "cost_usd", "vision_samples", "claude_effort",
 ]
@@ -166,6 +166,10 @@ def load_manifest(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+# Set by --agent: the AI model calls the five stages as tools (utils/agent.py).
+AGENT_MODE = False
+
+
 def run_one(photo: dict[str, Any], model: str) -> dict[str, Any]:
     from utils.exif import extract_exif
     from utils.forensics import assess_forensics
@@ -197,18 +201,26 @@ def run_one(photo: dict[str, Any], model: str) -> dict[str, Any]:
 
     try:
         path = str(photo["path"])
-        metadata = {**extract_exif(path), "gps": None}  # judge the pixels, not EXIF
-        forensics = assess_forensics(path, None, metadata)
-        try:
-            vision = analyze_image(path, model=model)
-        except TypeError:  # older pipeline without per-call model choice
-            import utils.vision as vision_module
+        agent: dict[str, Any] = {}
+        if AGENT_MODE:
+            from utils.agent import run_agent
 
-            vision_module.VISION_MODEL = model
-            vision = analyze_image(path)
+            res = run_agent(path, None, ignore_gps=True, model=model)
+            vision, loc, agent = res["vision"], res["location"], res["agent"]
+        else:
+            metadata = {**extract_exif(path), "gps": None}  # judge the pixels, not EXIF
+            forensics = assess_forensics(path, None, metadata)
+            try:
+                vision = analyze_image(path, model=model)
+            except TypeError:  # older pipeline without per-call model choice
+                import utils.vision as vision_module
+
+                vision_module.VISION_MODEL = model
+                vision = analyze_image(path)
         if not vision.get("available"):
             raise RuntimeError(vision.get("note") or "vision unavailable")
-        loc = determine_location(metadata, vision, forensics)
+        if not AGENT_MODE:
+            loc = determine_location(metadata, vision, forensics)
     except Exception as exc:  # record and keep going
         out.update(seconds=round(time.monotonic() - start, 1), error=str(exc)[:300], **_usage())
         return out
@@ -233,6 +245,7 @@ def run_one(photo: dict[str, Any], model: str) -> dict[str, Any]:
         agreement=consensus.get("top_agreement"),
         samples=consensus.get("samples"),
         map_check=(loc.get("verification") or {}).get("status"),
+        agent_steps=" > ".join(st["tool"] for st in agent.get("steps", [])),
         seconds=round(time.monotonic() - start, 1),
         error="",
         **_usage(),
@@ -599,13 +612,17 @@ def main(argv: Optional[list[str]] = None) -> int:
     r.add_argument("--out", type=Path, default=Path("benchmark_results"))
     r.add_argument("--quick", action="store_true",
                    help="1 sample per photo and Claude effort 'medium'; rows labelled '(quick)'.")
+    r.add_argument("--agent", action="store_true",
+                   help="Agent mode: the model calls the five stages as tools (adds ' (agent)' to the label).")
     r.add_argument("--stop-after-refusals", type=int, default=3,
                    help="Stop calling a model that refused its first N photos (0 = never stop).")
     rep = sub.add_parser("report", help="Rebuild summaries and charts from results.csv.")
     rep.add_argument("--out", type=Path, default=Path("benchmark_results"))
     args = parser.parse_args(argv)
     if args.cmd == "run":
-        label = args.label
+        global AGENT_MODE
+        AGENT_MODE = args.agent
+        label = args.label + (" (agent)" if args.agent and "agent" not in args.label else "")
         if args.quick:
             # Read when the pipeline modules are first imported (inside run_one).
             os.environ["VISION_SAMPLES"] = "1"

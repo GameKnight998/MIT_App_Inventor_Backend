@@ -123,7 +123,8 @@ _TEST_PAGE = """<!doctype html>
 <p class="sub">Upload a photo to run the full pipeline. It usually takes 20&ndash;60 seconds.</p>
 <div class="card">
   <input type="file" id="file" accept="image/*">
-  <label><input type="checkbox" id="strip" checked> Ignore GPS in the photo (test the AI, not the metadata)</label><br><br>
+  <label><input type="checkbox" id="strip" checked> Ignore GPS in the photo (test the AI, not the metadata)</label><br>
+  <label><input type="checkbox" id="agent"> Agent mode (the AI calls the five stages as tools)</label><br><br>
   <button id="go">Locate</button> <span id="status" class="muted"></span>
   <img id="preview" hidden alt="">
 </div>
@@ -138,7 +139,8 @@ $("go").onclick = async () => {
   const t0 = Date.now();
   try {
     const fd = new FormData(); fd.append("image", f);
-    const r = await fetch("analyze" + ($("strip").checked ? "?ignore_gps=1" : ""), { method: "POST", body: fd });
+    const q = [$("strip").checked ? "ignore_gps=1" : "", $("agent").checked ? "mode=agent" : ""].filter(Boolean).join("&");
+    const r = await fetch("analyze" + (q ? "?" + q : ""), { method: "POST", body: fd });
     const d = await r.json();
     $("status").textContent = `Done in ${((Date.now() - t0) / 1000).toFixed(0)} s`;
     if (!d.success) { $("out").innerHTML = `<div class="card">Error: ${esc(d.error || JSON.stringify(d))}</div>`; return; }
@@ -155,6 +157,7 @@ $("go").onclick = async () => {
         ${d.confidence_by_distance ? `<div class="muted">Chance it is within 1 km: ${Math.round(d.confidence_by_distance["1km"]*100)}% &middot; 25 km: ${Math.round(d.confidence_by_distance["25km"]*100)}% &middot; 750 km: ${Math.round(d.confidence_by_distance["750km"]*100)}%</div>` : ""}
         <div>Confidence <b>${pct}%</b> &middot; map check: ${esc(d.verified)}${cons.samples > 1 ? ` &middot; AI runs agreeing: ${Math.round((cons.top_agreement||0)*cons.samples)} of ${cons.samples}` : ""}</div>
         ${d.warning ? `<p class="muted">${esc(d.warning)}</p>` : ""}
+        ${d.agent ? `<p><b>Agent (${d.agent.steps.length} tool calls):</b> ${esc(d.agent.brief || d.agent.note)}</p>` : ""}
         ${d.map_url ? `<p><a href="${esc(d.map_url)}" target="_blank" rel="noopener">Open in map</a></p>` : ""}
         ${alts ? `<div>Alternatives:</div><ul>${alts}</ul>` : ""}
         <details><summary>How it got there</summary><ul>${trace}</ul></details>
@@ -307,6 +310,31 @@ def geocode(q: str = "") -> JSONResponse:
     )
 
 
+# "fixed" runs the stages in order in Python; "agent" lets the AI model call the
+# five stages as tools and choose the order (utils/agent.py). ?mode= overrides.
+PIPELINE_MODE = os.getenv("PIPELINE_MODE", "fixed").strip().lower()
+
+
+def _requested_mode(request: Request) -> str:
+    mode = (request.query_params.get("mode") or PIPELINE_MODE).strip().lower()
+    return mode if mode in ("fixed", "agent") else "fixed"
+
+
+def _run_agent_pipeline(path: str, fmt: Optional[str], name: str, ignore_gps: bool, model: Optional[str]) -> dict:
+    """Agent mode: the AI model calls the five stages as tools."""
+    from utils.agent import run_agent
+
+    out = run_agent(path, fmt, ignore_gps=ignore_gps, model=model)
+    payload = build_response(
+        filename=name, metadata=out["metadata"], vision=out["vision"],
+        location=out["location"], forensics=out["forensics"],
+    )
+    payload["model"] = out["vision"].get("model") or out["agent"]["model"]
+    payload["pipeline_mode"] = "agent"
+    payload["agent"] = out["agent"]
+    return payload
+
+
 def _run_pipeline(path: str, fmt: Optional[str], name: str, ignore_gps: bool, model: Optional[str]) -> dict:
     """The blocking analysis work, run in a worker thread by /analyze."""
     metadata = extract_exif(path)
@@ -320,6 +348,7 @@ def _run_pipeline(path: str, fmt: Optional[str], name: str, ignore_gps: bool, mo
         filename=name, metadata=metadata, vision=vision, location=location, forensics=forensics
     )
     payload["model"] = vision.get("model") or model
+    payload["pipeline_mode"] = "fixed"
     return payload
 
 
@@ -380,7 +409,7 @@ async def analyze(request: Request) -> JSONResponse:
         # worker thread lets several requests (e.g. /compare's one-per-model)
         # proceed at the same time instead of queueing.
         payload = await run_in_threadpool(
-            _run_pipeline,
+            _run_agent_pipeline if _requested_mode(request) == "agent" else _run_pipeline,
             str(saved_path),
             fmt,
             original_name or saved_name,

@@ -119,7 +119,16 @@ def detect_expected_features(vision: Optional[dict[str, Any]]) -> list[str]:
     scene = vision.get("scene")
     if isinstance(scene, dict) and any(bool(v) for v in scene.values()):
         expected: list[str] = []
+        # A beach on a lake or river is not a sea coast: OpenStreetMap only
+        # tags coastlines on the sea, so expecting one there would cross out
+        # a correct inland answer (e.g. Lake Sammamish State Park).
+        inland_beach = bool(
+            scene.get("beach") and (scene.get("lake") or scene.get("river"))
+            and not scene.get("ocean_or_sea") and not scene.get("coastline")
+        )
         for key, category in _SCENE_TO_CATEGORY.items():
+            if key == "beach" and inland_beach:
+                continue
             if scene.get(key) and category not in expected:
                 expected.append(category)
         return expected

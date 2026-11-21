@@ -496,6 +496,50 @@ def _augment_verification(
     return out
 
 
+# A fallback place needs support within this margin of the best-supported
+# place (support = share of independent looks whose first choice it was).
+SUPPORT_MARGIN = 0.34
+
+
+def _drop_unsupported(
+    best_partial: Optional[tuple[dict[str, Any], dict[str, Any]]],
+    best_unavailable: Optional[tuple[dict[str, Any], dict[str, Any]]],
+    best_mismatch: Optional[tuple[dict[str, Any], dict[str, Any]]],
+    tried: list[tuple[dict[str, Any], dict[str, Any]]],
+) -> tuple[Any, Any, Any]:
+    """Re-pick the fallback options among well-supported places only.
+
+    Without this, a place no look chose (support 0) could win just because
+    its name was found on the map, while the place every look agreed on lost
+    to a failed or unreachable map check. Returns the three fallbacks
+    unchanged when support is unknown (a single look).
+    """
+    supports = [h.get("support") for h, _ in tried if h.get("support") is not None]
+    if not supports:
+        return best_partial, best_unavailable, best_mismatch
+    floor = max(supports) - SUPPORT_MARGIN
+
+    def ok(h: dict[str, Any]) -> bool:
+        s = h.get("support")
+        return s is None or s >= floor
+
+    def best(status: str, key: Any) -> Optional[tuple[dict[str, Any], dict[str, Any]]]:
+        pool = [(h, r) for h, r in tried if ok(h) and r.get("status") == status]
+        return max(pool, key=key) if pool else None
+
+    by_rank_then_base = lambda hr: (_verify_rank(hr[1]), hr[0].get("support") or 0, hr[0].get("base", 0.0))
+    return (
+        best("partial", by_rank_then_base),
+        best("unavailable", by_rank_then_base),
+        # Anything not partial/unavailable/accepted was crossed out as a mismatch.
+        max(
+            [(h, r) for h, r in tried if ok(h)
+             and r.get("status") not in ("partial", "unavailable") + tuple(_ACCEPT_STATUSES)],
+            key=by_rank_then_base, default=None,
+        ),
+    )
+
+
 def _select_location(
     candidates: list[dict[str, Any]],
     bonus: float,
@@ -518,6 +562,7 @@ def _select_location(
     best_mismatch: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
     chosen: Optional[dict[str, Any]] = None
     chosen_report: Optional[dict[str, Any]] = None
+    tried: list[tuple[dict[str, Any], dict[str, Any]]] = []
 
     for cand in candidates:
         cconf = _clamp(float(cand.get("confidence", 0.0) or 0.0))
@@ -551,6 +596,7 @@ def _select_location(
             )
             attempts += 1
             hyp["verification"] = report
+            tried.append((hyp, report))
             status = report.get("status")
 
             if status in _ACCEPT_STATUSES:
@@ -598,6 +644,14 @@ def _select_location(
             break
 
     if chosen is None:
+        # The map may lower confidence in what the looks agreed on, but it
+        # must not promote a place hardly any look chose: a failed or
+        # unavailable map check is weak evidence next to independent looks
+        # that agree. So the fallback only considers places whose support is
+        # close to the best support.
+        best_partial, best_unavailable, best_mismatch = _drop_unsupported(
+            best_partial, best_unavailable, best_mismatch, tried
+        )
         # Preference when nothing verified cleanly: a real partial match (has
         # corroborating evidence) > the AI's top un-checkable pick > a location
         # the map actively contradicted.

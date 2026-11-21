@@ -34,6 +34,13 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from starlette.concurrency import run_in_threadpool
 from PIL import Image
 
+try:  # iPhone photos are HEIC; Pillow opens them only with this plugin.
+    from pillow_heif import register_heif_opener
+
+    register_heif_opener()
+except ImportError:
+    pass
+
 from utils.cache import parallel_map
 from utils.exif import extract_exif
 from utils.forensics import assess_forensics

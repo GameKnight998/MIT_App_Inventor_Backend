@@ -1,0 +1,226 @@
+"""Unit tests for consensus sampling, landmark filtering and confidence fusion.
+
+Run: python -m unittest discover -s tests
+"""
+
+from __future__ import annotations
+
+import sys
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from utils.consensus import merge_samples  # noqa: E402
+from utils.landmarks import _looks_generic, extract_named_features  # noqa: E402
+from utils.osint import _DEFAULT_WEIGHTS, _fuse_confidence, fusion_features  # noqa: E402
+
+
+def sample(cands, scene=None, **extra):
+    return {
+        "available": True,
+        "candidates": [
+            {"name": n, "latitude": lat, "longitude": lon, "confidence": c}
+            for n, lat, lon, c in cands
+        ],
+        "scene": scene or {},
+        "confidence": cands[0][3] if cands else 0.0,
+        **extra,
+    }
+
+
+class ConsensusTests(unittest.TestCase):
+    def test_agreeing_samples_give_full_support(self):
+        merged = merge_samples(
+            [
+                sample([("Chelan", 47.84, -120.02, 0.6)]),
+                sample([("Lake Chelan", 47.85, -120.05, 0.5)]),  # 3 km away
+                sample([("Chelan, WA", 47.83, -120.01, 0.7)]),
+            ]
+        )
+        self.assertEqual(merged["consensus"]["samples"], 3)
+        self.assertEqual(merged["consensus"]["top_agreement"], 1.0)
+        self.assertEqual(merged["candidates"][0]["top_votes"], 1.0)
+        self.assertAlmostEqual(merged["candidates"][0]["confidence"], 0.6, places=2)
+
+    def test_scattered_samples_give_low_support(self):
+        merged = merge_samples(
+            [
+                sample([("Oregon", 44.0, -120.5, 0.5)]),
+                sample([("Spain", 40.4, -3.7, 0.5)]),
+                sample([("Chile", -33.4, -70.6, 0.5)]),
+            ]
+        )
+        self.assertAlmostEqual(merged["consensus"]["top_agreement"], 0.333, places=2)
+        # A candidate only one sample named is averaged down, not taken at face value.
+        self.assertAlmostEqual(merged["candidates"][0]["confidence"], 0.167, places=2)
+
+    def test_scene_feature_needs_majority(self):
+        merged = merge_samples(
+            [
+                sample([("A", 1, 1, 0.5)], scene={"lake": True, "forest": True}),
+                sample([("A", 1, 1, 0.5)], scene={"lake": False, "forest": True}),
+                sample([("A", 1, 1, 0.5)], scene={"lake": False, "forest": True}),
+            ]
+        )
+        self.assertFalse(merged["scene"]["lake"])
+        self.assertTrue(merged["scene"]["forest"])
+
+    def test_single_sample_has_no_agreement_signal(self):
+        merged = merge_samples([sample([("A", 1, 1, 0.5)])])
+        self.assertIsNone(merged["consensus"]["top_agreement"])
+        self.assertNotIn("top_votes", merged["candidates"][0])
+
+
+class LandmarkFilterTests(unittest.TestCase):
+    def test_generic_descriptions_are_detected(self):
+        for text in ("a gothic clock tower", "the old bridge", "suspension bridge", "Two towers"):
+            self.assertTrue(_looks_generic(text), text)
+        for text in ("Space Needle", "Golden Gate Bridge", "Lake Chelan"):
+            self.assertFalse(_looks_generic(text), text)
+
+    def test_named_landmarks_field_is_preferred(self):
+        vision = {"landmarks": ["a clock tower", "Big Ben"], "named_landmarks": ["Big Ben"]}
+        self.assertEqual(extract_named_features(vision), ["Big Ben"])
+
+    def test_city_names_are_not_natural_features(self):
+        from utils.landmarks import _looks_like_named_feature
+
+        for name in ("Seattle", "Parkland", "Baytown", "Seaside Heights Mall"):
+            self.assertFalse(_looks_like_named_feature(name), name)
+        for name in ("Lake Chelan", "Mt. Rainier", "Golden Gate Bridge"):
+            self.assertTrue(_looks_like_named_feature(name), name)
+
+    def test_candidate_names_are_not_checked_against_themselves(self):
+        vision = {"named_landmarks": [], "candidates": [{"name": "Lake Chelan"}]}
+        self.assertEqual(extract_named_features(vision), [])
+
+    def test_legacy_landmarks_drop_generic_entries(self):
+        vision = {"landmarks": ["a clock tower", "Big Ben"]}
+        self.assertEqual(extract_named_features(vision), ["Big Ben"])
+
+
+class FusionTests(unittest.TestCase):
+    base = {"ai_conf": 0.55, "clue_bonus": 0.14, "ambiguity_gap": 0.2, "verify_status": "skipped"}
+
+    def test_agreement_raises_and_disagreement_lowers_confidence(self):
+        none = _fuse_confidence(self.base)
+        agree = _fuse_confidence({**self.base, "agreement": 1.0})
+        split = _fuse_confidence({**self.base, "agreement": 1 / 3})
+        self.assertGreater(agree, none + 0.2)
+        self.assertLess(split, none)
+
+    def test_features_match_default_weight_names(self):
+        feats = fusion_features(
+            {
+                **self.base,
+                "verify_status": "verified",
+                "solar_status": "consistent",
+                "landmark_named": "missed",
+                "agreement": 0.5,
+                "precision_m": 500,
+                "landmark_corroborated": True,
+            }
+        )
+        for name in feats:
+            self.assertIn(name, _DEFAULT_WEIGHTS, name)
+
+    def test_vague_answer_lowers_confidence(self):
+        self.assertLess(
+            _fuse_confidence({**self.base, "agreement": 1.0, "vague_answer": True}),
+            _fuse_confidence({**self.base, "agreement": 1.0}) - 0.2,
+        )
+
+    def test_confidence_by_distance_orders_levels(self):
+        from utils.osint import _confidence_by_distance
+
+        broad = _confidence_by_distance(0.8, {"broad": True, "precise": False}, 1.0)
+        self.assertLess(broad["1km"], broad["25km"])
+        self.assertLessEqual(broad["25km"], broad["750km"])
+        precise = _confidence_by_distance(0.8, {"broad": False, "precise": True}, 1.0)
+        self.assertGreater(precise["1km"], broad["1km"] * 10)
+
+    def test_answer_without_coordinates_is_capped(self):
+        from utils.osint import NAME_ONLY_CAP, determine_location
+
+        vision = {
+            "available": True,
+            "candidates": [{"name": "Suburban area, Midwest", "region": "Unknown",
+                            "country": "United States", "confidence": 0.9}],
+        }
+        import utils.osint as O
+
+        old = O.forward_geocode_candidates
+        O.forward_geocode_candidates = lambda q, limit=3: []
+        try:
+            loc = determine_location({}, vision)
+        finally:
+            O.forward_geocode_candidates = old
+        self.assertLessEqual(loc["confidence"], NAME_ONLY_CAP)
+        self.assertIsNone(loc["region"])
+        self.assertEqual(loc["confidence_by_distance"]["1km"], 0.0)
+
+    def test_large_places_are_vague_and_do_not_pin_the_spot(self):
+        import utils.osint as O
+
+        park = {"addresstype": "national_park", "osm_type": "protected_area", "extent_km": 140.0}
+        viewpoint = {"addresstype": "tourism", "osm_type": "viewpoint", "extent_km": 0.1}
+        old = O.forward_geocode_candidates
+        try:
+            O.forward_geocode_candidates = lambda q, limit=3: [park]
+            spec = O._answer_specificity(
+                "Grand Canyon National Park", {}, {"matched_landmarks": [
+                    {"name": "Grand Canyon", "distance_km": 0.0, "extent_km": 140.0}]})
+            self.assertTrue(spec["broad"])
+            self.assertFalse(spec["precise"])
+
+            O.forward_geocode_candidates = lambda q, limit=3: [viewpoint]
+            spec = O._answer_specificity(
+                "Mather Point", {}, {"matched_landmarks": [
+                    {"name": "Mather Point", "distance_km": 0.1, "extent_km": 0.1}]})
+            self.assertFalse(spec["broad"])
+            self.assertTrue(spec["precise"])
+        finally:
+            O.forward_geocode_candidates = old
+
+    def test_point_mapped_canyon_is_still_large(self):
+        import utils.osint as O
+
+        canyon = {"addresstype": "valley", "osm_type": "valley", "extent_km": 0.01}
+        old = O.forward_geocode_candidates
+        try:
+            O.forward_geocode_candidates = lambda q, limit=3: [canyon]
+            spec = O._answer_specificity("Grand Canyon", {}, {"matched_landmarks": [
+                {"name": "Grand Canyon", "distance_km": 0.0, "extent_km": 0.01, "kind": "valley"}]})
+        finally:
+            O.forward_geocode_candidates = old
+        self.assertTrue(spec["broad"])
+        self.assertFalse(spec["precise"])
+
+    def test_recognised_landmark_is_not_text_support(self):
+        import utils.osint as O
+
+        old = O.forward_geocode_candidates
+        try:
+            O.forward_geocode_candidates = lambda q, limit=3: [{"addresstype": "city", "osm_type": "administrative"}]
+            seen = O._answer_specificity("Bellevue", {"named_landmarks": ["Bellevue"]}, {})
+            read = O._answer_specificity("Bellevue", {"signage": ["Toyota of Bellevue"]}, {})
+        finally:
+            O.forward_geocode_candidates = old
+        self.assertFalse(seen["text_support"])
+        self.assertTrue(read["text_support"])
+
+    def test_bounding_box_extent(self):
+        from utils.geocode import _bbox_extent_km
+
+        self.assertAlmostEqual(_bbox_extent_km(["36.0", "36.0", "-112.0", "-112.0"]), 0.0)
+        self.assertGreater(_bbox_extent_km(["35.5", "36.5", "-113.5", "-111.5"]), 100)
+        self.assertIsNone(_bbox_extent_km(None))
+
+    def test_calibrated_weights_override_defaults(self):
+        w = dict(_DEFAULT_WEIGHTS, bias=2.0)
+        self.assertGreater(_fuse_confidence(self.base, w), _fuse_confidence(self.base))
+
+
+if __name__ == "__main__":
+    unittest.main()

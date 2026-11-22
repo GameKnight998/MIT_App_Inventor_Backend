@@ -1,0 +1,7 @@
+{
+  "_note": "USD per 1M tokens, used by eval/benchmark.py to fill cost_usd. Edit to match your provider's current price list. A model missing here still gets token counts; its cost is left blank. cache_read / cache_write default to the input price when omitted (the pipeline does not use prompt caching, so these are normally 0 tokens). Claude prices: Anthropic API list prices as of 2026-11; Haiku 5.5 is for prompts up to 100K tokens. gpt-4o: OpenAI list price; check before relying on it.",
+  "claude-opus-5-5":   {"input": 4.00, "output": 20.00, "cache_read": 0.20},
+  "claude-sonnet-5-5": {"input": 2.00, "output": 10.00, "cache_read": 0.10},
+  "claude-haiku-5-5":  {"input": 0.10, "output": 0.50},
+  "gpt-4o":            {"input": 2.50, "output": 10.00, "cache_read": 1.25}
+}

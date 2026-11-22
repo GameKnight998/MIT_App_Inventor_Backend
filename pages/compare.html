@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model Compare</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f6f2; --card: #ffffff; --fg: #1f1f1e; --muted: #6b6a64; --line: #e2e0d9;
+    --accent: #2a78d6; --good: #1d7a45; --good-bg: #e5f4e4; --warn-bg: #f9eeda; --bad: #b3261e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { color-scheme: dark;
+      --bg: #161615; --card: #1f1f1e; --fg: #f0efec; --muted: #a3a29b; --line: #34332f;
+      --accent: #3987e5; --good: #5cc286; --good-bg: #1d3325; --warn-bg: #3a3120; --bad: #f28b82; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--fg); background: var(--bg); }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p.sub { color: var(--muted); margin: 0 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  label.field { display: block; font-weight: 600; margin-bottom: 6px; }
+  input[type=text] { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; }
+  .hint { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .models { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  .models label { display: flex; align-items: center; gap: 6px; }
+  .models .off { color: var(--muted); }
+  img#preview { max-width: 100%; max-height: 220px; border-radius: 8px; margin-top: 10px; display: block; }
+  button { font: inherit; font-weight: 600; padding: 9px 18px; border-radius: 8px; border: 0; background: var(--accent); color: #fff; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  #status { color: var(--muted); margin-left: 10px; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; white-space: nowrap; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.best td { background: var(--good-bg); }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 7px; border-radius: 10px; background: var(--good-bg); color: var(--good); margin-left: 6px; }
+  .err { color: var(--bad); }
+  .muted { color: var(--muted); }
+  .bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 4px; min-width: 60px; }
+  .bar > div { height: 100%; background: var(--accent); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Compare models on one photo</h1>
+  <p class="sub">Upload a photo, pick models, and see each model's answer, confidence and (if you give the true location) how far off it was.</p>
+
+  <div class="grid">
+    <div class="card">
+      <label class="field" for="file">Photo</label>
+      <input type="file" id="file" accept="image/*">
+      <img id="preview" hidden alt="Selected photo">
+    </div>
+    <div class="card">
+      <label class="field" for="truth">True location (optional)</label>
+      <input type="text" id="truth" placeholder="e.g. Mather Point, Grand Canyon  or  36.0617, -112.1077">
+      <div class="hint">A place name or "latitude, longitude". Leave empty to compare answers without scoring them.</div>
+      <label style="display:block;margin-top:12px"><input type="checkbox" id="ignoreGps" checked> Ignore GPS in the photo (test the AI, not the metadata)</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <label class="field">Models</label>
+    <div class="models" id="models"><span class="muted">Loading…</span></div>
+    <div class="hint">Each model makes several AI calls per photo, so every ticked model adds cost.</div>
+  </div>
+
+  <p><button id="go">Compare</button><span id="status"></span></p>
+
+  <div class="card table-wrap">
+    <table>
+      <thead><tr>
+        <th>Model</th><th>Answer</th><th class="num">Distance off</th><th>Confidence</th>
+        <th class="num">Within 1 / 25 / 750 km</th><th class="num">AI runs agreeing</th><th>Map check</th><th class="num">Time</th>
+      </tr></thead>
+      <tbody id="rows"><tr><td colspan="8" class="muted">Results appear here.</td></tr></tbody>
+    </table>
+  </div>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pct = (v) => (v == null ? "–" : Math.round(v * 100) + "%");
+
+function haversineKm(a, b, c, d) {
+  const r = 6371, t = Math.PI / 180;
+  const x = Math.sin((c - a) * t / 2) ** 2 + Math.cos(a * t) * Math.cos(c * t) * Math.sin((d - b) * t / 2) ** 2;
+  return 2 * r * Math.asin(Math.min(1, Math.sqrt(x)));
+}
+
+async function loadModels() {
+  try {
+    const r = await fetch("models");
+    const d = await r.json();
+    $("models").innerHTML = d.models.map((m) => {
+      const off = !!m.missing_key;
+      const note = off ? ` <span class="muted">(needs ${esc(m.missing_key)})</span>` : "";
+      const checked = !off && m.name === d.default ? "checked" : "";
+      return `<label class="${off ? "off" : ""}"><input type="checkbox" value="${esc(m.name)}" ${checked} ${off ? "disabled" : ""}>${esc(m.name)}${note}</label>`;
+    }).join("") || '<span class="muted">No models configured. Set ALLOWED_VISION_MODELS on the server.</span>';
+  } catch (e) {
+    $("models").innerHTML = `<span class="err">Could not load models: ${esc(e)}</span>`;
+  }
+}
+
+$("file").onchange = () => {
+  const f = $("file").files[0];
+  if (f) { $("preview").src = URL.createObjectURL(f); $("preview").hidden = false; }
+};
+
+async function resolveTruth() {
+  const raw = $("truth").value.trim();
+  if (!raw) return null;
+  const m = raw.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+  if (m) return { lat: +m[1], lon: +m[2], label: raw };
+  const r = await fetch("geocode?q=" + encodeURIComponent(raw));
+  if (!r.ok) throw new Error((await r.json()).error || "Place not found");
+  const d = await r.json();
+  return { lat: d.latitude, lon: d.longitude, label: d.display_name };
+}
+
+function rowHtml(model, state) {
+  if (state.pending) return `<tr><td>${esc(model)}</td><td colspan="7" class="muted">Analysing…</td></tr>`;
+  if (state.error) return `<tr><td>${esc(model)}</td><td colspan="6" class="err">${esc(state.error)}</td><td class="num">${state.secs}s</td></tr>`;
+  const d = state.data, bd = d.confidence_by_distance || {};
+  const cons = (d.details && d.details.vision && d.details.vision.consensus) || {};
+  const agree = cons.samples > 1 ? `${Math.round((cons.top_agreement || 0) * cons.samples)} of ${cons.samples}` : "–";
+  const dist = state.km == null ? '<span class="muted">–</span>' : (state.km < 10 ? state.km.toFixed(1) : Math.round(state.km).toLocaleString()) + " km";
+  const map = d.map_url ? ` <a href="${esc(d.map_url)}" target="_blank" rel="noopener">map</a>` : "";
+  return `<tr data-model="${esc(model)}"><td>${esc(model)}${state.best ? '<span class="tag">closest</span>' : ""}</td>
+    <td>${esc(d.location_name)}<div class="muted">${esc(d.region)}, ${esc(d.country)}${map}</div></td>
+    <td class="num">${dist}</td>
+    <td>${pct(d.confidence)}<div class="bar"><div style="width:${Math.round((d.confidence || 0) * 100)}%"></div></div></td>
+    <td class="num">${pct(bd["1km"])} / ${pct(bd["25km"])} / ${pct(bd["750km"])}</td>
+    <td class="num">${agree}</td><td>${esc(d.verified)}</td><td class="num">${state.secs}s</td></tr>`;
+}
+
+function render(order, states) {
+  const kms = order.map((m) => states[m].km).filter((k) => k != null);
+  const best = kms.length ? Math.min(...kms) : null;
+  order.forEach((m) => { states[m].best = best != null && states[m].km === best; });
+  $("rows").innerHTML = order.map((m) => rowHtml(m, states[m])).join("");
+  [...$("rows").children].forEach((tr) => { if (tr.dataset.model && states[tr.dataset.model].best) tr.className = "best"; });
+}
+
+$("go").onclick = async () => {
+  const file = $("file").files[0];
+  const models = [...document.querySelectorAll("#models input:checked")].map((i) => i.value);
+  if (!file) { $("status").textContent = "Choose a photo first."; return; }
+  if (!models.length) { $("status").textContent = "Tick at least one model."; return; }
+  $("go").disabled = true;
+  let truth = null;
+  try { truth = await resolveTruth(); }
+  catch (e) { $("status").textContent = "True location: " + e.message; $("go").disabled = false; return; }
+  $("status").textContent = truth ? `Scoring against ${truth.label}` : "Running…";
+  const states = Object.fromEntries(models.map((m) => [m, { pending: true }]));
+  render(models, states);
+  const ignore = $("ignoreGps").checked ? "&ignore_gps=1" : "";
+  await Promise.all(models.map(async (m) => {
+    const t0 = performance.now();
+    try {
+      const fd = new FormData(); fd.append("image", file);
+      const r = await fetch(`analyze?model=${encodeURIComponent(m)}${ignore}`, { method: "POST", body: fd });
+      const d = await r.json();
+      const secs = Math.round((performance.now() - t0) / 1000);
+      if (!d.success) { states[m] = { error: d.error || "Analysis failed", secs }; }
+      else if (d.model && d.model !== m) { states[m] = { error: `Server used ${d.model} instead; add ${m} to ALLOWED_VISION_MODELS`, secs }; }
+      else if (d.latitude == null) { states[m] = { data: d, km: null, secs }; }
+      else { states[m] = { data: d, secs, km: truth ? haversineKm(truth.lat, truth.lon, d.latitude, d.longitude) : null }; }
+    } catch (e) {
+      states[m] = { error: String(e), secs: Math.round((performance.now() - t0) / 1000) };
+    }
+    render(models, states);
+  }));
+  $("status").textContent = (truth ? `Scored against ${truth.label}. ` : "") + "Done.";
+  $("go").disabled = false;
+};
+
+loadModels();
+</script>
+</body>
+</html>

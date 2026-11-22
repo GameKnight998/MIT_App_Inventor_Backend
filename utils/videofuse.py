@@ -17,6 +17,9 @@ pipeline (verification, climate, solar, log-linear fusion) consumes it unchanged
 
 from __future__ import annotations
 
+import math
+import os
+
 from typing import Any, Optional
 
 from utils.vision import _empty_analysis
@@ -191,8 +194,72 @@ def _merge_candidates(frames: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "frames_agreeing": g["_frames"],
             }
         )
-    merged.sort(key=lambda c: c["confidence"], reverse=True)
+    _add_frame_support(merged, frames)
+    merged.sort(key=lambda c: (c["top_votes"], c["confidence"]), reverse=True)
     return merged
+
+
+# Frames whose top answers lie this close count as pointing at one search
+# region (e.g. Chloride Cliff and Cerro Gordo, 90 km apart, are both "the
+# Death Valley area"), so near-misses reinforce each other instead of competing.
+REGION_KM = float(os.getenv("VIDEO_REGION_KM", "150"))
+# Distance over which a frame's vote fades for neighbouring places.
+VIDEO_DECAY_KM = float(os.getenv("VIDEO_DECAY_KM", "75"))
+# Vote weight of a frame with generic scenery (clue_strength 0); a frame with a
+# readable sign (clue_strength 1) counts in full.
+MIN_CLUE_WEIGHT = float(os.getenv("MIN_CLUE_WEIGHT", "0.25"))
+
+
+def _km(a: dict[str, Any], b: dict[str, Any]) -> Optional[float]:
+    try:
+        lat1, lon1, lat2, lon2 = (math.radians(float(v)) for v in
+                                  (a["latitude"], a["longitude"], b["latitude"], b["longitude"]))
+    except (KeyError, TypeError, ValueError):
+        return None
+    h = math.sin((lat2 - lat1) / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2
+    return 2 * 6371.0 * math.asin(math.sqrt(h))
+
+
+def _add_frame_support(merged: list[dict[str, Any]], frames: list[dict[str, Any]]) -> None:
+    """Set each candidate's `top_votes`: the share of frames backing its region.
+
+    Every frame votes for its own top answer. The vote is weighted by:
+      * how many of that frame's looks agreed on it (its own `top_votes`), so a
+        frame whose looks scattered counts for less;
+      * how distinctive its clues are (`clue_strength`, rated by the vision model
+        against a fixed scale), so a desert tortoise or a readable sign counts
+        for more than a bare ridge found on several continents: from
+        MIN_CLUE_WEIGHT for generic scenery up to 1 for a sign.
+    A vote counts in full for the same place and fades with distance
+    (exp(-d / VIDEO_DECAY_KM)) up to REGION_KM, so near-misses reinforce each
+    other while the place where votes concentrate ranks first. This mirrors
+    per-photo consensus, which the confidence score already reads as
+    `top_votes`, instead of the model's self-reported confidence.
+    """
+    tops = []
+    for fr in frames:
+        cands = fr.get("candidates") or []
+        if cands:
+            weight = cands[0].get("top_votes")
+            weight = 1.0 if weight is None else _clamp(weight)
+            strength = fr.get("clue_strength")
+            if strength is not None:
+                weight *= MIN_CLUE_WEIGHT + (1 - MIN_CLUE_WEIGHT) * _clamp(strength)
+            tops.append((cands[0], weight))
+    # Normalise by the total vote weight, not the frame count: otherwise
+    # down-weighting generic frames would also cap the support of a region
+    # every frame agrees on (all frames at clue 0.4 -> at most 0.55).
+    n = sum(weight for _, weight in tops) or 1.0
+    for cand in merged:
+        votes = 0.0
+        for top, weight in tops:
+            dist = _km(cand, top)
+            same_name = (top.get("name") or "").strip().lower() == (cand.get("name") or "").strip().lower()
+            if same_name:
+                votes += weight
+            elif dist is not None and dist <= REGION_KM:
+                votes += weight * math.exp(-dist / VIDEO_DECAY_KM)
+        cand["top_votes"] = round(votes / n, 3)
 
 
 def merge_frame_visions(frame_visions: list[dict[str, Any]]) -> dict[str, Any]:
@@ -230,6 +297,11 @@ def merge_frame_visions(frame_visions: list[dict[str, Any]]) -> dict[str, Any]:
             "longitude": top.get("longitude"),
         }
         result["confidence"] = top["confidence"]
+        result["consensus"] = {
+            "samples": len(usable),
+            "top_agreement": top["top_votes"],
+            "groups": len(candidates),
+        }
 
     reasons = [v.get("reasoning") for v in usable if v.get("reasoning")]
     if reasons:

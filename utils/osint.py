@@ -18,8 +18,10 @@ reduced when the final choice still doesn't fully match.
 
 from __future__ import annotations
 
+import json
 import math
 import os
+import re
 from typing import Any, Optional
 
 from utils.cache import parallel_map
@@ -30,6 +32,7 @@ from utils.geocode import (
     reverse_geocode,
 )
 from utils.geoenv import annual_climate, climate_consistency, elevation_m
+from utils.landmarks import _BROAD_REGION as _BROAD_REGION_RE
 from utils.landmarks import extract_named_features, verify_named_and_water
 from utils.solar import sun_consistency
 from utils.verify import VERIFY_RADIUS_M, detect_expected_features, verify_location
@@ -75,56 +78,270 @@ def _logit(p: float) -> float:
 
 
 # Log-odds contributions per independent evidence signal. These de-anchor the
-# final confidence from the AI's self-reported number: instead of trusting the
-# model and multiplying penalties, each signal casts an additive vote and we
-# squash the sum back into [0, 1]. Weights are heuristic (documented, tunable)
-# and are the natural thing to calibrate once a labelled eval set exists.
-_FUSION_PRIOR = 0.2
-_VERIFY_LOGIT = {
-    "verified": 1.8,
-    "partial": 0.3,
-    "mismatch": -1.6,
-    "unavailable": 0.0,
-    "skipped": 0.0,
+# final confidence from the AI's self-reported number: each signal casts an
+# additive vote and the sum is squashed back into [0, 1].
+#
+# The defaults are hand-set. `eval/calibrate.py` fits them to labelled photos
+# and writes utils/fusion_weights.json, which overrides any key given here.
+_DEFAULT_WEIGHTS: dict[str, float] = {
+    "bias": _logit(0.2),
+    "ai_conf": 1.3,
+    "verify:verified": 1.8,
+    "verify:partial": 0.3,
+    "verify:mismatch": -1.6,
+    "solar:consistent": 0.6,
+    "solar:weak_mismatch": -0.4,
+    "solar:inconsistent": -2.0,
+    "climate:consistent": 0.5,
+    "climate:weak_mismatch": -0.4,
+    # The chosen name sits near its own coordinates: a consistency check, not
+    # evidence about the photo, so a match earns nothing (a miss still costs).
+    "place:matched": 0.0,
+    "place:missed": -0.9,
+    "landmark:matched": 1.2,
+    "landmark:missed": -0.9,
+    "water:matched": 0.7,
+    "water:missed": -0.8,
+    "clue_bonus": 3.0,
+    "landmark_corroborated": 1.0,
+    "ambiguity": -0.8,
+    "precision": 0.3,
+    # Share of independent vision samples whose top answer agreed with the
+    # chosen location (see utils/consensus.py). Scaled to [-1, 1].
+    "agreement": 1.5,
+    # The answer is a whole city/region/state and nothing in the photo's text
+    # names it (e.g. "Seattle" guessed from Washington plates alone). Runs
+    # agreeing on an obvious default is not evidence of a precise location.
+    "vague_answer": -1.5,
+    # Text in the photo (a sign, business name, plate frame) names the answer.
+    "text_support": 0.6,
+    # The answer lies near a place the investigator's notes name (e.g. "he
+    # mentioned Mt Charleston"). Unverified, so worth less than the photo's own
+    # text; a note that matches nothing adds nothing and costs nothing.
+    "note_support": 0.8,
 }
-_SOLAR_LOGIT = {"consistent": 0.6, "weak_mismatch": -0.4, "inconsistent": -2.0}
-_CLIMATE_LOGIT = {"consistent": 0.5, "weak_mismatch": -0.4}
-_NAMED_LOGIT = {"matched": 1.2, "missed": -0.9, "unknown": 0.0}
-_WATER_NAMED_LOGIT = {"matched": 0.7, "missed": -0.8, "unknown": 0.0}
+# How close the answer must be to a place named in the notes to count as
+# supported by them. Notes often name a landmark seen from the spot, not the
+# spot itself, so this is generous.
+NOTE_SUPPORT_KM = float(os.getenv("NOTE_SUPPORT_KM", "60"))
+FUSION_WEIGHTS_PATH = os.getenv(
+    "FUSION_WEIGHTS_PATH",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "fusion_weights.json"),
+)
 
 
-def _fuse_confidence(sig: dict[str, Any]) -> float:
-    """Combine independent evidence signals into a single confidence in [0, 1].
+def load_fusion_weights(path: Optional[str] = None) -> dict[str, float]:
+    """Defaults, overridden by a calibrated weights file when one exists."""
+    weights = dict(_DEFAULT_WEIGHTS)
+    try:
+        with open(path or FUSION_WEIGHTS_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        for key, value in (data.get("weights") or {}).items():
+            if key in weights:
+                weights[key] = float(value)
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+    return weights
 
-    Each signal shifts the log-odds up or down; the AI's own confidence is just
-    one voter (bounded weight) rather than the anchor everything scales off.
-    """
-    log_odds = _logit(_FUSION_PRIOR)
+
+_FUSION_WEIGHTS = load_fusion_weights()
+
+
+def fusion_features(sig: dict[str, Any]) -> dict[str, float]:
+    """Turn raw signals into the numeric features the weights multiply."""
+    feats: dict[str, float] = {}
 
     ai = sig.get("ai_conf")
     if ai is not None:
-        log_odds += 1.3 * (2 * _clamp(float(ai)) - 1)
+        feats["ai_conf"] = 2 * _clamp(float(ai)) - 1
 
-    log_odds += _VERIFY_LOGIT.get(sig.get("verify_status"), 0.0)
-    log_odds += _SOLAR_LOGIT.get(sig.get("solar_status"), 0.0)
-    log_odds += _CLIMATE_LOGIT.get(sig.get("climate_status"), 0.0)
-    log_odds += _NAMED_LOGIT.get(sig.get("place_status"), 0.0)
-    log_odds += _NAMED_LOGIT.get(sig.get("landmark_named"), 0.0)
-    log_odds += _WATER_NAMED_LOGIT.get(sig.get("water_named"), 0.0)
-    log_odds += 3.0 * min(float(sig.get("clue_bonus", 0.0) or 0.0), 0.25)
+    for prefix, key in (
+        ("verify", "verify_status"),
+        ("solar", "solar_status"),
+        ("climate", "climate_status"),
+        ("place", "place_status"),
+        ("landmark", "landmark_named"),
+        ("water", "water_named"),
+    ):
+        status = sig.get(key)
+        if status:
+            feats[f"{prefix}:{status}"] = 1.0
 
+    feats["clue_bonus"] = min(float(sig.get("clue_bonus", 0.0) or 0.0), 0.25)
     if sig.get("landmark_corroborated"):
-        log_odds += 1.0
+        feats["landmark_corroborated"] = 1.0
 
     gap = sig.get("ambiguity_gap")
     if gap is not None:
-        # Near-tie between top candidates -> penalty up to -0.8.
-        log_odds += -0.8 * (1 - min(float(gap) / 0.2, 1.0))
+        # 1 for a near-tie between the top candidates, 0 for a clear favourite.
+        feats["ambiguity"] = 1 - min(float(gap) / 0.2, 1.0)
 
     precision = sig.get("precision_m")
     if precision is not None and precision <= NARROW_MIN_RADIUS_M * 2:
-        log_odds += 0.3
+        feats["precision"] = 1.0
 
+    agreement = sig.get("agreement")
+    if agreement is not None:
+        feats["agreement"] = 2 * _clamp(float(agreement)) - 1
+    if sig.get("vague_answer"):
+        feats["vague_answer"] = 1.0
+    if sig.get("text_support"):
+        feats["text_support"] = 1.0
+    if sig.get("note_support"):
+        feats["note_support"] = 1.0
+    return feats
+
+
+def _note_support(result: dict[str, Any], vision: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
+    """The nearest place named in the investigator notes, if the answer is close.
+
+    Looks up at most 3 places the vision model extracted from the notes
+    (`note_places`) and returns the nearest one within NOTE_SUPPORT_KM of the
+    answer, or None.
+    """
+    names = [n for n in ((vision or {}).get("note_places") or []) if isinstance(n, str) and n.strip()]
+    if not names or not _has_coords(result):
+        return None
+    best: Optional[dict[str, Any]] = None
+    for name in list(dict.fromkeys(names))[:3]:
+        hit = forward_geocode(name.strip())
+        if not hit:
+            continue
+        dist = _haversine_km(result["latitude"], result["longitude"], hit["latitude"], hit["longitude"])
+        if dist <= NOTE_SUPPORT_KM and (best is None or dist < best["distance_km"]):
+            best = {"name": name.strip(), "distance_km": round(dist, 1)}
+    return best
+
+
+# Place types that cover a whole settlement or larger (tens of km across).
+_BROAD_TYPES = {
+    "city", "town", "municipality", "county", "state", "state_district",
+    "region", "province", "country", "administrative", "continent",
+}
+# Highest confidence for an answer that has no coordinates (never map-checked).
+NAME_ONLY_CAP = float(os.getenv("NAME_ONLY_CAP", "0.25"))
+# An answer whose place is wider than this (a national park, a county) is as
+# vague as a whole city, whatever its type.
+BROAD_EXTENT_KM = float(os.getenv("BROAD_EXTENT_KM", "10"))
+# A landmark this size or smaller can pin the spot; a bigger one (a park, a
+# lake, a canyon) cannot, even when its centre sits right on the answer.
+PRECISE_MAX_EXTENT_KM = float(os.getenv("PRECISE_MAX_EXTENT_KM", "3"))
+# Feature types that always cover a large area, even when the map stores them
+# as a single point ("Grand Canyon" is a point of type "valley").
+_LARGE_FEATURE_TYPES = {
+    "valley", "canyon", "gorge", "national_park", "nature_reserve", "protected_area",
+    "park_boundary", "mountain_range", "range", "ridge", "plateau", "massif", "desert",
+    "forest", "wood", "lake", "reservoir", "sea", "ocean", "bay", "strait", "river",
+    "island", "archipelago", "peninsula", "glacier",
+}
+
+
+def _is_large_place(hit: dict[str, Any]) -> bool:
+    kinds = {
+        (hit.get("addresstype") or "").lower(),
+        (hit.get("osm_type") or "").lower(),
+        (hit.get("kind") or "").lower(),
+    }
+    extent = hit.get("extent_km")
+    return bool(kinds & _LARGE_FEATURE_TYPES) or (extent is not None and float(extent) > BROAD_EXTENT_KM)
+
+
+# A named landmark within this distance of the answer pins it to a spot.
+PRECISE_LANDMARK_KM = float(os.getenv("PRECISE_LANDMARK_KM", "2"))
+_BROAD_WORDS = {
+    "area", "metropolitan", "metro", "region", "county", "state", "greater", "province",
+    "northwestern", "northeastern", "southwestern", "southeastern", "eastside", "westside",
+}
+_CORE_DROP = _BROAD_WORDS | {"the", "of", "western", "eastern", "northern", "southern", "central"}
+
+
+def _core_name(name: str) -> str:
+    """'Seattle Metropolitan Area, Washington' -> 'seattle'."""
+    first = (name or "").split(",")[0].lower()
+    return " ".join(w for w in re.findall(r"[a-z]+", first) if w not in _CORE_DROP)
+
+
+def _answer_specificity(
+    name: Optional[str], vision: Optional[dict[str, Any]], named: dict[str, Any]
+) -> dict[str, Any]:
+    """How specific the chosen answer is, and whether the photo's text backs it.
+
+    Returns {"broad": bool, "text_support": bool, "precise": bool}. "broad"
+    means the answer is a whole city or larger; "precise" means something
+    pins it to a spot (a named landmark the AI recognised was found nearby).
+    """
+    name = name or ""
+    words = set(re.findall(r"[a-z]+", name.split(",")[0].lower()))
+    broad = bool(words & _BROAD_WORDS) or bool(_BROAD_REGION_RE.search(name))
+    if not broad and name:
+        hits = forward_geocode_candidates(name, 1)
+        if hits:
+            # Nominatim may label a city "suburb"; its administrative boundary
+            # type is the reliable sign. Districts like Old Montreal or
+            # Montmartre are other boundary kinds and stay specific.
+            addresstype = (hits[0].get("addresstype") or "").lower()
+            osm_type = (hits[0].get("osm_type") or "").lower()
+            broad = (
+                addresstype in _BROAD_TYPES
+                or osm_type == "administrative"
+                or _is_large_place(hits[0])
+            )
+
+    core = _core_name(name)
+    text = " ".join(
+        # Only words actually read in the photo. The AI's own list of
+        # recognised landmarks would make "Grand Canyon" support itself.
+        str(t) for key in ("ocr_text", "signage") for t in ((vision or {}).get(key) or [])
+    ).lower()
+    text_support = bool(core) and re.search(rf"\b{re.escape(core)}\b", text) is not None
+
+    # A recognised landmark pins the spot only when the answer is right next
+    # to it. Seeing the Eiffel Tower on the skyline (4 km from "Paris" city
+    # centre) says the city, not where the photographer stood.
+    # A big landmark (a national park, a canyon) can sit "0 km" from an answer
+    # at its centre while saying nothing about where the photographer stood.
+    precise = any(
+        float(m.get("distance_km") or 1e9) <= PRECISE_LANDMARK_KM
+        and not _is_large_place(m)
+        and (m.get("extent_km") is None or float(m["extent_km"]) <= PRECISE_MAX_EXTENT_KM)
+        for m in named.get("matched_landmarks") or []
+    )
+    return {"broad": broad, "text_support": text_support, "precise": precise}
+
+
+def _confidence_by_distance(
+    p_city: float, spec: dict[str, Any], country_agreement: Optional[float]
+) -> dict[str, float]:
+    """Spread one city-level probability over street / city / country levels.
+
+    Heuristic until eval/calibrate.py has enough labelled photos:
+    street level needs something that pins the spot; country level also
+    gains when the independent samples agree on the country.
+    """
+    if spec.get("precise"):
+        street_factor = 0.85
+    elif not spec.get("broad"):
+        street_factor = 0.45
+    else:
+        street_factor = 0.05
+    p_country = p_city
+    if country_agreement is not None:
+        p_country = max(p_city, 1 - (1 - p_city) * (1 - 0.85 * _clamp(country_agreement)))
+    return {
+        "1km": round(_clamp(p_city * street_factor), 3),
+        "25km": round(_clamp(p_city), 3),
+        "750km": round(_clamp(p_country), 3),
+    }
+
+
+def _fuse_confidence(
+    sig: dict[str, Any], weights: Optional[dict[str, float]] = None
+) -> float:
+    """Combine independent evidence signals into a single confidence in [0, 1]."""
+    w = weights or _FUSION_WEIGHTS
+    log_odds = w["bias"]
+    for name, value in fusion_features(sig).items():
+        log_odds += w.get(name, 0.0) * value
     return round(_clamp(_sigmoid(log_odds)), 3)
 
 
@@ -222,6 +439,7 @@ def _hypotheses_for_candidate(
                 "address": None,
                 "base": _clamp(cconf + bonus),
                 "cand_conf": cconf,
+                "support": cand.get("top_votes"),
                 "source": "vision_coordinates",
             }
         )
@@ -241,6 +459,7 @@ def _hypotheses_for_candidate(
                     "address": g.get("display_name"),
                     "base": _clamp(cconf * 0.9 + bonus),
                     "cand_conf": cconf,
+                    "support": cand.get("top_votes"),
                     "source": "vision_geocoded",
                 }
             )
@@ -308,6 +527,50 @@ def _augment_verification(
     return out
 
 
+# A fallback place needs support within this margin of the best-supported
+# place (support = share of independent looks whose first choice it was).
+SUPPORT_MARGIN = 0.34
+
+
+def _drop_unsupported(
+    best_partial: Optional[tuple[dict[str, Any], dict[str, Any]]],
+    best_unavailable: Optional[tuple[dict[str, Any], dict[str, Any]]],
+    best_mismatch: Optional[tuple[dict[str, Any], dict[str, Any]]],
+    tried: list[tuple[dict[str, Any], dict[str, Any]]],
+) -> tuple[Any, Any, Any]:
+    """Re-pick the fallback options among well-supported places only.
+
+    Without this, a place no look chose (support 0) could win just because
+    its name was found on the map, while the place every look agreed on lost
+    to a failed or unreachable map check. Returns the three fallbacks
+    unchanged when support is unknown (a single look).
+    """
+    supports = [h.get("support") for h, _ in tried if h.get("support") is not None]
+    if not supports:
+        return best_partial, best_unavailable, best_mismatch
+    floor = max(supports) - SUPPORT_MARGIN
+
+    def ok(h: dict[str, Any]) -> bool:
+        s = h.get("support")
+        return s is None or s >= floor
+
+    def best(status: str, key: Any) -> Optional[tuple[dict[str, Any], dict[str, Any]]]:
+        pool = [(h, r) for h, r in tried if ok(h) and r.get("status") == status]
+        return max(pool, key=key) if pool else None
+
+    by_rank_then_base = lambda hr: (_verify_rank(hr[1]), hr[0].get("support") or 0, hr[0].get("base", 0.0))
+    return (
+        best("partial", by_rank_then_base),
+        best("unavailable", by_rank_then_base),
+        # Anything not partial/unavailable/accepted was crossed out as a mismatch.
+        max(
+            [(h, r) for h, r in tried if ok(h)
+             and r.get("status") not in ("partial", "unavailable") + tuple(_ACCEPT_STATUSES)],
+            key=by_rank_then_base, default=None,
+        ),
+    )
+
+
 def _select_location(
     candidates: list[dict[str, Any]],
     bonus: float,
@@ -330,6 +593,7 @@ def _select_location(
     best_mismatch: Optional[tuple[dict[str, Any], dict[str, Any]]] = None
     chosen: Optional[dict[str, Any]] = None
     chosen_report: Optional[dict[str, Any]] = None
+    tried: list[tuple[dict[str, Any], dict[str, Any]]] = []
 
     for cand in candidates:
         cconf = _clamp(float(cand.get("confidence", 0.0) or 0.0))
@@ -363,6 +627,7 @@ def _select_location(
             )
             attempts += 1
             hyp["verification"] = report
+            tried.append((hyp, report))
             status = report.get("status")
 
             if status in _ACCEPT_STATUSES:
@@ -410,6 +675,14 @@ def _select_location(
             break
 
     if chosen is None:
+        # The map may lower confidence in what the looks agreed on, but it
+        # must not promote a place hardly any look chose: a failed or
+        # unavailable map check is weak evidence next to independent looks
+        # that agree. So the fallback only considers places whose support is
+        # close to the best support.
+        best_partial, best_unavailable, best_mismatch = _drop_unsupported(
+            best_partial, best_unavailable, best_mismatch, tried
+        )
         # Preference when nothing verified cleanly: a real partial match (has
         # corroborating evidence) > the AI's top un-checkable pick > a location
         # the map actively contradicted.
@@ -532,6 +805,7 @@ def _determine_core(
         # fusion at the end of this branch (see _fuse_confidence).
         result["_signals"] = {
             "ai_conf": chosen.get("cand_conf"),
+            "agreement": chosen.get("support"),
             "clue_bonus": bonus,
             "ambiguity_gap": gap,
             "verify_status": status,
@@ -592,22 +866,59 @@ def _determine_core(
         signals["place_status"] = named.get("place_status")
         signals["landmark_named"] = named.get("landmark_status")
         signals["water_named"] = named.get("water_status")
+        spec = _answer_specificity(result.get("location_name"), vision, named)
+        signals["text_support"] = spec["text_support"]
+        signals["vague_answer"] = spec["broad"] and not (spec["text_support"] or spec["precise"])
+        note_hit = _note_support(result, vision)
+        signals["note_support"] = bool(note_hit)
+        if note_hit:
+            result["note_support"] = note_hit
+            evidence.append(
+                f"Investigator notes mention {note_hit['name']}, "
+                f"{note_hit['distance_km']:.0f} km from this answer."
+            )
+        # Headline: how far to trust this exact pin (vague answers marked down).
         result["confidence"] = _fuse_confidence(signals)
+        # A vague answer can still be right at city level, so that estimate
+        # leaves the vagueness penalty out.
+        p_city = _fuse_confidence({**signals, "vague_answer": False})
+        result["confidence_by_distance"] = _confidence_by_distance(
+            p_city, spec, ((vision or {}).get("consensus") or {}).get("country_agreement")
+        )
+        if signals["vague_answer"]:
+            evidence.append(
+                "Answer is a whole city or region and no text in the photo names it, "
+                "so confidence in this exact spot is reduced."
+            )
+        # Kept for debugging and for eval/calibrate.py, which fits the weights.
+        result["confidence_signals"] = signals
         return result
 
     # 3. Name-only fallback (geocoding produced no coordinates to verify).
     name_only = selection["name_only"]
     if name_only is not None:
+        # No coordinates means nothing could be checked on a map, and names
+        # like "Suburban area, Midwest" are too vague to geocode in the first
+        # place. Cap the confidence instead of trusting the AI's own number.
+        conf = min(float(name_only.get("confidence", 0.0) or 0.0), NAME_ONLY_CAP)
+        region = name_only.get("region")
+        if isinstance(region, str) and region.strip().lower() in ("unknown", "n/a", "none", ""):
+            region = None
         result.update(
             {
                 "location_name": name_only.get("name"),
                 "country": name_only.get("country"),
-                "region": name_only.get("region"),
-                "confidence": name_only.get("confidence", 0.0),
+                "region": region,
+                "confidence": round(conf, 3),
+                "confidence_by_distance": {
+                    "1km": 0.0,
+                    "25km": round(conf * 0.5, 3),
+                    "750km": round(conf, 3),
+                },
                 "source": "vision_place_name",
             }
         )
-        evidence.append(f"Best guess (unverified): {name_only.get('name')}.")
+        evidence.append(f"Best guess (unverified, no map location): {name_only.get('name')}.")
         _append_clue_evidence(result, metadata, vision)
         return result
 

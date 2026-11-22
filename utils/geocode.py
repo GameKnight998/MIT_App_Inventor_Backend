@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import math
 import os
+import threading
 import time
 from typing import Any, Optional
 
@@ -25,6 +26,39 @@ USER_AGENT = os.getenv(
     "GEOCODER_USER_AGENT", "ImageLocatorBackend/1.0 (MIT App Inventor capstone)"
 )
 TIMEOUT = float(os.getenv("GEOCODER_TIMEOUT", "8"))
+# Nominatim's usage policy allows at most ~1 request per second. The pipeline
+# geocodes from several threads at once (see utils.cache.parallel_map), so all
+# Nominatim calls share one process-wide throttle. Bursts get HTTP 429 and an
+# empty result, which leaves candidates without coordinates.
+MIN_INTERVAL_S = float(os.getenv("GEOCODER_MIN_INTERVAL", "1.0"))
+_throttle_lock = threading.Lock()
+_next_slot = 0.0
+
+
+def _wait_for_slot() -> None:
+    """Block until this caller may send the next Nominatim request."""
+    global _next_slot
+    with _throttle_lock:
+        now = time.monotonic()
+        wait = _next_slot - now
+        _next_slot = max(now, _next_slot) + MIN_INTERVAL_S
+    if wait > 0:
+        time.sleep(wait)
+
+
+def _nominatim_get(url: str, **kwargs: Any) -> requests.Response:
+    """GET a Nominatim endpoint within the rate limit, retrying once on 429."""
+    _wait_for_slot()
+    resp = requests.get(url, **kwargs)
+    if resp.status_code == 429:
+        try:
+            delay = float(resp.headers.get("Retry-After", "2"))
+        except ValueError:
+            delay = 2.0
+        time.sleep(min(max(delay, MIN_INTERVAL_S), 10.0))
+        _wait_for_slot()
+        resp = requests.get(url, **kwargs)
+    return resp
 
 
 def _enabled() -> bool:
@@ -53,6 +87,24 @@ def _short_name(address: dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _bbox_extent_km(bbox: Any) -> Optional[float]:
+    """Diagonal of a Nominatim bounding box [south, north, west, east], in km.
+
+    Tells a single viewpoint (well under 1 km) from a national park or city
+    (tens to hundreds of km) that shares the same name and centre point.
+    """
+    try:
+        south, north, west, east = (float(v) for v in bbox)
+    except (TypeError, ValueError):
+        return None
+    r = 6371.0
+    p1, p2 = math.radians(south), math.radians(north)
+    dphi = p2 - p1
+    dlmb = math.radians(east - west)
+    a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlmb / 2) ** 2
+    return round(2 * r * math.asin(min(1.0, math.sqrt(a))), 2)
+
+
 def _parse_result(item: dict[str, Any]) -> Optional[dict[str, Any]]:
     try:
         lat = round(float(item["lat"]), 6)
@@ -73,6 +125,8 @@ def _parse_result(item: dict[str, Any]) -> Optional[dict[str, Any]]:
         "category": item.get("category") or item.get("class"),
         "osm_type": item.get("type"),
         "addresstype": item.get("addresstype"),
+        # How big the place is, so a park or city is not mistaken for a spot.
+        "extent_km": _bbox_extent_km(item.get("boundingbox")),
     }
 
 
@@ -88,7 +142,7 @@ def forward_geocode_candidates(query: str, limit: int = 3) -> list[dict[str, Any
         return []
 
     try:
-        resp = requests.get(
+        resp = _nominatim_get(
             f"{NOMINATIM_URL}/search",
             params={
                 "q": query.strip(),
@@ -121,7 +175,7 @@ def reverse_geocode(latitude: float, longitude: float) -> Optional[dict[str, Any
         return None
 
     try:
-        resp = requests.get(
+        resp = _nominatim_get(
             f"{NOMINATIM_URL}/reverse",
             params={
                 "lat": latitude,
@@ -177,7 +231,7 @@ def search_nearby(
     viewbox = f"{lon - dlon},{lat + dlat},{lon + dlon},{lat - dlat}"
 
     try:
-        resp = requests.get(
+        resp = _nominatim_get(
             f"{NOMINATIM_URL}/search",
             params={
                 "q": query.strip(),

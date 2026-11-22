@@ -1,7 +1,7 @@
 """Elevation and climate cross-checks (independent physical signals).
 
 Uses free, key-less APIs:
-  - Open-Elevation for ground elevation at a coordinate.
+  - Open-Meteo (falling back to Open-Elevation) for ground elevation.
   - Open-Meteo's historical archive for a coarse annual climate (mean
     temperature and total precipitation over a recent year).
 
@@ -30,25 +30,53 @@ CLIMATE_ENABLED = os.getenv("CLIMATE_ENABLED", "1") not in ("0", "false", "False
 _USER_AGENT = os.getenv("GEOCODER_USER_AGENT", "ImageLocatorBackend/1.0")
 
 
-@cached(cache_empty=False)
-def elevation_m(latitude: float, longitude: float) -> Optional[float]:
-    """Ground elevation in metres at the coordinate (or None)."""
-    if not ELEVATION_ENABLED or latitude is None or longitude is None:
-        return None
+# Open-Meteo takes up to 100 points in one request and is far less rate-limited
+# than Open-Elevation, which stays as the fallback.
+OPEN_METEO_ELEV_URL = os.getenv("OPEN_METEO_ELEVATION_URL", "https://api.open-meteo.com/v1/elevation")
+
+
+def elevations(points: list[tuple[float, float]]) -> list[Optional[float]]:
+    """Ground elevation in metres for each (lat, lon), None where unknown."""
+    if not ELEVATION_ENABLED or not points:
+        return [None] * len(points)
+    pts = [(round(float(a), 4), round(float(b), 4)) for a, b in points][:100]
     try:
         resp = requests.get(
+            OPEN_METEO_ELEV_URL,
+            params={"latitude": ",".join(str(a) for a, _ in pts),
+                    "longitude": ",".join(str(b) for _, b in pts)},
+            headers={"User-Agent": _USER_AGENT},
+            timeout=GEOENV_TIMEOUT,
+        )
+        resp.raise_for_status()
+        vals = resp.json().get("elevation") or []
+        if len(vals) == len(pts):
+            return [None if v is None else round(float(v), 1) for v in vals]
+    except Exception:
+        pass
+    try:
+        resp = requests.post(
             ELEV_URL,
-            params={"locations": f"{round(latitude, 4)},{round(longitude, 4)}"},
+            json={"locations": [{"latitude": a, "longitude": b} for a, b in pts]},
             headers={"User-Agent": _USER_AGENT},
             timeout=GEOENV_TIMEOUT,
         )
         resp.raise_for_status()
         results = resp.json().get("results") or []
-        if results and results[0].get("elevation") is not None:
-            return round(float(results[0]["elevation"]), 1)
+        if len(results) == len(pts):
+            return [None if r.get("elevation") is None else round(float(r["elevation"]), 1)
+                    for r in results]
     except Exception:
+        pass
+    return [None] * len(pts)
+
+
+@cached(cache_empty=False)
+def elevation_m(latitude: float, longitude: float) -> Optional[float]:
+    """Ground elevation in metres at the coordinate (or None)."""
+    if latitude is None or longitude is None:
         return None
-    return None
+    return elevations([(latitude, longitude)])[0]
 
 
 @cached(cache_empty=False)

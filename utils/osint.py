@@ -454,6 +454,13 @@ def _hypotheses_for_candidate(
             p for p in (name, cand.get("region"), cand.get("country")) if p
         )
         for g in forward_geocode_candidates(query, GEO_CANDIDATES_PER_NAME):
+            # The centre of a large place (a municipality, a county, a park)
+            # is not where anyone stood. When the model gave its own point,
+            # trying that centre lets a map check far from the photographer
+            # replace a precise answer ("San Pedro de Atacama" the commune is
+            # 279 km wide and centred 58 km from the town).
+            if options and _is_large_place(g):
+                continue
             options.append(
                 {
                     "name": name or g.get("name"),

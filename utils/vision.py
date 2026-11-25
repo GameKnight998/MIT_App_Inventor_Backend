@@ -138,7 +138,9 @@ _SYSTEM_PROMPT = (
     "rock with a small known range (e.g. desert tortoise, Joshua tree, bristlecone "
     "pine) or a distinctive skyline; 0.4 = a regional landscape type (e.g. Great "
     "Basin sagebrush hills); 0.1 = generic scenery found on several continents.\n"
-    "- Provide up to 3 candidates. Each confidence and the top-level confidence "
+    "- Provide 3 candidates: your best answer first, then the next most likely "
+    "places, even when you are sure of the first (give those a low confidence). "
+    "Each confidence and the top-level confidence "
     "are 0.0-1.0. Do not invent text you cannot actually read."
 )
 

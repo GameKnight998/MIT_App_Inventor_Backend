@@ -77,6 +77,11 @@ def _logit(p: float) -> float:
     return math.log(p / (1 - p))
 
 
+# How many runner-up places the response lists, so the app can show every lead
+# that was considered (each look gives up to 3; agent mode can add more).
+MAX_ALTERNATIVES = 8
+
+
 # Log-odds contributions per independent evidence signal. These de-anchor the
 # final confidence from the AI's self-reported number: each signal casts an
 # additive vote and the sum is squashed back into [0, 1].
@@ -1025,7 +1030,7 @@ def _merge_alternatives(
         )
     for entry in extra:
         add(entry)
-    return alts[:3]
+    return alts[:MAX_ALTERNATIVES]
 
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
